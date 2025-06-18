@@ -1,0 +1,14 @@
+digraph Trie {
+  rankdir=TB;                  // Top→Bottom layout
+  node [shape=circle];         // Circular nodes
+
+  /* Edges: word → next state with label */
+  root -> c    [label="c"];
+  c    -> ca   [label="a"];
+  ca   -> car  [label="r"];
+  ca   -> cat  [label="t"];
+  car  -> cart [label="t"];
+  root -> d    [label="d"];
+  d    -> do   [label="o"];
+  do   -> dog  [label="g"];
+}

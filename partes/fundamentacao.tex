@@ -1,12 +1,7 @@
-% A subseção "Paralelismo em Computação" começa aqui.
+% A subseção "Fundamentos do Paralelismo" começa aqui.
+\subsecao{Fundamentals of Parallelism}
 
-\subsecao{Paralelismo em Computação}
-
-Advancements in semiconductor technology have historically driven computational power growth. For decades, the performance of single-core processors followed the trend predicted by Moore's Law, which forecast the doubling of transistors on a chip every eighteen months. However, in the mid-2000s, the hardware industry encountered significant physical barriers, such as excessive power consumption and challenges in heat dissipation, which limited the increase in processor clock frequency. The response to these technological limitations was a change in processor design: instead of focusing on making a single core faster, the emphasis shifted to integrating multiple processing cores onto a single chip. Thus emerged multi-core processors, which became the dominant architecture in modern computers. This transition opened up new possibilities for performance enhancement; however, to take advantage of the performance gains offered by multi-core processors, programs must be intentionally developed or adapted to execute tasks in parallel. \cite{Pacheco2011}.
-
-\subsubsecao{Fundamentals of Parallelism}
-
-Parallelism in computing refers to the simultaneous execution of multiple tasks or parts of the same task, with the primary goal of reducing a program's total execution time. It is crucial to distinguish parallelism from concurrency. Concurrency occurs when multiple tasks are in progress at a given time, but may not be executing simultaneously. A single-core system can exhibit concurrency by rapidly switching between the execution of different tasks, simulating parallelism through preemption. True parallelism, on the other hand, requires hardware with multiple processing units. \cite{Butenhof1997}.
+Parallelism in computing refers to the simultaneous execution of multiple tasks or parts of the same task, with the primary goal of reducing a program's total execution time. It is crucial to distinguish parallelism from concurrency. Concurrency occurs when multiple tasks are in progress at a given time, but may not be executing simultaneously. A single-core system can exhibit concurrency by rapidly switching between the execution of different tasks, simulating parallelism through preemption. True parallelism, on the other hand, requires hardware with multiple processing units \cite{Butenhof1997}.
 
 \subsubsecao{Parallel Computing Architectures}
 
@@ -54,7 +49,7 @@ Performance evaluation is fundamental to understanding the effectiveness of a pa
 
 The performance of a program is measured by its execution time. For parallel programs, the following terms are defined:
 \begin{itemize}
-    \item \textbf{Ts}: The execution time of the fastest known sequential algorithm for a given problem, executed on a single processor unit.
+    \item \textbf{Ts}: The execution time of a baseline sequential algorithm executed on a single processor unit.
     \item \textbf{Tp}: The execution time of the parallel program utilizing p processors.
 \end{itemize}
 
@@ -62,37 +57,52 @@ Ideally, \texttt{Tp} is expected to be substantially less than \texttt{Ts}. Howe
 
 \textbf{Speedup}
 
-Speedup (\texttt{S}) measures the performance gain achieved through parallel execution relative to sequential execution and it if referenced as equation 1. It is defined as the ratio of sequential execution time to parallel execution time:
-\[ S = \frac{T_s}{T_p} \]
+Speedup (\texttt{S}) measures the performance gain achieved through parallel execution relative to sequential execution and it is referenced as Equation \ref{eq:speedup}. It is defined as the ratio of sequential execution time to parallel execution time:
+\begin{equation}
+    S = \frac{T_s}{T_p}
+    \label{eq:speedup}
+\end{equation}
 An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law, establishes a theoretical upper bound on the speedup achievable by parallelizing a program with a fixed problem size. \texttt{s} represents the fraction of a program's sequential execution time that is inherently serial (non-parallelizable), and \texttt{f} is the parallelizable fraction (\texttt{s + f = 1}), the maximum speedup on \texttt{p} processors is given by:
-\[ S \leq \frac{1}{s + f/p} \]
-In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by \texttt{1/s}. This implies that even a small sequential fraction (\texttt{s} large) can severely limit the total speedup, regardless of the number of processors available. A complementary perspective is offered by the Gustafson-Barsis Law. This law argues that, that a speedup approximately linear
-\[ S_{\text{escalado}} = s + (1-s) \cdot p \]
-is achievable for problems that se beneficiam desta escalabilidade. This formulation suggests that for problems that can be scaled, it is possible to obtain speedup approximately linear with the number of processors, even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios.
+\begin{equation}
+    S \leq \frac{1}{s + f/p}
+    \label{eq:amdahl}
+\end{equation}
+In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by \texttt{1/s}. This implies that even a small sequential fraction (\texttt{s} large) can severely limit the total speedup, regardless of the number of processors available. A complementary perspective is offered by the Gustafson-Barsis Law. This law argues that a speedup approximately linear
+\begin{equation}
+    S_{\text{escalado}} = s + (1-s) \cdot p
+    \label{eq:gustafson}
+\end{equation}
+is achievable for problems that benefit from this scalability. This formulation suggests that for problems that can be scaled, it is possible to obtain speedup approximately linear with the number of processors, even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.7\linewidth]{speedup-plot.png}
+  \caption{Ideal vs.\ Amdahl’s theoretical speedup ($s=0.1$).}
+  \label{fig:speedup-plot}
+\end{figure}
+
 
 \textbf{Efficiency}
 
 Efficiency (\texttt{E}) measures the effectiveness of processor utilization in a parallel program. It is defined as the ratio of speedup to the number of processors \texttt{p}:
-\[ E = \frac{S}{p} = \frac{T_s}{p \cdot T_p} \]
+\begin{equation}
+    E = \frac{S}{p} = \frac{T_s}{p \cdot T_p}
+    \label{eq:efficiency}
+\end{equation}
 Efficiency values range between 0 and 1 (inclusive), often expressed as a percentage (0\% to 100\%). An efficiency of 1 (or 100\%) signifies ideal, linear speedup, implying that all processors are contributing productively throughout the execution. In practice, efficiency typically diminishes as the processor count increases, primarily due to the escalating impact of parallel overhead.
-
 \textbf{Scalability}
 
 Scalability, in the context of a parallel program and its underlying architecture, denotes its capacity to sustain performance (often measured by efficiency) as the number of processors and/or the problem size increases.
 
-\textbf{Strong Scalability}: Measures how execution time varies with an increasing number of processors for a fixed total problem size. The objective is to maintain relatively constant efficiency as \texttt{p} increases for a fixed \texttt{W}. Amdahl's Law is particularly relevant to this scenario.
+\textbf{Strong Scalability}: Measures how execution time varies with an increasing number of processors for a fixed total problem size. The objective is to maintain relatively constant efficiency as \texttt{p} increases. Amdahl's Law is particularly relevant to this scenario.
 
 \textbf{Weak Scalability}: Evaluates performance as both the number of processors \texttt{p} and the total problem size \texttt{W} increase, such that the problem size per processor \texttt{W/p} remains constant. The goal is to maintain efficiency as \texttt{p} and \texttt{W} scale proportionally. Gustafson's Law is most pertinent in this context.
 
 A system is considered scalable if the efficiency remains above a certain reasonable limit as the platform (number of processors) and the problem grow.
 
-% Fim do conteúdo sobre Métricas de Avaliação de Desempenho Paralelo.
-
 % Fim da subseção "Paralelismo em Computação".
 
-% ... (Conteúdo da subseção "Paralelismo em Computação" termina aqui) ...
-
-% Conteúdo da subseção "Tries (Prefix Trees)" com formatação matemática
+% Conteúdo da subseção "Tries (Prefix Trees)"
 
 \subsecao{Tries (Prefix Trees)}
 
@@ -100,7 +110,25 @@ This section elucidates the Trie data structure, detailing its defining properti
 
 \subsubsecao{Definition and Basic Structure}
 
-A Trie---also known as a prefix tree---is a specialized tree-like data structure optimized for the efficient storage and retrieval of a dynamic set of strings. Edward Fredkin introduced the term "trie" in 1960, highlighting its primary application in information retrieval \cite{Fredkin1960, Knuth1998}.
+A Trie---also known as a prefix tree---is a specialized tree-like data structure optimized for the efficient storage and retrieval of a dynamic set of strings. Edward Fredkin introduced the term "trie" in 1960, highlighting its primary application in information retrieval \cite{Fredkin1960, Knuth1998}. Figure \ref{fig:trie-example} illustrates an example of a trie storing a set of words.
+
+% Figura da Trie
+\begin{figure}[htbp] % h=here, t=top, b=bottom, p=page
+  \centering % Centraliza a figura
+  % Opção 1: Reduzir a largura (tente valores menores que 0.6)
+  % \includegraphics[width=0.4\textwidth]{trie.pdf}
+
+  % Opção 2: Controlar largura E altura, mantendo a proporção (RECOMENDADO para figuras altas)
+  % A figura será escalada para caber DENTRO de 60% da largura E 50% da altura do texto, sem distorcer.
+  % \includegraphics[width=0.6\textwidth, height=0.5\textheight, keepaspectratio]{trie.pdf}
+  % Experimente outros valores, ex:
+  \includegraphics[width=0.5\textwidth, height=0.41\textheight, keepaspectratio]{trie.pdf}
+
+
+  \caption{Example trie storing \{``car'', ``cat'', ``cart'', ``dog''\}. Nodes marking the end of a complete word are shown with a double circle.} % Legenda da figura
+  \label{fig:trie-example} % Rótulo para referenciar a figura
+\end{figure}
+% Fim da Figura da Trie
 
 Tries store strings by organizing nodes so that each path from the root to a node represents a unique prefix. In a standard $R$-way trie, each node can branch to $R$ children, where $R$ denotes the size of the character alphabet. The existence of a parent-child edge highlights two key aspects of tries:
 \begin{itemize}
@@ -151,7 +179,7 @@ Pattern matching involves identifying all instances where a given pattern $P$, w
 
 Pattern matching stands as a cornerstone problem in computer science with diverse applications. In general information processing, it underpins the functionality of text editors and web search engines for keyword searches. The field of computational biology extensively utilizes pattern matching for analyzing genetic sequences \cite{SedgewickWayne2011}.
 
-Furthermore, in the field of information security, pattern matching is crucial: Network Intrusion Detection Systems (NIDS) utilize it to identify malicious signatures in network traffic. Tools like YARA, for instance, define rules based on textual or binary patterns to classify and identify malware (\url{https://virustotal.github.io/yara/}). Later in this work, we’ll explore the role of pattern matching for NIDS in greater detail.
+Furthermore, in the field of information security, pattern matching is crucial: Network Intrusion Detection Systems (NIDS) utilize it to identify malicious signatures in network traffic. Tools like YARA, for instance, define rules based on textual or binary patterns to classify and identify malware \cite{YARADocs}. Later in this work, we’ll explore the role of pattern matching for NIDS in greater detail.
 
 \subsubsecao{Pattern Matching Algorithms}
 
@@ -191,63 +219,62 @@ The theoretical framework of \textit{finite automata} provides a robust and eleg
 
 % Fim da seção/subseção "Pattern Matching".
 
-% Conteúdo da seção/subseção "The Aho-Corasick Algorithm"
+% Conteúdo da subseção "The Aho-Corasick Algorithm"
 
 \subsecao{The Aho-Corasick Algorithm}
 
-This section provides a comprehensive examination of the Aho-Corasick algorithm, a highly efficient string-matching method designed to locate all occurrences of multiple patterns (keywords) within a given text. The algorithm leverages foundational concepts from \textit{automata theory} and string data structures, particularly tries, to offer an optimized solution for the multi-pattern search problem. It achieves \textit{linear time complexity} with respect to the combined length of the text and the number of matches found \cite{AhoCorasick1975}.
+This section provides a comprehensive examination of the Aho-Corasick algorithm, a highly efficient string-matching method designed to locate all occurrences of multiple patterns (keywords) within a given text. It combines \textit{automata theory} with \textit{trie} data structures to efficiently solve the \textit{multi-pattern search} problem. Its search phase runs in $O(n + z)$ time, where $n$ is the text length and $z$ is the number of matches \cite{AhoCorasick1975}.
 
 \subsubsecao{Context}
 
-The task of concurrently identifying all instances of a large collection of patterns within a text poses a significant computational challenge. A naive approach, which involves iteratively applying single-pattern matching algorithms (such as KMP or BM) for each pattern, is inefficient. This method necessitates repeated scans of the text, leading to a worst-case time complexity of approximately $O(k \cdot N)$ where $k$ is the number of patterns and $N$ is the text length, rendering it impractical for large pattern sets or long texts.
+The task of concurrently identifying all instances of a large collection of patterns within a text poses a significant computational challenge. A na\"ive approach---running a \textit{single-pattern matching} algorithm such as KMP or BM for each of the $k$ patterns---requires repeated scans of the text and has a worst-case time complexity of $O(k \cdot n)$, where $k$ is the number of patterns and $n$ is the text length, rendering it impractical for large pattern sets or long texts \cite{Gusfield1997}.
 
-The Aho-Corasick algorithm addresses this limitation by constructing a single \textit{finite automaton} from the entire set of patterns. This automaton processes the input text in a single pass to detect all matches. The algorithm effectively combines the \textit{state-transition} efficiency of finite automata with the prefix-sharing advantages of tries. It generalizes the "\textit{failure function}" concept from the Knuth-Morris-Pratt algorithm to the multi-pattern domain, enabling efficient handling of mismatches. While the basic Aho-Corasick machine utilizes \textit{goto transitions} and \textit{failure back-edges} (making it quasi-deterministic), a fully deterministic version can also be pre-computed if necessary, though the standard approach with \textit{failure links} is often preferred for its construction efficiency.
+The Aho-Corasick algorithm overcomes this by building one \textit{finite automaton} that encodes all patterns simultaneously. This automaton processes the input text in a single pass to detect all matches. The algorithm effectively combines the \textit{state-transition} efficiency of finite automata with the prefix-sharing advantages of tries, following \textit{failure links} on mismatches and resuming matching without rescanning characters---an extension of KMP’s \textit{failure-function} idea to a trie of patterns.
 
 \subsubsecao{Algorithm Components and Construction}
 
-The Aho-Corasick algorithm operates in two main phases: a preprocessing (construction) phase that builds the \textit{pattern-matching automaton}, and a matching (search) phase. Three key functions, constructed sequentially define the automaton:
+Aho-Corasick has two main phases: (i) construction, which builds the automaton, and (ii) search, which scans the text. Three key tables, built in the following order, define the automaton:
 
-\textbf{The Keyword Trie}
+\subsubsecao{Keyword Trie (goto)}
 
-The initial stage involves building a \textit{keyword trie}, which is a standard trie constructed from the given set of patterns $K = \{P_1, P_2, \dots, P_k\}$. Each node in this trie represents a state in the automaton, and each edge corresponds to a character transition. A path from the root to any state $s$ spells out a string that is a prefix of one or more keywords. This structure is formally the \textit{goto function}, $\operatorname{g}(s, a)$, which for a state $s$ and character $a$, returns the next state $s'$ or indicates failure if no such transition exists. The root state is typically completed with transitions (often self-loops or transitions to a dedicated "fail" state if not leading to a pattern prefix) for all alphabet characters not starting any keyword, ensuring the automaton always advances one text character per cycle \cite{AhoCorasick1975, SedgewickWayne2011}.
+A \textit{keyword trie} is first constructed from the pattern set $K=\{ P_1, P_2, \dots, P_k \}$. Each node represents a state, and each edge corresponds to a character transition. A path from the root to any state $s$ spells a prefix of one or more keywords. Formally, the \textit{goto function} $\operatorname{goto}(s, a)$ returns the next state $s'$ when an edge labelled $a$ exists; otherwise the transition fails. Undefined transitions from the root are assigned back to the root, i.e., $\operatorname{goto}(0, a) = 0$, creating implicit self-loops for every alphabet symbol.
 
-\textbf{The Failure Function}
+\subsubsecao{Failure Function (f)}
 
-The \textit{failure function}, $\operatorname{f}(s)$, is central to the algorithm's efficiency. For any state $s$ (other than the root), $\operatorname{f}(s)$ points to the state $s'$ such that the string labeling the path from the root to $s'$ is the longest proper suffix of the string labeling the path from the root to $s$ that is also a prefix of some keyword in $K$. This function enables the automaton, upon a mismatch at state $s$ with the current text character, to transition to $\operatorname{f}(s)$ and re-attempt a match without rescanning text characters. The failure function is typically computed level-by-level (breadth-first search order) after the goto function is complete, leveraging already computed failure values for parent states.
+For any state $s$ (except the root), $\operatorname{f}(s)$ is the state $s'$ whose path label is the longest proper suffix of the path label of $s$ that is also a prefix of some keyword. On a mismatch, the automaton follows $\operatorname{f}(s)$ and resumes matching without consuming the current character. The \textit{failure function} is computed level-by-level (breadth-first) after the goto table is complete.
 
-\textbf{The Output Function}
+\subsubsecao{The Output Function}
 
-The \textit{output function}, $\operatorname{output}(s)$, identifies all keywords that end at state $s$. For a given state $s$, $\operatorname{output}(s)$ is the set of all patterns $P_i$ in $K$ such that the string corresponding to the path to $s$ is $P_i$. To ensure all matches are reported, including those that are suffixes of other patterns, $\operatorname{output}(s)$ is augmented during the failure function computation: if $\operatorname{f}(s) = s'$, then $\operatorname{output}(s)$ is set to $\operatorname{output}(s) \cup \operatorname{output}(s')$. This incremental union ensures that reaching state $s$ correctly identifies all patterns ending at $s$ or at states reachable from $s$ via \textit{failure links}.
+The \textit{output function}, $\operatorname{output}(s)$, identifies all keywords that end at state $s$. For a given state $s$, $\operatorname{output}(s)$ is the set of all patterns $P_i$ in $K$ such that the string corresponding to the path to $s$ is $P_i$. To ensure all matches are reported, including those that are suffixes of other patterns, $\operatorname{output}(s)$ is augmented during the failure function computation: if $\operatorname{f}(s) = s'$, then $\operatorname{output}(s) \leftarrow \operatorname{output}(s) \cup \operatorname{output}(\operatorname{f}(s))$. This incremental union lets each state report every pattern that ends either at that state or at any suffix state reached through its failure chain.
 
-\textbf{Matching Phase}
+\subsubsecao{Matching Phase}
 
-Once the Aho-Corasick automaton is constructed, it processes the input text $T$ character by character in a single pass. Starting at the root (initial state), for each text character $a_i$:
+Once the Aho-Corasick automaton is constructed, it processes the input text $T$ character by character in a single pass. Starting from the root state, the automaton iterates over each text character $a_i$ as follows:
 \begin{enumerate}
-    \item The automaton attempts to transition from the $\textit{current\_state}$ using $\operatorname{g}(\textit{current\_state}, a_i)$.
-    \item If this transition leads to a state $s'$, the $\textit{current\_state}$ becomes $s'$.
-    \item If $\operatorname{g}(\textit{current\_state}, a_i)$ indicates failure, the $\textit{current\_state}$ is updated to $\operatorname{f}(\textit{current\_state})$, and step 1 is repeated with the same text character $a_i$ until a valid goto transition is found or the root state is reached (from which a goto transition will always exist for $a_i$, possibly to the root itself if $a_i$ does not start any pattern).
-    \item After each successful transition to a new state $s'$, the algorithm consults $\operatorname{output}(s')$ and reports all keywords found, along with their ending position $i$ in the text.
+    \item Attempt $\operatorname{goto}(\textit{current\_state}, a_i)$ for the current character $a_i$.
+    \item If the transition succeeds, set $\textit{current\_state} \leftarrow s'$.
+    \item Otherwise, set $\textit{current\_state} \leftarrow \operatorname{f}(\textit{current\_state})$ and repeat step 1 without consuming $a_i$ until a goto transition succeeds or the root is reached. From the root, $\operatorname{goto}(0, a_i)$ always exists, possibly returning to the root itself.
+    \item After each successful transition, inspect $\operatorname{output}(\textit{current\_state})$ and report every pattern it contains, recording its ending position $i$.
 \end{enumerate}
-The number of state transitions (goto and failure combined) during the matching phase on a text of length $N$ is bounded by $2N$.
+The combined number of goto and failure transitions during a scan of length $n$ is $< 2n$ \cite{AhoCorasick1975}.
 
-\textbf{Time and Space Complexity}
+\subsubsecao{Time and Space Complexity}
 
 The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for multi-pattern matching \cite{AhoCorasick1975, Gusfield1997}.
 
 \begin{itemize}
-    \item \textbf{Time Complexity}
-    \begin{itemize}
-        \item Construction Phase (Preprocessing): The construction of the goto, failure, and output functions takes $O(L)$ time, where $L$ is the total length of all keywords in the pattern set. Suppose a dense representation for root transitions is used (e.g., an array indexed by alphabet characters). In that case, an additional $O(|\Sigma|)$ term for alphabet size $|\Sigma|$ may be incurred for initializing these root transitions. Thus, construction is generally $O(L + |\Sigma|)$.
-        \item Matching Phase (Search): Processing a text of length $N$ involves at most $2N$ state transitions. Reporting matches takes additional time proportional to the total number of occurrences, $O_k$. Therefore, the search phase is $O(N + O_k)$.
-    \end{itemize}
-    \item \textbf{Space Complexity}
-    \begin{itemize}
-        \item The space required to store the automaton (goto function, failure function, and output function) is proportional to $O(L + |\Sigma|)$. The goto function can be stored as a trie, requiring space proportional to $L$. The failure function requires $O(L)$ space (one pointer per state). The output function, in its most general form, could also require more space if many states have many outputs, but efficient representations exist.
-    \end{itemize}
+    \item \textbf{Construction phase}: building the goto, failure, and output functions takes $O(L)$ time, where $L$ is the total length of all keywords. If a dense array is used for the root, an additional $O(|\Sigma|)$ initialization cost is incurred, giving $O(L + |\Sigma|)$.
+    \item \textbf{Search phase}: Scanning a text of length $n$ performs fewer than $2n$ state transitions. Reporting matches costs time proportional to the total number of occurrences $z$, so the total search time is $O(n + z)$.
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{Space complexity}: Storing the automaton requires $O(L + |\Sigma|)$ space: $O(L)$ for trie edges, $O(L)$ pointers for failure links, and additional space for output lists (proportional to the number of stored outputs).
 \end{itemize}
 
 \subsubsecao{Applications and Relevance}
 
-The Aho-Corasick algorithm is extensively used in applications demanding high-performance multi-pattern matching. Its single-pass processing capability makes it ideal for systems like Network Intrusion Detection Systems (NIDS), which scan network traffic for thousands of known malicious signatures. In cybersecurity, it is a core component of anti-malware tools and systems like YARA, where it efficiently matches literal string components extracted from more complex rules. Other applications include large-scale text analysis, bioinformatics (searching for multiple motifs in DNA or protein sequences), and spam filtering. It should be noted that while Aho-Corasick excels at exact literal string matching, systems like NIDS often layer additional capabilities (e.g., regular expression matching for parts of signatures) on top of or in conjunction with Aho-Corasick engines to handle more complex pattern definitions, which can affect overall performance characteristics. The Aho-Corasick algorithm remains a theoretically important and practically impactful example of applying \textit{finite automata} theory to solve complex string processing problems.
+The Aho-Corasick algorithm is widely used in applications that require high-performance \textit{multi-pattern matching}. Its single-pass processing capability makes it ideal for systems such as Network Intrusion Detection Systems (NIDS), which scan network traffic against thousands of malicious signatures \cite{AhoCorasick1975}. In cybersecurity, it is a core component of anti-malware tools and engines, such as YARA, where it efficiently matches literal string components extracted from complex rules. Other applications include large-scale text analysis, motif searching in DNA or protein sequences, and spam filtering.
 
-% Fim da seção/subseção "The Aho-Corasick Algorithm".
+While Aho-Corasick excels at exact literal matching, systems like NIDS often layer additional capabilities---such as \textit{regular-expression matching}---on top of Aho-Corasick engines to support more expressive signatures, which affects overall performance characteristics. The algorithm therefore remains a theoretically elegant and practically impactful example of \textit{finite-automata theory} applied to string processing \cite{Gusfield1997,YARADocs}.
+
+% Fim da subseção "The Aho-Corasick Algorithm".

@@ -19,7 +19,7 @@ clean:
 	rm -f *.aux *.bbl *.blg *.bcf *.run.xml *.log *.toc *.out *.lof *.lot *.fls
 
 cleanall: clean
-	rm -f main.pdf
+	rm -f main.pdf main.xdv main.synctex.gz main.fdb_latexmk
 
 .PHONY: all clean cleanall
 
