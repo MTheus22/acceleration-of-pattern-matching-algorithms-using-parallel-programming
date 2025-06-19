@@ -1,16 +1,32 @@
-Advancements in semiconductor technology have historically driven computational power growth. For decades, the performance of single-core processors followed the trend predicted by Moore's Law, which forecast the doubling of transistors on a chip every eighteen months. However, in the mid-2000s, the hardware industry encountered significant physical barriers, such as excessive power consumption and challenges in heat dissipation, which limited the increase in processor clock frequency. The response to these technological limitations was a change in processor design: instead of focusing on making a single core faster, the emphasis shifted to integrating multiple processing cores onto a single chip. Thus emerged multi-core processors, which became the dominant architecture in modern computers. This transition opened up new possibilities for performance enhancement; however, to take advantage of the performance gains offered by multi-core processors, programs must be intentionally developed or adapted to execute tasks in parallel \cite{Pacheco2011}.
+Advancements in semiconductor technology have historically driven computational power growth. For decades, the performance of single-core processors followed the trend predicted by \textit{Moore's Law}, which forecast the doubling of transistors on a chip every eighteen months \cite{Pacheco2011}. However, in the mid-2000s, the hardware industry encountered significant physical barriers, such as excessive power consumption and challenges in heat dissipation, which limited the increase in processor clock frequency. The response to these technological limitations was a change in processor design: instead of focusing on making a single core faster, the emphasis shifted to integrating multiple processing cores onto a single chip. Thus, multi-core processors emerged as the dominant architecture in modern computers. This transition opened up new possibilities for performance enhancement; however, to take advantage of the performance gains offered by multi-core processors, programs must be intentionally developed or adapted to execute tasks in parallel.
 
-De forma geral, a introdução deve abordar os seguintes elementos:
+\subsecao{Context and Problem Statement}
 
-\begin{itemize}
-    \item \textbf{Contextualização}: apresentar o tema, situando-o no contexto social, científico ou tecnológico, de forma a demonstrar sua importância.
-    
-    \item \textbf{Delimitação do problema}: definir claramente qual é o problema que será investigado, especificando os limites e o foco do estudo.
-    
-    \item \textbf{Justificativa}: argumentar sobre a relevância do trabalho, destacando sua contribuição teórica, prática, social ou científica.
-    
-    \item \textbf{Objetivos}: apresentar o \textbf{objetivo geral} e, quando aplicável, os \textbf{objetivos específicos}, que indicam os passos necessários para alcançar o objetivo principal.
-    
-    \item \textbf{Estrutura do trabalho}: descrever brevemente como o trabalho está organizado, indicando o conteúdo de cada capítulo.
-\end{itemize}
+This architectural shift from sequential to parallel execution profoundly impacts high-performance applications. In information security, tools for malware analysis and network intrusion detection must process vast data volumes rapidly to identify malicious patterns and enable prompt responses. YARA, an industry standard for pattern-based malware classification, exemplifies this challenge. It utilizes the efficient Aho-Corasick algorithm as the core of its multi-pattern matching engine, allowing it to search thousands of string patterns simultaneously \cite{YARADocs}.
+
+Despite its efficiency for multi-pattern searching, YARA's internal implementation of the Aho-Corasick algorithm is predominantly sequential. While YARA supports \textit{inter-file parallelism}---concurrently scanning multiple smaller files across different threads---it lacks \textit{intra-file parallelism}. This means that when scanning a single, large target (e.g., a full disk image or a large network packet capture), the entire computational load falls upon a single CPU core. This limitation constitutes a significant performance bottleneck in critical, real-world security scenarios, where rapid analysis of large-volume targets is paramount. As the size of data in security incidents continues to grow, this bottleneck becomes increasingly prohibitive.
+
+\subsecao{Justification and Research Proposal}
+
+The identified performance limitation of YARA's sequential engine when scanning large files presents a clear opportunity for optimization through parallel computing. Scientific literature confirms that parallelizing the Aho-Corasick algorithm is a viable and effective strategy; previous studies in fields like bioinformatics report significant speedups \cite{Vajira2018}. However, a systematic review of the literature reveals that direct implementation, integration, and empirical evaluation of a parallel Aho-Corasick engine within the YARA framework remains an unexplored research area.
+
+Therefore, this research proposes a \textit{data-parallel scanning strategy} for YARA’s Aho-Corasick engine on multi-core CPUs. The proposed solution involves partitioning each large input file into fixed-size, overlapping chunks and using multiple \texttt{POSIX threads} to concurrently traverse the same pre-compiled Aho-Corasick automaton. Each thread will process its assigned chunk, and thread-local match lists will be merged upon scan completion. The originality of this work lies not in inventing a new parallel algorithm, but in the software engineering required to integrate this strategy into YARA's complex \texttt{C}-based codebase and the scientific rigor of its empirical evaluation.
+
+\subsecao{Objectives}
+
+The general objective of this thesis is to demonstrate that the performance of YARA's pattern matching engine can be significantly accelerated for large-file scanning scenarios by introducing \textit{intra-file parallelism} on multi-core CPU architectures.
+
+To achieve this general objective, the following specific objectives are defined:
+\begin{enumerate}
+    \item To design and implement a parallel version of the Aho-Corasick scanning loop within the \texttt{libyara} library using native threading techniques (\texttt{POSIX threads}).
+    \item To solve the technical challenges associated with this integration, including thread-safe result management, synchronization overhead, and the handling of pattern matches that cross chunk boundaries.
+    \item To conduct a rigorous experimental evaluation to quantify the performance gains of the parallel implementation in terms of speedup and throughput.
+    \item To analyze the scalability of the proposed solution by systematically varying key parameters, such as the number of threads, input file size, and the complexity of the YARA rule set.
+\end{enumerate}
+
+\newpage\subsecao{Structure of the Thesis}
+
+This thesis is organized into the following chapters. Chapter 2 presents the Theoretical Framework, covering the fundamentals of parallel computing, including architectures, metrics, and models for parallel programming with threads. It also details the core data structures and algorithms relevant to this work, specifically Tries, the general problem of pattern matching, and a comprehensive examination of the Aho-Corasick algorithm. Chapter 3 outlines the Systematic Literature Review process, detailing the research questions, search strategy, and selection criteria used to identify the state of the art and establish the research gap. Chapter 4 describes the Methodology\dots
+
+% Fim do conteúdo da seção de Introdução.
 
