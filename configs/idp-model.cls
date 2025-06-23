@@ -164,7 +164,7 @@ headheight=1.8cm]{geometry}
 
         \vspace*{3cm}
  
-        \noindent{Trabalho de Conclusão de Curso apresentado como requisito parcial para a obtenção de grau de Bacharel em \@nomecurso, pelo Instituto Brasileiro de Ensino, Desenvolvimento e Pesquisa (IDP).}
+        \noindent{Qualification Exam document submitted as a partial requirement for the Bachelor’s Degree in Software Engineering at the Instituto Brasileiro de Ensino, Desenvolvimento e Pesquisa (IDP).}
 
 
         \vspace*{3cm}
@@ -192,7 +192,7 @@ headheight=1.8cm]{geometry}
     \end{flushleft}
         \vspace*{2cm}
 
-       \noindent{Trabalho de Conclusão de Curso apresentado como requisito parcial para a obtenção de grau de Bacharel em \@nomecurso, pelo Instituto Brasileiro de Ensino, Desenvolvimento e Pesquisa (IDP).}
+       \noindent{Qualification Exam document submitted as a partial requirement for the Bachelor’s Degree in Software Engineering at the Instituto Brasileiro de Ensino, Desenvolvimento e Pesquisa (IDP).}
 
 
     \begin{flushleft}
@@ -208,53 +208,19 @@ headheight=1.8cm]{geometry}
         \vspace*{2cm}
         \rule{\linewidth}{0.4pt}
         \vspace{1em}
-        {\@nomeorientador -  \iforientadora Orientadora 
-        \else Orientador
-        \fi}
+        {Patrícia Oliveira}
 
         \vspace*{2cm}
         \rule{\linewidth}{0.4pt}
         \vspace{1em}
-        {\@nomemembrobancai - \@funcaomembrobancai}
+        {Lucas Maurício}
         
         \vspace*{2cm}
         \rule{\linewidth}{0.4pt}
         \vspace{1em}
-        {\@nomemembrobancaii - \@funcaomembrobancaii}
+        {Jeremias M. Gomes}
         }
     \end{flushleft}
-}
-\newcommand{\agradecimentos}{
-    \clearpage
-     \begin{flushleft}
-    {\Large\bfseries\color{fundo_idp}\MakeUppercase{Agradecimentos}}
-    \end{flushleft}
-    \vspace{1em}
-    \input{partes/agradecimentos}
-}
-
-\newcommand{\dedicatoria}{
-    \clearpage
-     \begin{flushleft}
-    {\Large\bfseries\color{fundo_idp}\MakeUppercase{Dedicatória}}
-    \end{flushleft}
-    \vspace{1em}
-    \input{partes/dedicatoria}
-}
-
-\newcommand{\resumo}{
-    \clearpage
-     \begin{flushleft}
-    {\Large\bfseries\color{fundo_idp}\MakeUppercase{Resumo}}
-    \end{flushleft}
-    \vspace{1em}
-    \input{partes/resumo}
-    \vspace{1em}
-     \begin{tcolorbox}[keywordsbox]
-     \begin{center}
-        \color{fundo_idp}\textbf{Palavras-chave:} \color{fundo_idp}{\@palavraschave}.
-    \end{center}
-    \end{tcolorbox}
 }
 
 \renewcommand{\abstract}{

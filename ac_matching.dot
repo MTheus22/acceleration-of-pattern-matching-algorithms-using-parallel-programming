@@ -1,0 +1,23 @@
+digraph AC_Matching {
+  rankdir=TB;             // layout de cima para baixo
+  node [fontname="Helvetica"];
+
+  // Definição de estilos
+  Start  [shape=oval,    label="Start\nat root, i=1"];
+  Goto   [shape=box,     label=<Attempt<BR/>goto(cs, a<SUB>i</SUB>) <BR/> >];
+  Check  [shape=diamond, label="Success?"];
+  Report [shape=box,     label="Inspect\noutput(cs)"];
+  Next   [shape=box,     label="i ← i+1\n(next char)"];
+  Fail   [shape=box,     label="cs ← f(cs)\n(retry)"];
+  End    [shape=oval,    label="End"];
+
+  // Conexões
+  Start  -> Goto;
+  Goto   -> Check;
+  Check  -> Report [label="yes"];
+  Check  -> Fail   [label="no"];
+  Report -> Next;
+  Next   -> Goto;
+  Fail   -> Goto;
+  Next   -> End [label="  if i > n"];
+}

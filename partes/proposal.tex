@@ -1,0 +1,70 @@
+Therefore, this research proposes a \textit{data-parallel scanning strategy} for YARA’s Aho-Corasick engine on multi-core CPUs. The proposed solution involves partitioning each large input file into fixed-size, overlapping chunks and using multiple \texttt{POSIX threads} to concurrently traverse the same pre-compiled Aho-Corasick automaton. Each thread will process its assigned chunk, and thread-local match lists will be merged upon scan completion. The originality of this work lies not in inventing a new parallel algorithm, but in the software engineering required to integrate this strategy into YARA's complex \texttt{C}-based codebase and the scientific rigor of its empirical evaluation.
+
+\subsecao{Cronograma} 
+
+This schedule details the activities carried out and planned for the development of the present work, distributed throughout the academic year. The tables below present the main phases of the project, from the conception and initial research to the implementation, evaluation and final writing of the document, divided into two semesters for better visualization.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Cronograma de Atividades do TCC (Fev-Jul)} % Legenda da Tabela 1
+    \label{tab:tcc_schedule_part1} % Rótulo para a primeira parte
+    \begin{tabular}{@{} l *{6}{c} @{}} % Colunas: Atividade + Fev a Jul (6 meses)
+        \toprule
+        \textbf{Atividade} & \textbf{Fev} & \textbf{Mar} & \textbf{Abr} & \textbf{Mai} & \textbf{Jun} & \textbf{Jul} \\
+        \midrule
+
+        \multicolumn{7}{@{}l}{\textbf{Fase 1: Pesquisa e Planejamento}} \\
+ 
+        Orientação e Definição do Tema & X & X & & & & \\
+        Revisão Sistemática da Literatura & X & X & X & X & & \\
+        Estudo da Fundamentação Teórica & & X & X & & & \\
+        Desenvolvimento da Proposta de Pesquisa & & & X & X & & \\
+        \midrule
+
+        \multicolumn{7}{@{}l}{\textbf{Fase 2: Escrita e Submissão Parcial}} \\
+ 
+        Escrita dos Capítulos Iniciais & & & & X & X & \\
+        Submissão do Projeto e Documento Parcial & & & & & X & \\
+        \midrule
+
+        \multicolumn{7}{@{}l}{\textbf{Fase 3: Implementação e Desenvolvimento}} \\
+ 
+        Análise do Código-Fonte do YARA & &  & & & X \\
+        Desenvolvimento do Protótipo Paralelo & & & & & & \\ 
+        Resolução de Desafios de Integração & & & & & & \\ 
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[htbp] % Pode usar [H] aqui se quiser forçar a ficar logo abaixo da primeira
+    \centering
+    \caption{Cronograma de Atividades do TCC (Ago-Dez)} % Legenda da Tabela 2
+    \label{tab:tcc_schedule_part2} % Rótulo para a segunda parte
+    \begin{tabular}{@{} l *{5}{c} @{}} % Colunas: Atividade + Ago a Dez (5 meses)
+        \toprule
+        \textbf{Atividade} & \textbf{Ago} & \textbf{Set} & \textbf{Out} & \textbf{Nov} & \textbf{Dez} \\
+        \midrule
+
+        \multicolumn{6}{@{}l}{\textbf{Fase 3: Implementação e Desenvolvimento}} \\
+ 
+        Análise do Código-Fonte do YARA & X & & & & \\
+        Desenvolvimento do Protótipo Paralelo & X & X & & & \\
+        Resolução de Desafios de Integração & X & X & & & \\
+        \midrule
+
+        \multicolumn{6}{@{}l}{\textbf{Fase 4: Avaliação Experimental}} \\
+
+        Definição do Ambiente e Casos de Teste & X & X & & & \\
+        Execução dos Experimentos de Desempenho & & X & X & & \\
+        Coleta e Análise dos Resultados & & & X & & \\
+        \midrule
+
+        \multicolumn{6}{@{}l}{\textbf{Fase 5: Finalização e Defesa}} \\
+ 
+        Escrita dos Capítulos Finais & & & & X & X \\
+        Revisão e Formatação Final do TCC & & & & & X \\
+        Preparação para a Apresentação Final & & & & & X \\
+        Submissão Final e Defesa do TCC & & & & & X \\
+        \bottomrule
+    \end{tabular}
+\end{table}

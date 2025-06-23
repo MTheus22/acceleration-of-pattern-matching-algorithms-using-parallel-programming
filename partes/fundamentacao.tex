@@ -67,7 +67,7 @@ An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law, establishes 
     S \leq \frac{1}{s + f/p}
     \label{eq:amdahl}
 \end{equation}
-In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by \texttt{1/s}. This implies that even a small sequential fraction (\texttt{s} large) can severely limit the total speedup, regardless of the number of processors available. A complementary perspective is offered by the Gustafson-Barsis Law. This law argues that a speedup approximately linear
+In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by $\frac{1}{s}$. This implies that even a small sequential fraction (\texttt{s} large) can severely limit the total speedup, regardless of the number of processors available. Figure \ref{fig:speedup-plot} illustrates the theoretical speedup according to Amdahl's Law compared to ideal speedup for a given sequential fraction. A complementary perspective is offered by the Gustafson-Barsis Law. This law argues that a speedup approximately linear
 \begin{equation}
     S_{\text{escalado}} = s + (1-s) \cdot p
     \label{eq:gustafson}
@@ -90,16 +90,18 @@ Efficiency (\texttt{E}) measures the effectiveness of processor utilization in a
     \label{eq:efficiency}
 \end{equation}
 Efficiency values range between 0 and 1 (inclusive), often expressed as a percentage (0\% to 100\%). An efficiency of 1 (or 100\%) signifies ideal, linear speedup, implying that all processors are contributing productively throughout the execution. In practice, efficiency typically diminishes as the processor count increases, primarily due to the escalating impact of parallel overhead.
+
+
 \textbf{Scalability}
 
-Scalability, in the context of a parallel program and its underlying architecture, denotes its capacity to sustain performance (often measured by efficiency) as the number of processors and/or the problem size increases.
+In parallel computing, scalability denotes a system’s ability to sustain high performance (often via efficiency) as both the number of processors and/or the problem size grow.
 
-\textbf{Strong Scalability}: Measures how execution time varies with an increasing number of processors for a fixed total problem size. The objective is to maintain relatively constant efficiency as \texttt{p} increases. Amdahl's Law is particularly relevant to this scenario.
+\begin{itemize}
+    \item \textbf{Strong Scalability}: Measures how execution time changes when you increase the processor count $p$ for a fixed total problem size, denoted $W$ (for example, the total number of array elements to process). The goal is to keep efficiency nearly constant as $p$ increases. Amdahl’s Law directly applies in this scenario.
+    \item \textbf{Weak Scalability}: Measures how execution time changes when you increase both the processor count $p$ and the total problem size $W$ such that the work per processor ($W/p$) stays constant. The aim is to maintain efficiency as $p$ and $W$ grow proportionally. Gustafson’s Law is most relevant here.
+\end{itemize}
 
-\textbf{Weak Scalability}: Evaluates performance as both the number of processors \texttt{p} and the total problem size \texttt{W} increase, such that the problem size per processor \texttt{W/p} remains constant. The goal is to maintain efficiency as \texttt{p} and \texttt{W} scale proportionally. Gustafson's Law is most pertinent in this context.
-
-A system is considered scalable if the efficiency remains above a certain reasonable limit as the platform (number of processors) and the problem grow.
-
+A parallel system is considered scalable if its efficiency remains above an acceptable threshold as both the number of processors $p$ and the problem size $W$ increase.
 % Fim da subseção "Paralelismo em Computação".
 
 % Conteúdo da subseção "Tries (Prefix Trees)"
@@ -115,15 +117,8 @@ A Trie---also known as a prefix tree---is a specialized tree-like data structure
 % Figura da Trie
 \begin{figure}[htbp] % h=here, t=top, b=bottom, p=page
   \centering % Centraliza a figura
-  % Opção 1: Reduzir a largura (tente valores menores que 0.6)
-  % \includegraphics[width=0.4\textwidth]{trie.pdf}
 
-  % Opção 2: Controlar largura E altura, mantendo a proporção (RECOMENDADO para figuras altas)
-  % A figura será escalada para caber DENTRO de 60% da largura E 50% da altura do texto, sem distorcer.
-  % \includegraphics[width=0.6\textwidth, height=0.5\textheight, keepaspectratio]{trie.pdf}
-  % Experimente outros valores, ex:
   \includegraphics[width=0.5\textwidth, height=0.41\textheight, keepaspectratio]{trie.pdf}
-
 
   \caption{Example trie storing \{``car'', ``cat'', ``cart'', ``dog''\}. Nodes marking the end of a complete word are shown with a double circle.} % Legenda da figura
   \label{fig:trie-example} % Rótulo para referenciar a figura
@@ -161,45 +156,48 @@ While prefix sharing can save space, the overall space complexity of $R$-way tri
 
 \subsubsecao{Foundational Role in String Processing}
 
-The trie data structure is a cornerstone for numerous advanced string processing algorithms. Critically for this work, the Aho-Corasick algorithm, engineered for the efficient, simultaneous matching of multiple patterns within a text, employs a trie---constructed from the set of patterns (the dictionary)---as its initial structural framework. This pattern trie is subsequently augmented with specialized "failure links" to form a finite automaton, enabling text processing in time linear to the text's length \cite{AhoCorasick1975}. A thorough grasp of trie principles is thus indispensable for developing and analyzing the Aho-Corasick algorithm.
+The trie data structure is a cornerstone for numerous advanced string processing algorithms. Critically for this work, the Aho-Corasick algorithm, engineered for the efficient, simultaneous matching of multiple patterns within a text, employs a trie---constructed from the set of patterns (the dictionary)---as its initial structural framework \cite{AhoCorasick1975}. A thorough grasp of trie principles is thus indispensable for developing and analyzing the Aho-Corasick algorithm.
 
 % Fim da subseção "Tries".
 
 % Conteúdo da seção/subseção "Pattern Matching"
 
-\subsecao{Pattern Matching}
+\newpage\subsecao{Pattern Matching}
 
-This section introduces the fundamental problem of pattern matching within strings, explores key algorithmic approaches to its solution, and underscores its significance across various computational domains. This foundational discussion provides the essential context for understanding advanced multi-pattern matching algorithms, such as the Aho-Corasick algorithm.
+This section introduces the fundamental problem of pattern matching within strings, explores key algorithmic approaches to its solution, and underscores its significance across various computational domains. This foundational discussion provides the essential context for understanding advanced multi-pattern matching algorithms, such as the Aho-Corasick algorithm. In general information processing, pattern (or \textit{string}) matching underpins the functionality of text editors and web search engines for keyword searches. The field of computational biology extensively utilizes pattern matching for analyzing genetic sequences \cite{SedgewickWayne2011}. Furthermore, in the field of information security, pattern matching is crucial: Network Intrusion Detection Systems (NIDS) utilize it to identify malicious signatures in network traffic. Tools like YARA, for instance, define rules based on textual or binary patterns to classify and identify malware \cite{YARADocs}. Later in this work, we’ll explore the role of pattern matching for NIDS in greater detail.
 
 \subsubsecao{The Pattern Matching Problem}
 
-Pattern matching involves identifying all instances where a given pattern $P$, which is a string of length $M$, appears as a contiguous substring within a larger text $T$, which has a length of $N$. Beyond simply finding the first match, the problem often extends to locating all occurrences, enumerating them, or extracting surrounding contextual information for each match \cite{SedgewickWayne2011}.
-
-\subsubsecao{Importance and Applications}
-
-Pattern matching stands as a cornerstone problem in computer science with diverse applications. In general information processing, it underpins the functionality of text editors and web search engines for keyword searches. The field of computational biology extensively utilizes pattern matching for analyzing genetic sequences \cite{SedgewickWayne2011}.
-
-Furthermore, in the field of information security, pattern matching is crucial: Network Intrusion Detection Systems (NIDS) utilize it to identify malicious signatures in network traffic. Tools like YARA, for instance, define rules based on textual or binary patterns to classify and identify malware \cite{YARADocs}. Later in this work, we’ll explore the role of pattern matching for NIDS in greater detail.
-
-\subsubsecao{Pattern Matching Algorithms}
-
-Pattern matching algorithms are generally categorized based on the number of patterns they process and the exactness of the match. This research focuses on Exact Matching, where the pattern must correspond precisely to a segment of the text. A key distinction for this study lies between algorithms designed for Single-Pattern Matching and those optimized for Multi-Pattern Matching, where the objective is to identify all occurrences of any pattern from a predetermined set of patterns within a given text \cite{AhoCorasick1975, Gusfield1997}.
+The \textit{string matching} problem consists in determining whether a string $P$ (the \textit{pattern}) of length $M$ occurs within a string $T$ (the \textit{text}) of length $N$, where $M \leq N$. Formally, it seeks all positions $pos$ such that the following condition holds for every $i \in \{0, 1, \dots, M-1\}$:
+\begin{equation}
+    P[i] = T[pos + i], \quad \text{with} \quad pos + i < N
+    \label{eq:string_matching_condition} 
+\end{equation}
+Each valid $pos$ corresponds to an occurrence of the pattern in the text. Beyond simply finding the first match, the problem often extends to locating all occurrences, enumerating them, or extracting surrounding contextual information for each match \cite{SedgewickWayne2011}.
 
 \subsubsecao{Fundamental Algorithms for Exact Single-Pattern Matching}
 
+Pattern matching algorithms are generally categorized based on the number of patterns they process and the exactness of the match. This thesis focuses on \textit{Exact Matching}, where the pattern must correspond precisely to a segment of the text. A key distinction for this study lies between algorithms designed for \textit{Single-Pattern Matching} and those optimized for \textit{Multi-Pattern Matching}, where the objective is to identify all occurrences of any pattern from a predetermined set of patterns within a given text \cite{AhoCorasick1975, Gusfield1997}.
+
+\vspace{1em}
+
 \textbf{The Naive Algorithm}
 
-The naive or brute-force algorithm represents the most straightforward method for exact pattern matching. Its operation involves iteratively aligning the pattern $P$ with the text $T$ at every possible starting position $i$ (from 0 to $N-M$). For each alignment, $P$ is compared character by character, from left to right, against the corresponding substring. If all characters match, an occurrence is reported \cite{Gusfield1997}.
+The na\"ive or brute-force algorithm represents the most straightforward method for exact pattern matching. Its operation involves iteratively aligning the pattern $P$ with the text $T$ at every possible starting position $i$ (from 0 to $N-M$). For each alignment, $P$ is compared character by character, from left to right, against the corresponding substring. If all characters match, an occurrence is reported \cite{Gusfield1997}.
 
-Following this comparison (whether a match or a mismatch), the algorithm shifts $P$ one position to the right relative to $T$ and proceeds to the next alignment. Despite its simplicity, Knuth, Morris, and Pratt (1977) state that this method can be highly inefficient \cite{KnuthMorrisPratt1977}. Its worst-case time complexity is $O(M \cdot N)$ character comparisons. This occurs, for example, when searching for a pattern like $P = a^n b$ within a text $T = a^{2n} b$, where many partial matches occur.
+Following this comparison (whether a match or a mismatch), the algorithm shifts $P$ one position to the right relative to $T$ and proceeds to the next alignment. Despite its simplicity, Knuth, Morris, and Pratt (1977) state that this method can be highly inefficient \cite{KnuthMorrisPratt1977}. Its worst-case time complexity is $O(M \cdot N)$ character comparisons. This occurs, for example, when searching for a pattern like $P = a^n b$ within a text $T = a^{2n} b$, where many partial matches occur. To address these limitations, more advanced pattern matching algorithms include a preprocessing phase for the pattern $P$. This phase extracts structural information about $P$ that is then utilized during the search, enabling larger shifts of the pattern relative to the text and thus reducing the total number of character comparisons.
 
-\textbf{Optimized Approaches via Pattern Preprocessing}
+\vspace{1em}
 
-To address the limitations of the naive algorithm, more advanced pattern matching algorithms include a preprocessing phase for the pattern $P$. This phase extracts structural information about $P$ that is then utilized during the search, enabling larger shifts of the pattern relative to the text and thus reducing the total number of character comparisons.
+\textbf{Knuth-Morris-Pratt (KMP) Algorithm}
 
-\textbf{Knuth-Morris-Pratt (KMP) Algorithm}: The KMP algorithm \cite{KnuthMorrisPratt1977} efficiently resolves the pattern matching problem with an optimal worst-case time complexity of $O(N + M)$. Unlike the naive approach, KMP avoids re-checking characters that have already been matched. To achieve this, KMP first preprocesses the pattern $P$ by constructing a special array known as the failure array (or prefix array), typically denoted by $p[1..M]$. This array indicates the length of the longest prefix that is also a suffix for each prefix of $P$. With this information, when a mismatch occurs during the search, the algorithm utilizes the failure array to determine how far the pattern should shift to the right, bypassing unnecessary comparisons and preventing redundant checks.
+The KMP algorithm \cite{KnuthMorrisPratt1977} efficiently resolves the pattern matching problem with an optimal worst-case time complexity of $O(N + M)$. Unlike the na\"ive approach, KMP avoids re-checking characters that have already been matched. To achieve this, KMP first preprocesses the pattern $P$ by constructing a special array known as the \textit{failure array} (or \textit{prefix array}), typically denoted by $p[1..M]$. This array indicates the length of the longest prefix that is also a suffix for each prefix of $P$. With this information, when a mismatch occurs during the search, the algorithm utilizes the failure array to determine how far the pattern should shift to the right, bypassing unnecessary comparisons and preventing redundant checks.
 
-\textbf{Boyer-Moore (BM) Algorithm}: The Boyer-Moore (BM) algorithm \cite{BoyerMoore1977} is widely recognized for its excellent practical performance, often outperforming linear-time methods in typical cases. Unlike the KMP algorithm, Boyer-Moore typically compares characters starting from the end of the pattern and moves backward.
+\vspace{1em}
+
+\textbf{Boyer-Moore (BM) Algorithm}
+
+The Boyer-Moore (BM) algorithm \cite{BoyerMoore1977} is widely recognized for its excellent practical performance, often outperforming linear-time methods in typical cases. Unlike the KMP algorithm, Boyer-Moore typically compares characters starting from the end of the pattern and moves backward.
 Its efficiency primarily stems from two rules (or heuristics):
 \begin{itemize}
     \item \textbf{Bad Character Rule}: When a mismatch occurs, this rule uses the character from the text that caused the mismatch to determine how far the pattern can safely shift. The algorithm shifts the pattern to align this mismatched text character with its last occurrence in the pattern or moves completely past the mismatched character if it does not appear in the pattern.
@@ -235,28 +233,36 @@ The Aho-Corasick algorithm overcomes this by building one \textit{finite automat
 
 Aho-Corasick has two main phases: (i) construction, which builds the automaton, and (ii) search, which scans the text. Three key tables, built in the following order, define the automaton:
 
-\subsubsecao{Keyword Trie (goto)}
+\vspace{1em}
+
+\textbf{Keyword Trie (goto)}
 
 A \textit{keyword trie} is first constructed from the pattern set $K=\{ P_1, P_2, \dots, P_k \}$. Each node represents a state, and each edge corresponds to a character transition. A path from the root to any state $s$ spells a prefix of one or more keywords. Formally, the \textit{goto function} $\operatorname{goto}(s, a)$ returns the next state $s'$ when an edge labelled $a$ exists; otherwise the transition fails. Undefined transitions from the root are assigned back to the root, i.e., $\operatorname{goto}(0, a) = 0$, creating implicit self-loops for every alphabet symbol.
 
-\subsubsecao{Failure Function (f)}
+\vspace{1em}
+
+\textbf{Failure Function (f)}
 
 For any state $s$ (except the root), $\operatorname{f}(s)$ is the state $s'$ whose path label is the longest proper suffix of the path label of $s$ that is also a prefix of some keyword. On a mismatch, the automaton follows $\operatorname{f}(s)$ and resumes matching without consuming the current character. The \textit{failure function} is computed level-by-level (breadth-first) after the goto table is complete.
 
-\subsubsecao{The Output Function}
+\vspace{1em}
+
+\textbf{The Output Function}
 
 The \textit{output function}, $\operatorname{output}(s)$, identifies all keywords that end at state $s$. For a given state $s$, $\operatorname{output}(s)$ is the set of all patterns $P_i$ in $K$ such that the string corresponding to the path to $s$ is $P_i$. To ensure all matches are reported, including those that are suffixes of other patterns, $\operatorname{output}(s)$ is augmented during the failure function computation: if $\operatorname{f}(s) = s'$, then $\operatorname{output}(s) \leftarrow \operatorname{output}(s) \cup \operatorname{output}(\operatorname{f}(s))$. This incremental union lets each state report every pattern that ends either at that state or at any suffix state reached through its failure chain.
 
 \subsubsecao{Matching Phase}
 
-Once the Aho-Corasick automaton is constructed, it processes the input text $T$ character by character in a single pass. Starting from the root state, the automaton iterates over each text character $a_i$ as follows:
-\begin{enumerate}
-    \item Attempt $\operatorname{goto}(\textit{current\_state}, a_i)$ for the current character $a_i$.
-    \item If the transition succeeds, set $\textit{current\_state} \leftarrow s'$.
-    \item Otherwise, set $\textit{current\_state} \leftarrow \operatorname{f}(\textit{current\_state})$ and repeat step 1 without consuming $a_i$ until a goto transition succeeds or the root is reached. From the root, $\operatorname{goto}(0, a_i)$ always exists, possibly returning to the root itself.
-    \item After each successful transition, inspect $\operatorname{output}(\textit{current\_state})$ and report every pattern it contains, recording its ending position $i$.
-\end{enumerate}
-The combined number of goto and failure transitions during a scan of length $n$ is $< 2n$ \cite{AhoCorasick1975}.
+Once the Aho–Corasick automaton has been built, it scans the text $T = a_1 a_2 \dots a_n$ in one left-to-right pass. At each position $i$, the machine attempts to follow the transition labelled $a_i$ from its \textit{current\_state} (cs); if that edge exists, it moves along it, otherwise it follows \textit{failure links} (f) until either a matching transition is found or the root is reached. Every time a successful transition is made, the automaton inspects the $\operatorname{output}$ set of the new state and emits all patterns ending at position $i$. Figure~\ref{fig:ac-matching-flow} illustrates this control flow in detail.
+
+\begin{figure}[htbp] % Use htbp para melhor posicionamento
+\centering
+\includegraphics[width=0.6\textwidth,keepaspectratio]{ac_matching.pdf} % Certifique-se de que o nome do arquivo e o caminho estão corretos
+\caption{Flowchart of the Aho–Corasick matching phase. Start at the root with $i=1$, attempt each $\operatorname{goto}(\textit{current\_state}, a_i)$, follow failure links on a “no” decision, report matches via $\operatorname{output}(\textit{current\_state})$ on a “yes,” advance $i$, and terminate when $i>n$.}
+\label{fig:ac-matching-flow}
+\end{figure}
+
+Because each character can trigger at most one eventual successful $\operatorname{goto}$ and any number of failure-link traversals, the total number of transitions (goto plus failure) over the entire scan is bounded by $< 2n$ \cite{AhoCorasick1975}.
 
 \subsubsecao{Time and Space Complexity}
 
