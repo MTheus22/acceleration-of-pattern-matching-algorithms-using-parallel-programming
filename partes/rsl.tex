@@ -66,42 +66,25 @@ The subsequent criteria were established for the selection of primary studies:
 
 \subsubsecao{Selection Process and Initial Search Outcomes}
 
-The study selection was a multi-stage process. Initially, the constructed search strings were executed against the selected digital libraries. The retrieved results were subsequently refined using filters provided by each database (e.g., publication period, document type, language, subject area), as detailed below:
-\begin{itemize}
-    \item \textbf{ACM Digital Library:}
-    String 1 yielded 122 articles, reduced to 29 following filter application \\
-    String 2 yielded 274 articles, reduced to 66 following filter application \\
-    Filters applied:
-    Publication years: 2015-2025;
-    Document type: Research Article;
-    Publisher: ACM;
-    Title exclusion: GPU;
-    Language: English.
-    \item \textbf{Web of Science:}
-    String 1 yielded 30 articles, reduced to 6 after filter application \\
-    String 2 yielded 66 articles, reduced to 20 after filter application. \\
-    Filters applied:
-    Publication years: 2015-2025;
-    WoS Categories: Computer Science (excluding Artificial Intelligence);
-    Title exclusion: GPU;
-    Language: English.
-    \item \textbf{Scopus:}
-    String 1 yielded 34 articles, reduced to 6 following filter application \\
-    String 2 yielded 145 articles, reduced to 49 following filter application \\
-    Filters applied:
-    Publication years: 2015-2025
-    Language: English
-    Subject areas: Computer Science, Engineering;
-    Document types: Article, Conference Paper;
-    Title exclusion: GPU.
-    \item \textbf{IEEE Xplore:}
-    String 1 yielded 25 articles, reduced to 2 following filter application \\
-    String 2 yielded 60 articles, reduced to 18 following filter application \\
-    Filters applied:
-    Publication years: 2015-2025;
-    Title exclusion: GPU;
-    Language: English.
-\end{itemize}
+The study selection was a multi-stage process. Initially, the constructed search strings were executed against the selected digital libraries. The retrieved results were subsequently refined using filters provided by each database (e.g., publication period, document type, language, subject area), as detailed in Table \ref{tab:search_results}:
+
+\begin{table}[ht]
+    \centering
+    \caption{Search results and filters applied per database.}
+    \label{tab:search_results}
+    \small
+    \begin{tabular}{@{} l c c p{7.5cm} @{}}
+        \toprule
+        \textbf{Database} & \textbf{String 1} & \textbf{String 2} & \textbf{Filters Applied} \\
+        & \multicolumn{1}{c}{\scriptsize{(Found / Kept)}} & \multicolumn{1}{c}{\scriptsize{(Found / Kept)}} & \\
+        \midrule
+        ACM Digital Library & 122 / 29 & 274 / 66 & 2015-2025; Research Article; Publisher: ACM; Title excl.: GPU; Lang: English. \\ \addlinespace
+        Web of Science & 30 / 6 & 66 / 20 & 2015-2025; WoS Cats: CS (excl. AI); Title excl.: GPU; Lang: English. \\ \addlinespace
+        Scopus & 34 / 6 & 145 / 49 & 2015-2025; Lang: English; Subj: CS, Eng; Types: Article, Conf. Paper; Title excl.: GPU. \\ \addlinespace
+        IEEE Xplore & 25 / 2 & 60 / 18 & 2015-2025; Title excl.: GPU; Lang: English. \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 Following the initial database search and filtering stage, the resultant sets of candidate articles were aggregated.
 
