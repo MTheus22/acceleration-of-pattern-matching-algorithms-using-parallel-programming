@@ -1,4 +1,10 @@
 {
+  "[latex]": {
+    "editor.wordWrap": "on",
+    "editor.wrappingIndent": "same"
+  },
+  "editor.wordWrapColumn": 100
+}{
   // --- Ferramentas (tools) ---
   "latex-workshop.latex.tools": [
     {
