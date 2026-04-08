@@ -8,7 +8,7 @@ Despite its efficiency for multi-pattern searching, YARA's internal implementati
 
 \newpage\subsecao{Motivation}
 
-The identified performance limitation of YARA's sequential engine when scanning large files presents a clear opportunity for optimization through parallel computing. Prior literature demonstrate that parallelizing the Aho-Corasick algorithm is both viable and effective, with significant speedups reported in domains such as bioinformatics \cite{Vajira2018}. However, a systematic review of the literature reveals that direct implementation, integration, and empirical evaluation of a parallel Aho-Corasick engine within the YARA framework remains an unexplored research area.
+The identified performance limitation of YARA's sequential engine when scanning large files presents a clear opportunity for optimization through parallel computing. Prior literature demonstrate that parallelizing the Aho-Corasick algorithm is both viable and effective, with significant speedups reported in domains such as bioinformatics \cite{Vajira2018}.
 
 Given the ever-increasing volume of data to be scanned and the growing demand for efficient malware detection, improving the performance of pattern-matching engines remains a relevant and pressing challenge. While existing solutions offer powerful detection capabilities, scaling them to handle large workloads efficiently on modern multi-core systems is still a non-trivial problem. Addressing this challenge is crucial for ensuring that tools like YARA remain effective and practical in real-world scenarios where speed and accuracy are essential.
 
