@@ -62,7 +62,7 @@ Speedup (\texttt{S}) measures the performance gain achieved through parallel exe
     S = \frac{T_s}{T_p}
     \label{eq:speedup}
 \end{equation}
-An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law, establishes a theoretical upper bound on the speedup achievable by parallelizing a program with a fixed problem size. \texttt{s} represents the fraction of a program's sequential execution time that is inherently serial (non-parallelizable), and \texttt{f} is the parallelizable fraction (\texttt{s + f = 1}), the maximum speedup on \texttt{p} processors is given by:
+An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law, establishes a theoretical upper bound on the speedup achievable by parallelizing a program with a fixed problem size. \texttt{s} represents the fraction of a program's sequential execution time that is inherently serial (non-parallelizable), and \texttt{f} is the parallelizable fraction (\texttt{s + f = 1}), the maximum speedup on \texttt{p} processors is given by Eq. \ref{eq:amdahl}.
 \begin{equation}
     S \leq \frac{1}{s + f/p}
     \label{eq:amdahl}
