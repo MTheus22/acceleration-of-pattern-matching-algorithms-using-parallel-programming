@@ -7,15 +7,15 @@ Parallelism in computing refers to the simultaneous execution of multiple tasks 
 
 Parallel computer architectures are classified according to various criteria. A prominent taxonomy, proposed by Flynn \cite{Flynn1966}, categorizes these architectures based on instruction and data streams:
 \begin{itemize}
-    \item \textbf{SISD (Single Instruction, Single Data)}: Represents a conventional single-processor architecture, where a single instruction operates on a single data stream.
-    \item \textbf{SIMD (Single Instruction, Multiple Data)}: Involves multiple processing units that execute the same instruction concurrently on different data elements.
-    \item \textbf{MISD (Multiple Instruction, Single Data)}: Characterizes systems where multiple processing units apply distinct instructions on the same data stream.
+    \item \textbf{SISD (Single Instruction, Single Data)}: Represents a conventional single-processor architecture, where a single instruction operates on a single data stream;
+    \item \textbf{SIMD (Single Instruction, Multiple Data)}: Involves multiple processing units that execute the same instruction concurrently on different data elements;
+    \item \textbf{MISD (Multiple Instruction, Single Data)}: Characterizes systems where multiple processing units apply distinct instructions on the same data stream;
     \item \textbf{MIMD (Multiple Instruction, Multiple Data)}:  Involves multiple processing units that execute distinct instructions on distinct data streams independently. This paradigm is directly related to multi-core architectures.
 \end{itemize}
 
 Within the MIMD category, systems are further distinguished based on their memory organization \cite{Pacheco2011}:
 \begin{itemize}
-    \item \textbf{Shared-Memory Systems}: In these systems, multiple processors share a physical memory address space. Inter-processor communication (IPC) is typically achieved by reading from and writing to shared variables in memory or through message passing mechanisms. Multi-core processors are the most common and widely available example of this architecture, where all cores on a chip share access to main memory.
+    \item \textbf{Shared-Memory Systems}: In these systems, multiple processors share a physical memory address space. Inter-processor communication (IPC) is typically achieved by reading from and writing to shared variables in memory or through message passing mechanisms. Multi-core processors are the most common and widely available example of this architecture, where all cores on a chip share access to main memory;
     \item \textbf{Distributed-Memory Systems}: Each processor in these systems possesses their own locally accessible memory, and communication between processors is usually done by exchanging messages across an interconnection network. Computer clusters are examples of this architectural model.
 \end{itemize}
 
