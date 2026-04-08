@@ -218,7 +218,7 @@ headheight=1.8cm]{geometry}
         \vspace*{2cm}
         \rule{\linewidth}{0.4pt}
         \vspace{1em}
-        {Jeremias M. Gomes}
+        {Jeremias Moreira Gomes}
         }
     \end{flushleft}
 }
