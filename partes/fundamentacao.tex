@@ -21,11 +21,9 @@ Within the MIMD category, systems are further distinguished based on their memor
 
 The present work focuses on the acceleration of algorithms in environments with multi-core processors, which fall into the shared memory MIMD category. A multi-core processor (MCP) is a single chip that contains two or more central processing units (CPUs) called ‘cores’. Each of these cores is capable of reading and executing program instructions independently, essentially functioning as a complete processor.
 
-\subsubsecao{Parallel Programming With Threads}
+\subsubsecao{Processes vs Threads}
 
 Within shared-memory systems, such as multi-core processors, software-level parallelism is commonly achieved through the execution of multiple threads within a single process.
-
-\textbf{Processes vs. Threads}
 
 A process is an instance of an executing program, an entity possessing its own dedicated virtual address space, file descriptors, environment variables, and other Operating System (OS) resources, all isolated from other processes \cite{Pacheco2011}.
 
@@ -37,7 +35,7 @@ A thread, on the other hand, is a lighter unit of execution started by a process
     \item Thread-specific state, such as signal masking and scheduling priority.
 \end{itemize}
 
-\textbf{POSIX Thread Model (Pthreads)}
+\subsubsecao{POSIX Thread Model (Pthreads)}
 
 The POSIX Thread Model, commonly referred to as “Pthreads”, is a standard that defines an application programming interface (API) for thread creation and management, as specified by IEEE Std 1003.1c-1995. Pthreads provides a portable suite of data types, functions, and constants that allows developers to create multithreaded applications that are compilable and executable across diverse POSIX-compliant operating systems (e.g., Linux, macOS, and various Unix variants). The Pthreads API provides functionality for managing the thread lifecycle—including creation, termination, and joining—and, critically, incorporates synchronization primitives. These primitives, such as mutexes and condition variables, are indispensable for orchestrating access to shared resources within shared-memory environments \cite{Butenhof1997, Pacheco2011}.
 
