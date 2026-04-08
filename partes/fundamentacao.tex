@@ -38,12 +38,14 @@ A thread, on the other hand, is a lighter unit of execution started by a process
 \subsubsecao{POSIX Thread Model (Pthreads)}
 
 The POSIX Thread Model, commonly referred to as “Pthreads”, is a standard that defines an application programming interface (API) for thread creation and management, as specified by IEEE Std 1003.1c-1995. Pthreads provides a portable suite of data types, functions, and constants that allows developers to create multithreaded applications that are compilable and executable across diverse POSIX-compliant operating systems (e.g., Linux, macOS, and various Unix variants). The Pthreads API provides functionality for managing the thread lifecycle—including creation, termination, and joining—and, critically, incorporates synchronization primitives. These primitives, such as mutexes and condition variables, are indispensable for orchestrating access to shared resources within shared-memory environments \cite{Butenhof1997} \cite{Pacheco2011}.
+% Fim da subseção "Fundamentos do Paralelismo".
 
-\subsubsecao{Parallel Performance Evaluation Metrics}
+% A subseção "Parallel Performance Evaluation Metrics" começa aqui.
+\subsecao{Parallel Performance Evaluation Metrics}
 
 Performance evaluation is fundamental to understanding the effectiveness of a parallel program. The following metrics compare the execution time of the parallel program with its equivalent sequential counterpart \cite{Grama2003}.
 
-\textbf{Execution Time and Overhead}
+\subsubsecao{Execution Time and Overhead}
 
 The performance of a program is measured by its execution time. For parallel programs, the following terms are defined:
 \begin{itemize}
@@ -53,7 +55,7 @@ The performance of a program is measured by its execution time. For parallel pro
 
 Ideally, \texttt{Tp} is expected to be substantially less than \texttt{Ts}. However, parallel execution introduces \textit{overhead}. This encompasses the time spent by processors on tasks that do not directly contribute to problem resolution, including communication, synchronization, load balance, and other computations inherent to the parallel implementation.
 
-\textbf{Speedup}
+\subsubsecao{Speedup}
 
 Speedup (\texttt{S}) measures the performance gain achieved through parallel execution relative to sequential execution and it is referenced as Equation \ref{eq:speedup}. It is defined as the ratio of sequential execution time to parallel execution time:
 \begin{equation}
@@ -80,7 +82,7 @@ is achievable for problems that benefit from this scalability. This formulation 
 \end{figure}
 
 
-\textbf{Efficiency}
+\subsubsecao{Efficiency}
 
 Efficiency (\texttt{E}) measures the effectiveness of processor utilization in a parallel program. It is defined as the ratio of speedup to the number of processors \texttt{p}:
 \begin{equation}
@@ -90,7 +92,7 @@ Efficiency (\texttt{E}) measures the effectiveness of processor utilization in a
 Efficiency values range between 0 and 1 (inclusive), often expressed as a percentage (0\% to 100\%). An efficiency of 1 (or 100\%) signifies ideal, linear speedup, implying that all processors are contributing productively throughout the execution. In practice, efficiency typically diminishes as the processor count increases, primarily due to the escalating impact of parallel overhead.
 
 
-\textbf{Scalability}
+\subsubsecao{Scalability}
 
 In parallel computing, scalability denotes a system’s ability to sustain high performance (often via efficiency) as both the number of processors and/or the problem size grow.
 
@@ -100,7 +102,7 @@ In parallel computing, scalability denotes a system’s ability to sustain high 
 \end{itemize}
 
 A parallel system is considered scalable if its efficiency remains above an acceptable threshold as both the number of processors $p$ and the problem size $W$ increase.
-% Fim da subseção "Paralelismo em Computação".
+% Fim da subseção "Parallel Performance Evaluation Metrics".
 
 % Conteúdo da subseção "Tries (Prefix Trees)"
 
