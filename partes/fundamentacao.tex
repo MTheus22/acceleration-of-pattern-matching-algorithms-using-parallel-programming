@@ -29,7 +29,7 @@ Within shared-memory systems, such as multi-core processors, software-level para
 
 A process is an instance of an executing program, an entity possessing its own dedicated virtual address space, file descriptors, environment variables, and other Operating System (OS) resources, all isolated from other processes \cite{Pacheco2011}.
 
-A thread, on the other hand, is a lighter unit of execution started by a process. The same process can control, concurrently or in parallel, multiple threads. A key characteristic is that all threads within a process share its virtual address space, which encompasses executable code, global data, and the heap segment. However, each thread maintains its private resources, which are essential for its independent execution context:
+A thread, on the other hand, is a lighter unit of execution started by a process. The same process can control, concurrently or in parallel, multiple threads. A key characteristic is that all threads within a process share its virtual address space, which encompasses executable code, global data, and the heap segment \cite{Pacheco2011}. However, each thread maintains its private resources, which are essential for its independent execution context:
 \begin{itemize}
     \item A unique identifier (thread ID).
     \item A set of CPU registers, including the program counter (PC).
