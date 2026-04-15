@@ -153,7 +153,7 @@ Tries provide distinct advantages for operations on string collections, as detai
 
 \subsubsecao{Space Complexity Considerations}
 
-While prefix sharing can save space, the overall space complexity of $R$-way tries requires careful consideration. Each node in an $R$-way trie conceptually provides $R$ potential links. If the alphabet size $R$ is large (e.g., for Unicode) and the actual branching factor at most nodes is low (a sparse trie), allocating space for all $R$ links per node can lead to considerable memory consumption due to numerous unused (null) links \cite{Knuth1998, SedgewickWayne2011}.
+While prefix sharing can save space, the overall space complexity of $R$-way tries requires careful consideration. Each node in an $R$-way trie conceptually provides $R$ potential links. If the alphabet size $R$ is large (e.g., for Unicode) and the actual branching factor at most nodes is low (a sparse trie), allocating space for all $R$ links per node can lead to considerable memory consumption due to numerous unused (null) links \cite{Knuth1998}, \cite{SedgewickWayne2011}.
 
 \subsubsecao{Foundational Role in String Processing}
 
