@@ -135,7 +135,7 @@ To signify that such a prefix also constitutes a complete key present in the tri
 
 \subsubsecao{Core Operations}
 
-Tries support several primary operations, including search, insertion, and deletion \cite{SedgewickWayne2011}.
+Tries support several primary operations, including search, insertion, and deletion \cite{SedgewickWayne2011}. These operations are explained below:
 
 \textbf{Search}: Locating a key involves traversing the trie starting from the root, following the successive characters of the target key. Each character dictates which child link to follow. The search operation succeeds if a complete path corresponding to all characters of the key exists and the node reached at the end of this path is appropriately marked as representing a complete key. The search fails if, at any point, a required link is null (i.e., no path for the current character exists) or if the path is fully traversed but the final node is not marked as a complete key.
 
