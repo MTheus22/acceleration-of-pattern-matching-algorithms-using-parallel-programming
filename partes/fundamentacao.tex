@@ -168,12 +168,12 @@ This section introduces the fundamental problem of pattern matching within strin
 
 \subsubsecao{The Pattern Matching Problem}
 
-The \textit{string matching} problem consists in determining whether a string $P$ (the \textit{pattern}) of length $M$ occurs within a string $T$ (the \textit{text}) of length $N$, where $M \leq N$. Formally, it seeks all positions $pos$ such that the following condition holds for every $i \in \{0, 1, \dots, M-1\}$:
+The \textit{string matching} problem consists in determining whether a string $P$ (the \textit{pattern}) of length $M$ occurs within a string $T$ (the \textit{text}) of length $N$, where $M \leq N$. Formally, it seeks all positions $pos$ such that the condition in Eq. \ref{eq:string_matching_condition} holds for every $i \in \{0, 1, \dots, M-1\}$, and each valid $pos$ corresponds to an occurrence of the pattern in the text:
 \begin{equation}
     P[i] = T[pos + i], \quad \text{with} \quad pos + i < N
     \label{eq:string_matching_condition} 
 \end{equation}
-Each valid $pos$ corresponds to an occurrence of the pattern in the text. Beyond simply finding the first match, the problem often extends to locating all occurrences, enumerating them, or extracting surrounding contextual information for each match \cite{SedgewickWayne2011}.
+Beyond simply finding the first match, the problem often extends to locating all occurrences, enumerating them, or extracting surrounding contextual information for each match \cite{SedgewickWayne2011}.
 
 \subsubsecao{Fundamental Algorithms for Exact Single-Pattern Matching}
 
