@@ -137,20 +137,20 @@ To signify that such a prefix also constitutes a complete key present in the tri
 
 Tries support several primary operations, including search, insertion, and deletion \cite{SedgewickWayne2011}. These operations are explained below:
 
-\begin{description}
-    \item[Search:] Locating a key involves traversing the trie starting from the root, following the successive characters of the target key. Each character dictates which child link to follow. The search operation succeeds if a complete path corresponding to all characters of the key exists and the node reached at the end of this path is appropriately marked as representing a complete key. The search fails if, at any point, a required link is null (i.e., no path for the current character exists) or if the path is fully traversed but the final node is not marked as a complete key.
-    \item[Insertion:] The insertion process begins similarly to a search, by traversing the trie according to the characters of the key to be added. If the path for the key does not extend to its full length (i.e., a null link is encountered), new nodes are created and linked to form the remainder of the path. The node corresponding to the final character of the inserted key is then marked to indicate that it is a complete key in the set.
-    \item[Deletion:] Deleting a key first involves locating the node corresponding to the key's final character and removing its end-of-word marker. If there are no child links (meaning it is not a prefix for any other key), it can be deleted. This deletion may proceed recursively: when a child node is removed, if its parent has no other children and the parent node is not marking a key, the parent node becomes redundant and can be deleted. This process continues up to the root as long as parent nodes become redundant.
-\end{description}
+\begin{itemize}
+    \item \textbf{Search}: locating a key involves traversing the trie starting from the root, following the successive characters of the target key. Each character dictates which child link to follow. The search operation succeeds if a complete path corresponding to all characters of the key exists and the node reached at the end of this path is appropriately marked as representing a complete key. The search fails if, at any point, a required link is null (i.e., no path for the current character exists) or if the path is fully traversed but the final node is not marked as a complete key;
+    \item \textbf{Insertion}: the insertion process begins similarly to a search, by traversing the trie according to the characters of the key to be added. If the path for the key does not extend to its full length (i.e., a null link is encountered), new nodes are created and linked to form the remainder of the path. The node corresponding to the final character of the inserted key is then marked to indicate that it is a complete key in the set;
+    \item \textbf{Deletion}: deleting a key first involves locating the node corresponding to the key's final character and removing its end-of-word marker. If there are no child links (meaning it is not a prefix for any other key), it can be deleted. This deletion may proceed recursively: when a child node is removed, if its parent has no other children and the parent node is not marking a key, the parent node becomes redundant and can be deleted. This process continues up to the root as long as parent nodes become redundant.
+\end{itemize}
 
 \subsubsecao{Advantages and Performance Characteristics}
 
 Tries provide distinct advantages for operations on string collections, as detailed below.
 
-\begin{description}
-    \item[Time Complexity:] A primary advantage is that the time required for search and insertion operations depends primarily on the length of the key ($L$), not on the total number ($N$) of keys stored. Specifically, these operations typically require examining a number of nodes proportional to $L$. \cite{SedgewickWayne2011} state that the number of array accesses (node visits) is at most $L+1$ \cite{SedgewickWayne2011}. This $O(L)$ performance makes tries highly efficient for prefix-based searches (e.g., retrieving all keys starting with a given prefix) and ensures that search performance does not substantially degrade as the dataset size increases.
-    \item[Prefix Sharing:] When stored strings share common prefixes, tries inherently exploit this by having those strings share the initial path from the root. This sharing can lead to significant space savings compared to storing each string independently, particularly if there is substantial prefix overlap among keys \cite{Fredkin1960}.
-\end{description}
+\begin{itemize}
+    \item \textbf{Time Complexity}: a primary advantage is that the time required for search and insertion operations depends primarily on the length of the key ($L$), not on the total number ($N$) of keys stored. Specifically, these operations typically require examining a number of nodes proportional to $L$. \cite{SedgewickWayne2011} state that the number of array accesses (node visits) is at most $L+1$ \cite{SedgewickWayne2011}. This $O(L)$ performance makes tries highly efficient for prefix-based searches (e.g., retrieving all keys starting with a given prefix) and ensures that search performance does not substantially degrade as the dataset size increases;
+    \item \textbf{Prefix Sharing}: when stored strings share common prefixes, tries inherently exploit this by having those strings share the initial path from the root. This sharing can lead to significant space savings compared to storing each string independently, particularly if there is substantial prefix overlap among keys \cite{Fredkin1960}.
+\end{itemize}
 
 While prefix sharing can save space, the overall space complexity of $R$-way tries requires careful consideration. Each node in an $R$-way trie conceptually provides $R$ potential links. If the alphabet size $R$ is large (e.g., for Unicode) and the actual branching factor at most nodes is low (a sparse trie), allocating space for all $R$ links per node can lead to considerable memory consumption due to numerous unused (null) links \cite{Knuth1998}, \cite{SedgewickWayne2011}.
 
@@ -169,7 +169,7 @@ This section introduces the fundamental problem of pattern matching within strin
 \subsubsecao{The Pattern Matching Problem}
 
 The \textit{string matching} problem consists in determining whether a string $P$ (the \textit{pattern}) of length $M$ occurs within a string $T$ (the \textit{text}) of length $N$, where $M \leq N$. Formally, it seeks all positions $pos$ such that the condition in Eq. \ref{eq:string_matching_condition} holds for every $i \in \{0, 1, \dots, M-1\}$, and each valid $pos$ corresponds to an occurrence of the pattern in the text:
-\begin{equation}pendente
+\begin{equation}
     P[i] = T[pos + i], \quad \text{with} \quad pos + i < N
     \label{eq:string_matching_condition} 
 \end{equation}
@@ -228,25 +228,14 @@ The Aho-Corasick algorithm overcomes this by building one \textit{finite automat
 
 \subsubsecao{Algorithm Components and Construction}
 
-Aho-Corasick has two main phases: (i) construction, which builds the automaton, and (ii) search, which scans the text. Three key tables, built in the following order, define the automaton:
+Aho-Corasick has two main phases: (i) construction, which builds the automaton, and (ii) search, which scans the text. The automaton, introduced in \cite{AhoCorasick1975}, has three key tables, built in the following order:
 
-\vspace{1em}
+\begin{itemize}
+    \item \textbf{Keyword Trie (goto)}: a \textit{keyword trie} is first constructed from the pattern set $K=\{ P_1, P_2, \dots, P_k \}$. Each node represents a state, and each edge corresponds to a character transition. A path from the root to any state $s$ spells a prefix of one or more keywords. Formally, the \textit{goto function} $\operatorname{goto}(s, a)$ returns the next state $s'$ when an edge labelled $a$ exists; otherwise the transition fails. Undefined transitions from the root are assigned back to the root, i.e., $\operatorname{goto}(0, a) = 0$, creating implicit self-loops for every alphabet symbol;
+    \item \textbf{Failure Function (f)}: for any state $s$ (except the root), $\operatorname{f}(s)$ is the state $s'$ whose path label is the longest proper suffix of the path label of $s$ that is also a prefix of some keyword. On a mismatch, the automaton follows $\operatorname{f}(s)$ and resumes matching without consuming the current character. The \textit{failure function} is computed level-by-level (breadth-first) after the goto table is complete;
+    \item \textbf{The Output Function}: the \textit{output function}, $\operatorname{output}(s)$, identifies all keywords that end at state $s$. For a given state $s$, $\operatorname{output}(s)$ is the set of all patterns $P_i$ in $K$ such that the string corresponding to the path to $s$ is $P_i$. To ensure all matches are reported, including those that are suffixes of other patterns, $\operatorname{output}(s)$ is augmented during the failure function computation: if $\operatorname{f}(s) = s'$, then $\operatorname{output}(s) \leftarrow \operatorname{output}(s) \cup \operatorname{output}(\operatorname{f}(s))$. This incremental union lets each state report every pattern that ends either at that state or at any suffix state reached through its failure chain.
+\end{itemize}
 
-\textbf{Keyword Trie (goto)}
-
-A \textit{keyword trie} is first constructed from the pattern set $K=\{ P_1, P_2, \dots, P_k \}$. Each node represents a state, and each edge corresponds to a character transition. A path from the root to any state $s$ spells a prefix of one or more keywords. Formally, the \textit{goto function} $\operatorname{goto}(s, a)$ returns the next state $s'$ when an edge labelled $a$ exists; otherwise the transition fails. Undefined transitions from the root are assigned back to the root, i.e., $\operatorname{goto}(0, a) = 0$, creating implicit self-loops for every alphabet symbol.
-
-\vspace{1em}
-
-\textbf{Failure Function (f)}
-
-For any state $s$ (except the root), $\operatorname{f}(s)$ is the state $s'$ whose path label is the longest proper suffix of the path label of $s$ that is also a prefix of some keyword. On a mismatch, the automaton follows $\operatorname{f}(s)$ and resumes matching without consuming the current character. The \textit{failure function} is computed level-by-level (breadth-first) after the goto table is complete.
-
-\vspace{1em}
-
-\textbf{The Output Function}
-
-The \textit{output function}, $\operatorname{output}(s)$, identifies all keywords that end at state $s$. For a given state $s$, $\operatorname{output}(s)$ is the set of all patterns $P_i$ in $K$ such that the string corresponding to the path to $s$ is $P_i$. To ensure all matches are reported, including those that are suffixes of other patterns, $\operatorname{output}(s)$ is augmented during the failure function computation: if $\operatorname{f}(s) = s'$, then $\operatorname{output}(s) \leftarrow \operatorname{output}(s) \cup \operatorname{output}(\operatorname{f}(s))$. This incremental union lets each state report every pattern that ends either at that state or at any suffix state reached through its failure chain.
 
 \subsubsecao{Matching Phase}
 
