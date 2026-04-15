@@ -131,7 +131,7 @@ Tries store strings by organizing nodes so that each path from the root to a nod
     \item The edge's position (index) within the parent node's array of $R$ possible child links directly corresponds to a unique character in the alphabet. For instance, index 0 might correspond to `a', index 1 to `b', and so on, according to a predefined mapping.
     \item The character associated with this edge extends the prefix represented by the parent; this implies that at least one word (or key) in the trie contains this character sequence.
 \end{itemize}
-To signify that such a prefix also constitutes a complete key present in the trie, the node reached at the end of this path is typically marked by storing an associated non-null value or a boolean flag. The characters themselves are implicitly encoded by the trie's structure rather than being explicitly stored within each node.
+To signify that such a prefix also constitutes a complete key present in the trie, the node reached at the end of this path is typically marked by storing an associated non-null value or a boolean flag. The characters themselves are implicitly encoded by the trie's structure rather than being explicitly stored within each node \cite{SedgewickWayne2011}.
 
 \subsubsecao{Core Operations}
 
