@@ -145,7 +145,7 @@ Tries support several primary operations, including search, insertion, and delet
 
 \subsubsecao{Advantages and Performance Characteristics}
 
-Tries provide distinct advantages for operations on string collections.
+Tries provide distinct advantages for operations on string collections, as detailed below.
 
 \textbf{Time Complexity}: A primary advantage is that the time required for search and insertion operations depends primarily on the length of the key ($L$), not on the total number ($N$) of keys stored. Specifically, these operations typically require examining a number of nodes proportional to $L$. \cite{SedgewickWayne2011} state that the number of array accesses (node visits) is at most $L+1$ \cite{SedgewickWayne2011}. This $O(L)$ performance makes tries highly efficient for prefix-based searches (e.g., retrieving all keys starting with a given prefix) and ensures that search performance does not substantially degrade as the dataset size increases.
 
