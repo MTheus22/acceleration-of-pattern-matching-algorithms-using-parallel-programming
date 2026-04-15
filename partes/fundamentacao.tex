@@ -113,22 +113,22 @@ This section elucidates the Trie data structure, detailing its defining properti
 
 \subsubsecao{Definition and Basic Structure}
 
-A Trie---also known as a prefix tree---is a specialized tree-like data structure optimized for the efficient storage and retrieval of a dynamic set of strings. Edward Fredkin introduced the term "trie" in 1960, highlighting its primary application in information retrieval \cite{Fredkin1960, Knuth1998}. Figure \ref{fig:trie-example} illustrates an example of a trie storing a set of words.
+A Trie---also known as a prefix tree---is a specialized tree-like data structure optimized for the efficient storage and retrieval of a dynamic set of strings. Edward Fredkin introduced the term ``trie'' in 1960, highlighting its primary application in information retrieval \cite{Fredkin1960}, \cite{Knuth1998}. Figure \ref{fig:trie-example} illustrates an example of a trie storing a set of words.
 
 % Figura da Trie
 \begin{figure}[htbp] % h=here, t=top, b=bottom, p=page
   \centering % Centraliza a figura
-
-  \includegraphics[width=0.5\textwidth, height=0.41\textheight, keepaspectratio]{trie.pdf}
-
   \caption{Example trie storing \{``car'', ``cat'', ``cart'', ``dog''\}. Nodes marking the end of a complete word are shown with a double circle.} % Legenda da figura
+    \includegraphics[width=0.4\textwidth]{trie.pdf}
+    \par\smallskip
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
   \label{fig:trie-example} % Rótulo para referenciar a figura
 \end{figure}
 % Fim da Figura da Trie
 
 Tries store strings by organizing nodes so that each path from the root to a node represents a unique prefix. In a standard $R$-way trie, each node can branch to $R$ children, where $R$ denotes the size of the character alphabet. The existence of a parent-child edge highlights two key aspects of tries:
 \begin{itemize}
-    \item The edge's position (index) within the parent node's array of $R$ possible child links directly corresponds to a unique character in the alphabet. For instance, index 0 might correspond to 'a', index 1 to 'b', and so on, according to a predefined mapping.
+    \item The edge's position (index) within the parent node's array of $R$ possible child links directly corresponds to a unique character in the alphabet. For instance, index 0 might correspond to `a', index 1 to `b', and so on, according to a predefined mapping.
     \item The character associated with this edge extends the prefix represented by the parent; this implies that at least one word (or key) in the trie contains this character sequence.
 \end{itemize}
 To signify that such a prefix also constitutes a complete key present in the trie, the node reached at the end of this path is typically marked by storing an associated non-null value or a boolean flag. The characters themselves are implicitly encoded by the trie's structure rather than being explicitly stored within each node.
@@ -208,7 +208,7 @@ These two rules combined enable the Boyer-Moore algorithm to skip larger portion
 
 \subsubsecao{Limitations of Iterating Single-Pattern Algorithms}
 
-When the task involves searching for multiple patterns simultaneously from a set $K = \{P_1, P_2, \dots, P_k\}$ within a text $T$, simply applying a single-pattern matching algorithm for each $P_i$ independently proves highly inefficient. This "iterative" approach requires scanning the text multiple times, resulting in a total time complexity that can be approximately $O(k \cdot (N+M_{\text{avg}}))$ or worse, where $M_{\text{avg}}$ is the average pattern length \cite{AhoCorasick1975}. This highlights the need for more specialized solutions.
+When the task involves searching for multiple patterns simultaneously from a set $K = \{P_1, P_2, \dots, P_k\}$ within a text $T$, simply applying a single-pattern matching algorithm for each $P_i$ independently proves highly inefficient. This ``iterative'' approach requires scanning the text multiple times, resulting in a total time complexity that can be approximately $O(k \cdot (N+M_{\text{avg}}))$ or worse, where $M_{\text{avg}}$ is the average pattern length \cite{AhoCorasick1975}. This highlights the need for more specialized solutions.
 
 \subsubsecao{The Need for Specialized Multi-Pattern Algorithms}
 
