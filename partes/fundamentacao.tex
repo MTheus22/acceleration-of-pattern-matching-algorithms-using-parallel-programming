@@ -162,7 +162,7 @@ The trie data structure is a cornerstone for numerous advanced string processing
 
 % Conteúdo da seção/subseção "Pattern Matching"
 
-\newpage\subsecao{Pattern Matching}
+\subsecao{Pattern Matching}
 
 This section introduces the fundamental problem of pattern matching within strings, explores key algorithmic approaches to its solution, and underscores its significance across various computational domains. This foundational discussion provides the essential context for understanding advanced multi-pattern matching algorithms, such as the Aho-Corasick algorithm. In general information processing, pattern (or \textit{string}) matching underpins the functionality of text editors and web search engines for keyword searches. The field of computational biology extensively utilizes pattern matching for analyzing genetic sequences \cite{SedgewickWayne2011}. Furthermore, in the field of information security, pattern matching is crucial: Network Intrusion Detection Systems (NIDS) utilize it to identify malicious signatures in network traffic. Tools like YARA, for instance, define rules based on textual or binary patterns to classify and identify malware \cite{YARADocs}. Later in this work, the role of pattern matching for NIDS will be explored in greater detail.
 
@@ -173,29 +173,28 @@ The \textit{string matching} problem consists in determining whether a string $P
     P[i] = T[pos + i], \quad \text{with} \quad pos + i < N
     \label{eq:string_matching_condition} 
 \end{equation}
+
 Beyond simply finding the first match, the problem often extends to locating all occurrences, enumerating them, or extracting surrounding contextual information for each match \cite{SedgewickWayne2011}.
 
-\subsubsecao{Fundamental Algorithms for Exact Single-Pattern Matching}
-
-Pattern matching algorithms are generally categorized based on the number of patterns they process and the exactness of the match. This thesis focuses on \textit{Exact Matching}, where the pattern must correspond precisely to a segment of the text. A key distinction for this study lies between algorithms designed for \textit{Single-Pattern Matching} and those optimized for \textit{Multi-Pattern Matching}, where the objective is to identify all occurrences of any pattern from a predetermined set of patterns within a given text \cite{AhoCorasick1975}, \cite{Gusfield1997}.
+Algorithms that address the string matching problem are generally categorized based on the number of patterns they process and the exactness of the match. This thesis focuses on \textit{Exact Matching}, where the pattern must correspond precisely to a segment of the text. A key distinction for this study lies between algorithms designed for \textit{Single-Pattern Matching} and those optimized for \textit{Multi-Pattern Matching}, where the objective is to identify all occurrences of any pattern from a predetermined set of patterns within a given text \cite{AhoCorasick1975}, \cite{Gusfield1997}.
 
 \vspace{1em}
 
-\textbf{The Naive Algorithm}
+\subsubsecao{The Naive Algorithm}
 
-The na\"ive or brute-force algorithm represents the most straightforward method for exact pattern matching. Its operation involves iteratively aligning the pattern $P$ with the text $T$ at every possible starting position $i$ (from 0 to $N-M$). For each alignment, $P$ is compared character by character, from left to right, against the corresponding substring. If all characters match, an occurrence is reported \cite{Gusfield1997}.
+The naive or brute-force algorithm represents the most straightforward method for exact pattern matching. Its operation involves iteratively aligning the pattern $P$ with the text $T$ at every possible starting position $i$ (from 0 to $N-M$). For each alignment, $P$ is compared character by character, from left to right, against the corresponding substring. If all characters match, an occurrence is reported \cite{Gusfield1997}.
 
 Following this comparison (whether a match or a mismatch), the algorithm shifts $P$ one position to the right relative to $T$ and proceeds to the next alignment. Despite its simplicity, Knuth, Morris, and Pratt (1977) state that this method can be highly inefficient \cite{KnuthMorrisPratt1977}. Its worst-case time complexity is $O(M \cdot N)$ character comparisons. This occurs, for example, when searching for a pattern like $P = a^n b$ within a text $T = a^{2n} b$, where many partial matches occur. To address these limitations, more advanced pattern matching algorithms include a preprocessing phase for the pattern $P$. This phase extracts structural information about $P$ that is then utilized during the search, enabling larger shifts of the pattern relative to the text and thus reducing the total number of character comparisons.
 
 \vspace{1em}
 
-\textbf{Knuth-Morris-Pratt (KMP) Algorithm}
+\subsubsecao{Knuth-Morris-Pratt (KMP) Algorithm}
 
 The KMP algorithm \cite{KnuthMorrisPratt1977} efficiently resolves the pattern matching problem with an optimal worst-case time complexity of $O(N + M)$. Unlike the na\"ive approach, KMP avoids re-checking characters that have already been matched. To achieve this, KMP first preprocesses the pattern $P$ by constructing a special array known as the \textit{failure array} (or \textit{prefix array}), typically denoted by $p[1..M]$. This array indicates the length of the longest prefix that is also a suffix for each prefix of $P$. With this information, when a mismatch occurs during the search, the algorithm utilizes the failure array to determine how far the pattern should shift to the right, bypassing unnecessary comparisons and preventing redundant checks.
 
 \vspace{1em}
 
-\textbf{Boyer-Moore (BM) Algorithm}
+\subsubsecao{Boyer-Moore (BM) Algorithm}
 
 The Boyer-Moore (BM) algorithm \cite{BoyerMoore1977} is widely recognized for its excellent practical performance, often outperforming linear-time methods in typical cases. Unlike the KMP algorithm, Boyer-Moore typically compares characters starting from the end of the pattern and moves backward.
 Its efficiency primarily stems from two rules (or heuristics):
