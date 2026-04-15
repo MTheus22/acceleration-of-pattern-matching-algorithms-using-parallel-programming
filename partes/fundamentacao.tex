@@ -256,7 +256,7 @@ Because each character can trigger at most one eventual successful $\operatornam
 
 \subsubsecao{Time and Space Complexity}
 
-The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for multi-pattern matching \cite{AhoCorasick1975},{Gusfield1997}.
+The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for multi-pattern matching \cite{AhoCorasick1975},{Gusfield1997}. For both the construction and search phases, the complexities are as follows:
 
 \begin{itemize}
     \item \textbf{Construction phase}: building the goto, failure, and output functions takes $O(L)$ time, where $L$ is the total length of all keywords. If a dense array is used for the root, an additional $O(|\Sigma|)$ initialization cost is incurred, giving $O(L + |\Sigma|)$.
