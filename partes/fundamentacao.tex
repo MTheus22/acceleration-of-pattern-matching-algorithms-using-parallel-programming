@@ -71,12 +71,12 @@ In the limit, as the number of processors (\texttt{p}) tends to infinity, the ma
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=0.7\linewidth]{speedup-plot.png}
   \caption{Ideal vs.\ Amdahl’s theoretical speedup ($s=0.1$).}
+  \includegraphics[width=0.7\linewidth]{speedup-plot.png}
   \label{fig:speedup-plot}
 \end{figure}
 
-A complementary perspective is offered by the Gustafson-Barsis Law in Eq. \ref{eq:gustafson}. This law argues that a speedup approximately linear is achievable for problems that benefit from this scalability. This formulation suggests that for problems that can be scaled, it is possible to obtain speedup approximately linear with the number of processors, even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios.
+A complementary perspective is offered by the Gustafson-Barsis Law in Eq. \ref{eq:gustafson}. This law argues that a speedup approximately linear is achievable for problems that benefit from this scalability. This formulation suggests that for problems that can be scaled, it is possible to obtain speedup approximately linear with the number of processors, even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios \cite{Pacheco2011}.
 
 \begin{equation}
     S_{\text{escalado}} = s + (1-s) \cdot p
@@ -85,7 +85,7 @@ A complementary perspective is offered by the Gustafson-Barsis Law in Eq. \ref{e
 
 \subsubsecao{Efficiency}
 
-Efficiency (\texttt{E}) measures the effectiveness of processor utilization in a parallel program. It is defined as the ratio of speedup to the number of processors \texttt{p}:
+Efficiency (\texttt{E}) measures the effectiveness of processor utilization in a parallel program. It is defined as the ratio of speedup to the number of processors \texttt{p}, as in Eq. \ref{eq:efficiency}:
 \begin{equation}
     E = \frac{S}{p} = \frac{T_s}{p \cdot T_p}
     \label{eq:efficiency}
