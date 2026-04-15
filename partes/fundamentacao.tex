@@ -256,14 +256,11 @@ Because each character can trigger at most one eventual successful $\operatornam
 
 \subsubsecao{Time and Space Complexity}
 
-The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for multi-pattern matching \cite{AhoCorasick1975},{Gusfield1997}. For both the construction and search phases, the complexities are as follows:
+The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for multi-pattern matching \cite{AhoCorasick1975},{Gusfield1997}. The complexities for the construction and search phases and storing the automaton are as follows:
 
 \begin{itemize}
-    \item \textbf{Construction phase}: building the goto, failure, and output functions takes $O(L)$ time, where $L$ is the total length of all keywords. If a dense array is used for the root, an additional $O(|\Sigma|)$ initialization cost is incurred, giving $O(L + |\Sigma|)$.
-    \item \textbf{Search phase}: Scanning a text of length $n$ performs fewer than $2n$ state transitions. Reporting matches costs time proportional to the total number of occurrences $z$, so the total search time is $O(n + z)$.
-\end{itemize}
-
-\begin{itemize}
+    \item \textbf{Construction phase}: building the goto, failure, and output functions takes $O(L)$ time, where $L$ is the total length of all keywords. If a dense array is used for the root, an additional $O(|\Sigma|)$ initialization cost is incurred, giving $O(L + |\Sigma|)$;
+    \item \textbf{Search phase}: Scanning a text of length $n$ performs fewer than $2n$ state transitions. Reporting matches costs time proportional to the total number of occurrences $z$, so the total search time is $O(n + z)$;
     \item \textbf{Space complexity}: Storing the automaton requires $O(L + |\Sigma|)$ space: $O(L)$ for trie edges, $O(L)$ pointers for failure links, and additional space for output lists (proportional to the number of stored outputs).
 \end{itemize}
 
