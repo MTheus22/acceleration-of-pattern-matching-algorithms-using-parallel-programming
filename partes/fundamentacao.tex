@@ -204,13 +204,11 @@ Its efficiency primarily stems from two rules (or heuristics):
 \end{itemize}
 These two rules combined enable the Boyer-Moore algorithm to skip larger portions of the text, significantly reducing the total number of comparisons.
 
-\subsubsecao{Limitations of Iterating Single-Pattern Algorithms}
-
-When the task involves searching for multiple patterns simultaneously from a set $K = \{P_1, P_2, \dots, P_k\}$ within a text $T$, simply applying a single-pattern matching algorithm for each $P_i$ independently proves highly inefficient. This ``iterative'' approach requires scanning the text multiple times, resulting in a total time complexity that can be approximately $O(k \cdot (N+M_{\text{avg}}))$ or worse, where $M_{\text{avg}}$ is the average pattern length \cite{AhoCorasick1975}. This highlights the need for more specialized solutions.
-
 \subsubsecao{The Need for Specialized Multi-Pattern Algorithms}
 
-To efficiently handle applications that require simultaneous searches for a large number of patterns, specialized algorithms are essential. These methods usually preprocess the entire set of patterns to create a unified data structure, which enables a single, efficient pass over the text to identify all occurrences of any pattern within the set.
+When the task involves searching for multiple patterns simultaneously from a set $K = \{P_1, P_2, \dots, P_k\}$ within a text $T$, simply applying a single-pattern matching algorithm for each $P_i$ independently proves highly inefficient. This ``iterative'' approach requires scanning the text multiple times, resulting in a total time complexity that can be approximately $O(k \cdot (N+M_{\text{avg}}))$ or worse, where $M_{\text{avg}}$ is the average pattern length \cite{AhoCorasick1975}.
+
+To efficiently handle applications that require simultaneous searches for a large number of patterns, specialized algorithms are essential. These methods usually preprocess the entire set of patterns to create a unified data structure, which enables a single, efficient pass over the text to identify all occurrences of any pattern within the set \cite{Gusfield1997}.
 
 The theoretical framework of \textit{finite automata} provides a robust and elegant solution for this problem. By constructing a single \textit{finite automaton} (FA) that can recognize all patterns in a given set, the text can be processed in a single continuous scan. Each character read from the text triggers a \textit{state transition} within the FA. When the FA reaches an \textit{accepting state}---a state explicitly designed to indicate the successful recognition of one or more patterns---the algorithm reports an occurrence. Algorithms like the Aho-Corasick algorithm exemplify this approach; they automate the construction of such a \textit{pattern-matching machine}, typically based on a trie structure augmented with specialized \textit{failure transitions} \cite{AhoCorasick1975}. This automaton-based paradigm forms the critical foundation for efficiently solving multi-pattern matching problems.
 
