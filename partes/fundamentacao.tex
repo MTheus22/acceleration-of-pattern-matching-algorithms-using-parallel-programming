@@ -239,13 +239,17 @@ Aho-Corasick has two main phases: (i) construction, which builds the automaton, 
 
 \subsubsecao{Matching Phase}
 
-Once the Aho–Corasick automaton has been built, it scans the text $T = a_1 a_2 \dots a_n$ in one left-to-right pass. At each position $i$, the machine attempts to follow the transition labelled $a_i$ from its \textit{current\_state} (cs); if that edge exists, it moves along it, otherwise it follows \textit{failure links} (f) until either a matching transition is found or the root is reached. Every time a successful transition is made, the automaton inspects the $\operatorname{output}$ set of the new state and emits all patterns ending at position $i$. Figure~\ref{fig:ac-matching-flow} illustrates this control flow in detail.
+Once the Aho–Corasick automaton has been built, it scans the text $T = a_1 a_2 \dots a_n$ in one left-to-right pass. At each position $i$, the machine attempts to follow the transition labelled $a_i$ from its \textit{current\_state} (cs); if that edge exists, it moves along it, otherwise it follows \textit{failure links} (f) until either a matching transition is found or the root is reached. Every time a successful transition is made, the automaton inspects the $\operatorname{output}$ set of the new state and emits all patterns ending at position $i$.
 
-\begin{figure}[htbp] % Use htbp para melhor posicionamento
-\centering
-\includegraphics[width=0.6\textwidth,keepaspectratio]{ac_matching.pdf} % Certifique-se de que o nome do arquivo e o caminho estão corretos
-\caption{Flowchart of the Aho–Corasick matching phase. Start at the root with $i=1$, attempt each $\operatorname{goto}(\textit{current\_state}, a_i)$, follow failure links on a “no” decision, report matches via $\operatorname{output}(\textit{current\_state})$ on a “yes,” advance $i$, and terminate when $i>n$.}
-\label{fig:ac-matching-flow}
+Figure~\ref{fig:ac-matching-flow} illustrates this control flow in detail, which: starts at the root with $i=1$, attempt each $\operatorname{goto}(\textit{current\_state}, a_i)$, follow failure links on a “no” decision, report matches via $\operatorname{output}(\textit{current\_state})$ on a “yes,” advance $i$, and terminate when $i>n$.
+
+\begin{figure}[H] 
+    \centering
+    \caption{Flowchart of the Aho–Corasick matching phase.}
+    \includegraphics[width=0.6\textwidth,keepaspectratio]{ac_matching.pdf} 
+    \par\smallskip
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+    \label{fig:ac-matching-flow}
 \end{figure}
 
 Because each character can trigger at most one eventual successful $\operatorname{goto}$ and any number of failure-link traversals, the total number of transitions (goto plus failure) over the entire scan is bounded by $< 2n$ \cite{AhoCorasick1975}.
