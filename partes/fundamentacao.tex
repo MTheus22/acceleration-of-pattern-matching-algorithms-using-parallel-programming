@@ -98,7 +98,7 @@ Efficiency values range between 0 and 1 (inclusive), often expressed as a percen
 In parallel computing, scalability denotes a system’s ability to sustain high performance (often via efficiency) as both the number of processors and/or the problem size grow.
 
 \begin{itemize}
-    \item \textbf{Strong Scalability}: Measures how execution time changes when you increase the processor count $p$ for a fixed total problem size, denoted $W$ (for example, the total number of array elements to process). The goal is to keep efficiency nearly constant as $p$ increases. Amdahl’s Law directly applies in this scenario.
+    \item \textbf{Strong Scalability}: Measures how execution time changes when you increase the processor count $p$ for a fixed total problem size, denoted $W$ (for example, the total number of array elements to process). The goal is to keep efficiency nearly constant as $p$ increases. Amdahl’s Law directly applies in this scenario;
     \item \textbf{Weak Scalability}: Measures how execution time changes when you increase both the processor count $p$ and the total problem size $W$ such that the work per processor ($W/p$) stays constant. The aim is to maintain efficiency as $p$ and $W$ grow proportionally. Gustafson’s Law is most relevant here.
 \end{itemize}
 
