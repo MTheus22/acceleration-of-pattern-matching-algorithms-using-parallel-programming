@@ -224,7 +224,7 @@ This section provides a comprehensive examination of the Aho-Corasick algorithm,
 
 The task of concurrently identifying all instances of a large collection of patterns within a text poses a significant computational challenge. A na\"ive approach---running a \textit{single-pattern matching} algorithm such as KMP or BM for each of the $k$ patterns---requires repeated scans of the text and has a worst-case time complexity of $O(k \cdot n)$, where $k$ is the number of patterns and $n$ is the text length, rendering it impractical for large pattern sets or long texts \cite{Gusfield1997}.
 
-The Aho-Corasick algorithm overcomes this by building one \textit{finite automaton} that encodes all patterns simultaneously. This automaton processes the input text in a single pass to detect all matches. The algorithm effectively combines the \textit{state-transition} efficiency of finite automata with the prefix-sharing advantages of tries, following \textit{failure links} on mismatches and resuming matching without rescanning characters---an extension of KMP’s \textit{failure-function} idea to a trie of patterns.
+The Aho-Corasick algorithm overcomes this by building one \textit{finite automaton} that encodes all patterns simultaneously. This automaton processes the input text in a single pass to detect all matches. The algorithm effectively combines the \textit{state-transition} efficiency of finite automata with the prefix-sharing advantages of tries, following \textit{failure links} on mismatches and resuming matching without rescanning characters---an extension of KMP’s \textit{failure-function} idea to a trie of patterns \cite{Gusfield1997}.
 
 \subsubsecao{Algorithm Components and Construction}
 
