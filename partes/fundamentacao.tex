@@ -169,7 +169,7 @@ This section introduces the fundamental problem of pattern matching within strin
 \subsubsecao{The Pattern Matching Problem}
 
 The \textit{string matching} problem consists in determining whether a string $P$ (the \textit{pattern}) of length $M$ occurs within a string $T$ (the \textit{text}) of length $N$, where $M \leq N$. Formally, it seeks all positions $pos$ such that the condition in Eq. \ref{eq:string_matching_condition} holds for every $i \in \{0, 1, \dots, M-1\}$, and each valid $pos$ corresponds to an occurrence of the pattern in the text:
-\begin{equation}
+\begin{equation}pendente
     P[i] = T[pos + i], \quad \text{with} \quad pos + i < N
     \label{eq:string_matching_condition} 
 \end{equation}
@@ -199,7 +199,7 @@ The KMP algorithm \cite{KnuthMorrisPratt1977} efficiently resolves the pattern m
 The Boyer-Moore (BM) algorithm \cite{BoyerMoore1977} is widely recognized for its excellent practical performance, often outperforming linear-time methods in typical cases. Unlike the KMP algorithm, Boyer-Moore typically compares characters starting from the end of the pattern and moves backward.
 Its efficiency primarily stems from two rules (or heuristics):
 \begin{itemize}
-    \item \textbf{Bad Character Rule}: When a mismatch occurs, this rule uses the character from the text that caused the mismatch to determine how far the pattern can safely shift. The algorithm shifts the pattern to align this mismatched text character with its last occurrence in the pattern or moves completely past the mismatched character if it does not appear in the pattern.
+    \item \textbf{Bad Character Rule}: When a mismatch occurs, this rule uses the character from the text that caused the mismatch to determine how far the pattern can safely shift. The algorithm shifts the pattern to align this mismatched text character with its last occurrence in the pattern or moves completely past the mismatched character if it does not appear in the pattern;
     \item \textbf{Good Suffix Rule}: When a mismatch happens after matching one or more characters from the end of the pattern, this rule uses the matched suffix to decide how far to shift the pattern. It searches for another occurrence of the matched suffix within the pattern, ensuring that no previously matched characters are unnecessarily compared again.
 \end{itemize}
 These two rules combined enable the Boyer-Moore algorithm to skip larger portions of the text, significantly reducing the total number of comparisons.
