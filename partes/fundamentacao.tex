@@ -67,12 +67,7 @@ An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law, establishes 
     S \leq \frac{1}{s + f/p}
     \label{eq:amdahl}
 \end{equation}
-In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by $\frac{1}{s}$. This implies that even a small sequential fraction (\texttt{s} large) can severely limit the total speedup, regardless of the number of processors available. Figure \ref{fig:speedup-plot} illustrates the theoretical speedup according to Amdahl's Law compared to ideal speedup for a given sequential fraction. A complementary perspective is offered by the Gustafson-Barsis Law. This law argues that a speedup approximately linear
-\begin{equation}
-    S_{\text{escalado}} = s + (1-s) \cdot p
-    \label{eq:gustafson}
-\end{equation}
-is achievable for problems that benefit from this scalability. This formulation suggests that for problems that can be scaled, it is possible to obtain speedup approximately linear with the number of processors, even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios.
+In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by $\frac{1}{s}$. This implies that even a small sequential fraction (\texttt{s} large) can severely limit the total speedup, regardless of the number of processors available. Figure \ref{fig:speedup-plot} illustrates the theoretical speedup according to Amdahl's Law compared to ideal speedup for a given sequential fraction. 
 
 \begin{figure}[ht]
   \centering
@@ -81,6 +76,12 @@ is achievable for problems that benefit from this scalability. This formulation 
   \label{fig:speedup-plot}
 \end{figure}
 
+A complementary perspective is offered by the Gustafson-Barsis Law in Eq. \ref{eq:gustafson}. This law argues that a speedup approximately linear is achievable for problems that benefit from this scalability. This formulation suggests that for problems that can be scaled, it is possible to obtain speedup approximately linear with the number of processors, even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios.
+
+\begin{equation}
+    S_{\text{escalado}} = s + (1-s) \cdot p
+    \label{eq:gustafson}
+\end{equation}
 
 \subsubsecao{Efficiency}
 
