@@ -97,6 +97,8 @@ Efficiency values range between 0 and 1 (inclusive), often expressed as a percen
 
 In parallel computing, scalability denotes a system’s ability to sustain high performance (often via efficiency) as both the number of processors and/or the problem size grow \cite{Grama2003}.
 
+% TODO adicionar coesão
+
 \begin{itemize}
     \item \textbf{Strong Scalability}: Measures how execution time changes when you increase the processor count $p$ for a fixed total problem size, denoted $W$ (for example, the total number of array elements to process). The goal is to keep efficiency nearly constant as $p$ increases. Amdahl’s Law directly applies in this scenario;
     \item \textbf{Weak Scalability}: Measures how execution time changes when you increase both the processor count $p$ and the total problem size $W$ such that the work per processor ($W/p$) stays constant. The aim is to maintain efficiency as $p$ and $W$ grow proportionally. Gustafson’s Law is most relevant here.
@@ -164,7 +166,7 @@ The trie data structure is a cornerstone for numerous advanced string processing
 
 \subsecao{Pattern Matching}
 
-This section introduces the fundamental problem of pattern matching within strings, explores key algorithmic approaches to its solution, and underscores its significance across various computational domains. This foundational discussion provides the essential context for understanding advanced multi-pattern matching algorithms, such as the Aho-Corasick algorithm. In general information processing, pattern (or \textit{string}) matching underpins the functionality of text editors and web search engines for keyword searches. The field of computational biology extensively utilizes pattern matching for analyzing genetic sequences \cite{SedgewickWayne2011}. Furthermore, in the field of information security, pattern matching is crucial: Network Intrusion Detection Systems (NIDS) utilize it to identify malicious signatures in network traffic. Tools like YARA, for instance, define rules based on textual or binary patterns to classify and identify malware \cite{YARADocs}. Later in this work, the role of pattern matching for NIDS will be explored in greater detail.
+This section introduces the fundamental problem of pattern matching within strings, explores key algorithmic approaches to its solution, and underscores its significance across various computational domains. This foundational discussion provides the essential context for understanding advanced multi-pattern matching algorithms, such as the Aho-Corasick algorithm. In general information processing, pattern (or \textit{string}) matching underpins the functionality of text editors and web search engines for keyword searches. The field of computational biology extensively utilizes pattern matching for analyzing genetic sequences \cite{SedgewickWayne2011}. Furthermore, in the field of information security, pattern matching is crucial: Network Intrusion Detection Systems (NIDS) utilize it to identify malicious signatures in network traffic. Tools like YARA, for instance, define rules based on textual or binary patterns to classify and identify malware \cite{YARADocs}.
 
 \subsubsecao{The Pattern Matching Problem}
 
@@ -266,7 +268,7 @@ The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for 
 
 \subsubsecao{Applications and Relevance}
 
-The Aho-Corasick algorithm is widely used in applications that require high-performance \textit{multi-pattern matching}. Its single-pass processing capability makes it ideal for systems such as Network Intrusion Detection Systems (NIDS), which scan network traffic against thousands of malicious signatures \cite{AhoCorasick1975}. In cybersecurity, it is a core component of anti-malware tools and engines, such as YARA, where it efficiently matches literal string components extracted from complex rules. Other applications include large-scale text analysis, motif searching in DNA or protein sequences, and spam filtering.
+The Aho-Corasick algorithm is widely used in applications that require high-performance \textit{multi-pattern matching}, where its single-pass processing of the input against the entire pattern set is essential. Representative use cases include large-scale text analysis, motif searching in DNA or protein sequences \cite{Vajira2018}, spam filtering, Network Intrusion Detection Systems (NIDS) that scan traffic against thousands of signatures, and anti-malware tooling---YARA, for example, employs Aho-Corasick to match the literal string components extracted from its rules \cite{YARADocs}.
 
 While Aho-Corasick excels at exact literal matching, systems like NIDS often layer additional capabilities---such as \textit{regular-expression matching}---on top of Aho-Corasick engines to support more expressive signatures, which affects overall performance characteristics. The algorithm therefore remains a theoretically elegant and practically impactful example of \textit{finite-automata theory} applied to string processing \cite{Gusfield1997},\cite{YARADocs}.
 
