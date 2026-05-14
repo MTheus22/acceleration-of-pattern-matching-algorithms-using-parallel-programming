@@ -1,46 +1,67 @@
-# Copilot Instructions for IDP Capstone LaTeX Project
+# Copilot Instructions
 
-## Project Overview
-This is a custom LaTeX template for IDP Capstone (TCC) projects. It uses `XeLaTeX` and a custom class `idp-model.cls`.
+These instructions tell GitHub Copilot how to behave in this LaTeX
+repository. Full project context lives in [`../README.md`](../README.md);
+detailed agent guidance lives in [`../CLAUDE.md`](../CLAUDE.md). Keep
+this file lean — anything that grows belongs in `CLAUDE.md`.
 
-## Architecture & File Structure
-- **Root**: `main.tex` is the entry point. It defines metadata, loads the class, and orchestrates content.
-- **Class Implementation**: `configs/idp-model.cls` defines the document layout, custom commands, and styling. **Avoid modifying this file** unless specifically changing the template design.
-- **Content**: All content text resides in `partes/*.tex`.
-- **Packages**: Add new LaTeX packages to `pacotes/pacotes.tex`.
-- **Figures**: Store images in `figuras/`. The path is auto-configured.
-- **Bibliography**: `referencias.bib` contains BibTeX entries (IEEE standard).
+## Project at a glance
 
-## Build & Workflow
-- **Build System**: Use `make` (or `make all`) to build the PDF.
-  - The process is: `xelatex -> bibtex -> xelatex -> xelatex`.
-  - **Do NOT** use `pdflatex` or standard latex commands directly; the font specs require `xelatex`.
-- **Cleaning**: `make clean` removes aux files; `make cleanall` removes the PDF as well.
+LaTeX source of an undergraduate thesis (TCC, IDP, 2025) about
+**parallelizing the Aho–Corasick algorithm on shared-memory multi-core
+CPUs** using POSIX Threads. The companion C implementation lives at
+`../parallel-aho-corasick`.
 
-## Project Conventions
+**Scope note:** earlier drafts framed the work as accelerating YARA's
+Aho–Corasick engine specifically. The current scope is the algorithm
+itself; YARA is one representative application. Do not reintroduce
+YARA-centric objectives.
 
-### Custom Sectioning Commands
-The standard `\section`, `\subsection`, etc., are **REPLACED** by custom commands in `idp-model.cls`.
-- **Top-Level Sections**: Use `\secao{Title}{path/to/file}`.
-  - Example: `\secao{Introduction}{partes/introduction}`
-  - Note: This command **automatically inputs** the file. Do not use `\input` inside `main.tex` for main sections.
-- **Subsections**: Use `\subsecao{Title}` inside the content files.
-- **Sub-subsections**: Use `\subsubsecao{Title}`.
+## Build
 
-### Metadata
-- Set metadata in `main.tex` preamble: `\autor{}`, `\titulo{}`, `\orientador{}`, `\membrobancai{}{}`, `\keywords{}`.
-- Course selection: Use `\cienciadacomputacao` or `\engenhariadesoftware`.
+- Engine: **XeLaTeX** (not pdflatex — the class uses `fontspec` with
+  Arial).
+- Pipeline: `xelatex → bibtex → xelatex → xelatex`, driven by
+  `Makefile`.
+- Targets: `make` (build + clean aux), `make clean`, `make cleanall`.
 
-### Bibliography
-- Use `\cite{key}` for numeric citations (IEEE style).
-- Ensure `referencias.bib` is up to date.
+## File map
 
-### Content Editing
-- **Abstract/Resumo**: Edit `partes/resumo.tex` and `partes/abstract.tex`. Do not rename these files.
-- **New Chapters**:
-  1. Create `partes/new-chapter.tex`.
-  2. Add `\secao{Chapter Title}{partes/new-chapter}` to `main.tex`.
+- `main.tex` — document root, metadata, chapter wiring.
+- `partes/*.tex` — chapter content. **Edit here.**
+- `referencias.bib` — BibTeX (IEEE numeric style).
+- `configs/idp-model.cls` — institutional class. **Do not edit.**
+- `pacotes/pacotes.tex` — add `\usepackage{...}` here.
+- `figuras/` — figures (PDF/PNG); `graphicspath` already points here.
 
-## Common Issues
-- **Missing Fonts**: If compilation fails on fonts, ensure `Arial` is installed on the system, as `idp-model.cls` relies on `\setmainfont{Arial}` via `fontspec`.
-- **BibTeX Errors**: If citations appear as `[?]`, run `make` again to ensure the full build cycle runs.
+## Conventions Copilot must follow
+
+- Sectioning uses **custom** commands:
+  - `\secao{Title}{partes/file}` in `main.tex` (auto-inputs).
+  - `\subsecao{Title}` and `\subsubsecao{Title}` inside content files.
+  - Never suggest `\section`, `\subsection`, `\subsubsection`.
+- Citations: `\cite{key}` (numeric IEEE). Every new key must exist in
+  `referencias.bib`.
+- Tone: formal, third-person English. No "we", "I", "our".
+- Comments and identifiers in English; supporting markdown
+  (`README.md`, `CLAUDE.md`, `tools/*/README.md`) in Portuguese.
+- Abstract/Resumo files: `partes/abstract.tex`. Do not rename.
+- Add new chapters by creating `partes/new.tex` and registering them
+  in `main.tex` via `\secao{...}{partes/new}`.
+
+## Common pitfalls
+
+- **`[?]` citations**: run `make` again — the full xelatex/bibtex
+  cycle has not completed.
+- **Missing fonts**: ensure `Arial` is installed; `fontspec` needs it.
+- **Broken TOC**: someone used `\section`/`\subsection` — replace
+  with `\secao`/`\subsecao`/`\subsubsecao`.
+
+## Out of scope for autocompletion
+
+- Editing `configs/idp-model.cls` (institutional template).
+- Touching front-matter metadata (`\autor`, `\titulo`, `\orientador`,
+  `\membrobancai`, `\keywords`, `\dataaprovacao`) unless explicitly
+  asked.
+- Committing `main.pdf` regenerations without an accompanying source
+  change.
