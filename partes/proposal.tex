@@ -1,70 +1,91 @@
-Therefore, this research proposes a \textit{data-parallel scanning strategy} for YARA’s Aho-Corasick engine on multi-core CPUs. The proposed solution involves partitioning each large input file into fixed-size, overlapping chunks and using multiple \texttt{POSIX threads} to concurrently traverse the same pre-compiled Aho-Corasick automaton. Each thread will process its assigned chunk, and thread-local match lists will be merged upon scan completion. The originality of this work lies not in inventing a new parallel algorithm, but in the software engineering required to integrate this strategy into YARA's complex \texttt{C}-based codebase and the scientific rigor of its empirical evaluation.
+This chapter presents the proposed solution: a modular parallel framework for
+the Aho-Corasick multi-pattern matching algorithm, targeting shared-memory
+multi-core CPUs. The design is guided by a single structural decision from which
+every other property follows. The execution is split into separate phases: the
+master thread builds the automaton sequentially, after which its
+state-transition tables are declared strictly read-only. Because the automaton
+is never mutated during scanning, multiple worker threads can traverse it
+concurrently without any mutual-exclusion primitive on the hot path. This
+lock-free property is what allows the parallel search to approach the limits
+imposed by the hardware rather than by software contention.
 
-\subsecao{Cronograma} 
+The framework is organized so that distinct optimization ideas can be plugged in
+and measured independently. Two complementary forms of parallelism are
+considered: partitioning the \textit{input text} among threads, and partitioning
+the \textit{pattern dictionary}. In addition, an algorithmic optimization of the
+match-emission step is proposed that benefits both the sequential and the
+parallel cases. The remainder of this chapter describes each component.
 
-This schedule details the activities carried out and planned for the development of the present work, distributed throughout the academic year. The tables below present the main phases of the project, from the conception and initial research to the implementation, evaluation and final writing of the document, divided into two semesters for better visualization.
+\subsecao{Data Partitioning and Boundary Overlap}
 
-\begin{table}[htbp]
-    \centering
-    \caption{Cronograma de Atividades do TCC (Fev-Jul)} % Legenda da Tabela 1
-    \label{tab:tcc_schedule_part1} % Rótulo para a primeira parte
-    \begin{tabular}{@{} l *{6}{c} @{}} % Colunas: Atividade + Fev a Jul (6 meses)
-        \toprule
-        \textbf{Atividade} & \textbf{Fev} & \textbf{Mar} & \textbf{Abr} & \textbf{Mai} & \textbf{Jun} & \textbf{Jul} \\
-        \midrule
+To exploit thread-level parallelism on a single large input, the framework
+partitions the text buffer into contiguous segments, one per worker thread.
+Each worker traverses the shared automaton over its own segment and records
+matches in a private list, so that no synchronization is required while
+scanning.
 
-        \multicolumn{7}{@{}l}{\textbf{Fase 1: Pesquisa e Planejamento}} \\
- 
-        Orientação e Definição do Tema & X & X & & & & \\
-        Revisão Sistemática da Literatura & X & X & X & X & & \\
-        Estudo da Fundamentação Teórica & & X & X & & & \\
-        Desenvolvimento da Proposta de Pesquisa & & & X & X & & \\
-        \midrule
+Partitioning a stream of bytes naively would, however, miss any pattern that
+straddles the boundary between two adjacent segments, because neither worker
+would observe the full pattern. To prevent these boundary false negatives, the
+design uses a controlled overlap. Let $L_{\max}$ be the length of the longest
+pattern in the dictionary. A worker responsible for the segment spanning offsets
+$[S, E)$ does not begin scanning at $S$ but at $S - L_{\max} + 1$, except for the
+first worker, which starts at offset $0$. This warm-up margin guarantees that, by
+the time the worker reaches the start of its owned region at $S$, the automaton is
+in the same state it would have reached in a single sequential pass from offset
+$0$, so every boundary-crossing pattern is observed by exactly one worker. Any
+match whose end position falls before $S$ is suppressed, because it is owned and
+reported by the previous worker; conversely, attributing each match to the segment
+that contains its end position keeps ownership disjoint, which preserves an exact
+one-to-one correspondence with the sequential baseline and duplicates no
+detection. An overlap of $L_{\max}-1$ is the minimum that achieves
+this property; any smaller value loses matches, and any larger value only adds
+redundant work.
 
-        \multicolumn{7}{@{}l}{\textbf{Fase 2: Escrita e Submissão Parcial}} \\
- 
-        Escrita dos Capítulos Iniciais & & & & X & X & \\
-        Submissão do Projeto e Documento Parcial & & & & & X & \\
-        \midrule
+\subsecao{Load Balancing on Heterogeneous Cores}
 
-        \multicolumn{7}{@{}l}{\textbf{Fase 3: Implementação e Desenvolvimento}} \\
- 
-        Análise do Código-Fonte do YARA & &  & & & X \\
-        Desenvolvimento do Protótipo Paralelo & & & & & & \\ 
-        Resolução de Desafios de Integração & & & & & & \\ 
-        \bottomrule
-    \end{tabular}
-\end{table}
+Uniform segments are optimal only when all cores are equally fast. On a hybrid
+processor, where Performance and Efficiency cores run at different clock
+frequencies, equally sized segments cause the threads on slower cores to finish
+late, leaving the faster threads idle at the final synchronization barrier. The
+proposed framework therefore includes a topology-aware partitioning strategy
+that detects the heterogeneous layout and weights each segment in proportion to
+the relative speed of the core that will process it. The aim is to equalize the
+finishing times of all workers and thereby reduce the idle time wasted at the
+barrier. As an alternative that requires no knowledge of the topology, the
+framework also supports dynamic dispatch, in which the text is divided into many
+small tasks that idle workers claim through a single atomic counter, so that
+faster cores naturally process more tasks.
 
-\begin{table}[htbp] % Pode usar [H] aqui se quiser forçar a ficar logo abaixo da primeira
-    \centering
-    \caption{Cronograma de Atividades do TCC (Ago-Dez)} % Legenda da Tabela 2
-    \label{tab:tcc_schedule_part2} % Rótulo para a segunda parte
-    \begin{tabular}{@{} l *{5}{c} @{}} % Colunas: Atividade + Ago a Dez (5 meses)
-        \toprule
-        \textbf{Atividade} & \textbf{Ago} & \textbf{Set} & \textbf{Out} & \textbf{Nov} & \textbf{Dez} \\
-        \midrule
+\subsecao{Flattening the Match-Emission Path}
 
-        \multicolumn{6}{@{}l}{\textbf{Fase 3: Implementação e Desenvolvimento}} \\
- 
-        Análise do Código-Fonte do YARA & X & & & & \\
-        Desenvolvimento do Protótipo Paralelo & X & X & & & \\
-        Resolução de Desafios de Integração & X & X & & & \\
-        \midrule
+In the canonical Aho-Corasick algorithm, each accepting state references the
+patterns that end there through linked structures, and reporting all matches at
+a given state requires walking these pointer chains. Under a large dictionary,
+those pointers are scattered across an automaton far larger than the cache, so
+each emission incurs cache misses and serialized pointer dereferences that
+compete with the much hotter state-transition traffic.
 
-        \multicolumn{6}{@{}l}{\textbf{Fase 4: Avaliação Experimental}} \\
+To remove this cost, the design proposes a flattened output layout. During
+construction, the patterns associated with every state are collected into a
+single contiguous array, and each state stores only a starting offset and a
+count into that array. At scan time, emitting the matches of a state becomes a
+sequential read of a short, contiguous range, which the hardware prefetcher
+handles efficiently and which removes pointer dereferences from the inner loop.
+This optimization is purely a memory-layout change: it preserves the exact set
+of reported matches and is inherited by every scanning variant, whether
+sequential or parallel.
 
-        Definição do Ambiente e Casos de Teste & X & X & & & \\
-        Execução dos Experimentos de Desempenho & & X & X & & \\
-        Coleta e Análise dos Resultados & & & X & & \\
-        \midrule
+\subsecao{Partitioning the Dictionary}
 
-        \multicolumn{6}{@{}l}{\textbf{Fase 5: Finalização e Defesa}} \\
- 
-        Escrita dos Capítulos Finais & & & & X & X \\
-        Revisão e Formatação Final do TCC & & & & & X \\
-        Preparação para a Apresentação Final & & & & & X \\
-        Submissão Final e Defesa do TCC & & & & & X \\
-        \bottomrule
-    \end{tabular}
-\end{table}
+The strategies above all partition the text while keeping the dictionary whole.
+A complementary axis, evaluated as a contrast, partitions the dictionary
+instead. Here the pattern set is divided into $K$ groups according to the first
+byte of each pattern, and a smaller sub-automaton is built for each group. Every
+sub-automaton is then scanned over the input. The motivation is that each
+sub-automaton has a smaller working set, which might fit closer to the cache and
+mitigate the memory pressure of a single monolithic automaton. The framework
+also supports a two-dimensional composition that combines dictionary sharding
+with text chunking. Whether either approach actually outperforms plain text
+parallelism on memory-bound workloads is an empirical question, answered in the
+results chapter.

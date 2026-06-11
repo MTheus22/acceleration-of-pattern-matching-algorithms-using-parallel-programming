@@ -1,15 +1,71 @@
+This appendix documents the protocol used to query the raw measurement
+database from which every quantitative result reported in this thesis is
+derived, so that the figures can be reproduced and audited independently. The
+benchmark campaign stores its measurements in a single typed SQLite file,
+\texttt{sweep.db}, holding one \texttt{runs} table (one row per timed
+execution) together with a set of aggregating views. The headline figures are
+obtained from those views rather than from the raw execution logs.
 
-Os apêndices são materiais suplementares \textbf{elaborados pelo próprio autor}, que contribuem para a compreensão, fundamentação ou detalhamento do trabalho, mas que não são essenciais para o desenvolvimento principal do texto.
+\subsecao{Database Schema}
 
-Eles podem incluir, por exemplo:
+Each row of the \texttt{runs} table identifies an execution by its phase,
+pattern dictionary, corpus, searcher strategy and thread count, and records the
+timing statistics (minimum, mean, median and maximum wall-clock time in
+milliseconds, together with the coefficient of variation across the timed
+iterations), the derived throughput (in MB/s and Gbit/s), the input volume and
+match count, and the automaton descriptors (pattern count, number of states,
+footprint in kibibytes, and sequential or parallel build time). The views
+listed in Table~\ref{tab:dbviews} pre-aggregate the analysis so that no headline
+figure depends on ad hoc post-processing of the raw rows.
 
-\begin{itemize}
-    \item Questionários e roteiros de entrevistas utilizados na pesquisa;
-    \item Documentos, códigos-fonte, tabelas extensas ou informações complementares;
-    \item Detalhes técnicos ou cálculos que, se inseridos no corpo principal, tornariam a leitura cansativa;
-    \item Materiais que apoiam a metodologia ou os resultados, mas que não são obrigatórios para a compreensão geral.
-\end{itemize}
+\begin{table}[htbp]
+    \centering
+    \caption{Aggregating views of the measurement database.}
+    \label{tab:dbviews}
+    \small
+    \begin{tabular}{@{} l p{8.8cm} @{}}
+        \toprule
+        \textbf{View} & \textbf{Question it answers} \\
+        \midrule
+        \texttt{v\_speedup}       & Speedup of each searcher against the single-threaded sequential baseline. \\ \addlinespace
+        \texttt{v\_self\_speedup} & Self-relative scalability: throughput at $T$ threads over throughput at one thread. \\ \addlinespace
+        \texttt{v\_footprint}     & Throughput as a function of the automaton footprint, at one and twelve threads. \\ \addlinespace
+        \texttt{v\_build}         & Speedup of the parallel automaton construction over the sequential build. \\ \addlinespace
+        \texttt{v\_best}          & Best-performing searcher for each dictionary, corpus and thread count. \\ \addlinespace
+        \texttt{v\_correctness}   & Number of distinct match counts per dictionary and corpus (a value of one indicates agreement). \\
+        \bottomrule
+    \end{tabular}
 
-Cada apêndice deve ser identificado por uma letra maiúscula (Apêndice A, Apêndice B, etc.) e ter um título claro e objetivo. Eles são inseridos após as referências bibliográficas e antes do índice remissivo, se houver.
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. \par}
+\end{table}
 
-A inclusão dos apêndices deve ser feita de maneira organizada e referenciada no texto principal, para que o leitor saiba quando e por que consultar esses materiais complementares.
+\subsecao{Canonical Queries}
+
+The queries below reproduce the principal results of the study. They are issued
+against the database with the standard \texttt{sqlite3} client.
+
+\begin{verbatim}
+-- Speedup curve of a searcher (Snort dictionary, canonical corpus)
+SELECT thr, speedup_vs_seq FROM v_speedup
+WHERE patterns='patterns_snort' AND corpus='enron_corpus'
+  AND searcher='pthread_dynamic' ORDER BY thr;
+
+-- Peak speedup per scenario (winning searcher and thread count)
+SELECT patterns, corpus, searcher, thr, speedup_vs_seq FROM v_speedup w
+WHERE speedup_vs_seq = (SELECT MAX(speedup_vs_seq) FROM v_speedup x
+  WHERE x.patterns = w.patterns AND x.corpus = w.corpus)
+ORDER BY patterns, corpus;
+
+-- Footprint versus throughput at twelve threads (cache blowout)
+SELECT patterns, automaton_mib, searcher, mbps FROM v_footprint
+WHERE thr = 12 ORDER BY automaton_mib;
+
+-- Speedup of the parallel automaton construction
+SELECT patterns, build_threads, build_speedup FROM v_build
+ORDER BY patterns, build_threads;
+\end{verbatim}
+
+Before any timing was reported, the correctness of every parallel strategy was
+established through the \texttt{v\_correctness} view, which returns a single
+distinct match count for each dictionary and corpus, confirming that all
+strategies reproduce the exact match set of the sequential baseline.

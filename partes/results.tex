@@ -1,18 +1,384 @@
+This chapter presents and discusses the empirical results, following the
+protocol described in the previous chapter. All figures reported here come from
+the same sustained measurement campaign, in which every parallel strategy was
+first verified to reproduce the exact match set of the sequential baseline. The
+analysis proceeds in a deliberate order: it first characterizes the bottleneck
+that motivates the entire study (the relationship between automaton footprint
+and throughput); it then isolates the contribution of each optimization axis;
+and it finally reports the cumulative behaviour at scale, including the
+strategies that did not pay off. Throughout, speedup is measured against the
+single-threaded sequential baseline, and the reported values are the sustained,
+under-load figures, which are conservative relative to cold-burst peaks.
 
-Esta seção tem como objetivo apresentar, analisar e interpretar os resultados obtidos na pesquisa. Os dados devem ser organizados de forma clara, utilizando tabelas, gráficos, quadros ou figuras, quando necessário, para facilitar a compreensão.
+\subsecao{Characterizing the Bottleneck: Footprint versus Throughput}
 
-A análise dos resultados deve ser feita de forma crítica, relacionando-os com os objetivos propostos e com o referencial teórico previamente abordado. É fundamental interpretar o significado dos dados, verificando se eles corroboram ou refutam as hipóteses levantadas ou os estudos anteriores consultados.
+The defining characteristic of the problem is that throughput is governed by the
+size of the automaton, not by the content of the text. Table~\ref{tab:footprint}
+sweeps the dictionary from one hundred patterns to roughly forty-five thousand,
+keeping the corpus fixed, and reports the single-threaded scanning throughput.
+Isolating the effect with a single thread removes any threading confound, so the
+degradation can be attributed entirely to the memory hierarchy.
 
-Nesta etapa, não basta apenas descrever os resultados; é necessário discutir suas implicações, possíveis limitações, e o que eles revelam sobre o problema de pesquisa. A discussão pode ser apresentada juntamente com os resultados ou em um capítulo separado, conforme as normas da instituição ou a natureza do trabalho.
+\begin{table}[htbp]
+    \centering
+    \caption{Single-threaded throughput as the automaton footprint grows.}
+    \label{tab:footprint}
+    \small
+    \begin{tabular}{@{} l r r l r @{}}
+        \toprule
+        \textbf{Dictionary} & \textbf{Patterns} & \textbf{Automaton} & \textbf{Cache regime} & \textbf{Throughput} \\
+         & & & & \textbf{(MB/s)} \\
+        \midrule
+        Snort-100        & 100      & 1.93~MiB   & Well within L3       & 483.1 \\ \addlinespace
+        Snort-1k         & $\sim$1{,}000 & 11.92~MiB & Near L3           & 337.3 \\ \addlinespace
+        Snort (full)     & 4{,}188  & 55.23~MiB  & Exceeds L3           & 240.7 \\ \addlinespace
+        Emerging Threats & 44{,}678 & 506.78~MiB & $42\times$ the L3    & 125.6 \\
+        \bottomrule
+    \end{tabular}
 
-Portanto, esta seção deve responder às seguintes perguntas:
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Corpus fixed; single thread.\par}
+\end{table}
 
-\begin{itemize}
-    \item Quais foram os principais resultados obtidos?
-    \item Como esses resultados se relacionam com os objetivos do trabalho?
-    \item Eles confirmam ou refutam o que foi encontrado na literatura?
-    \item Quais são as possíveis explicações para os achados?
-    \item Existem limitações nos dados ou na metodologia que influenciam os resultados?
-\end{itemize}
+Throughput falls monotonically by $74.0\%$, from $483.1$~MB/s when the automaton
+fits comfortably within the shared L3 to $125.6$~MB/s when it is forty-two times
+larger than that same cache.
+The cause is structural: each input byte triggers a lookup in the
+state-transition table, and once that table no longer fits in cache, every
+transition risks a main-memory access. The same degradation persists under
+twelve threads, where the twelve-thread speedup of the same chunked strategy drops from $6.68\times$ in the
+cache-resident regime to $2.63\times$ in the memory-bound regime, confirming
+that the limit is the memory subsystem rather than a threading artifact. This is
+the central obstacle to scaling Aho-Corasick at intrusion-detection scale, and
+it frames the interpretation of every subsequent result.
 
-A apresentação dos resultados e sua discussão devem ser feitas de maneira clara, objetiva e fundamentada, garantindo coerência com todo o desenvolvimento do trabalho.
+\subsecao{Scalability of Text Parallelism}
+
+The primary parallelization strategy partitions the input text across worker
+threads. Figure~\ref{fig:speedup} shows the speedup as a function of thread
+count for the two representative regimes, measured on the largest corpus
+($\sim$10.6~GiB) to minimize scheduler and thermal noise.
+
+\begin{figure}[htbp]
+\centering
+\caption{Speedup of text parallelism versus thread count, for a moderate
+dictionary (Snort, 55~MiB) and a memory-bound dictionary (Emerging Threats,
+507~MiB), on the $\sim$10.6~GiB corpus.}
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.82\textwidth,
+    height=6.2cm,
+    xlabel={Number of threads ($T$)},
+    ylabel={Speedup vs.\ sequential},
+    xmin=1, xmax=12,
+    ymin=1, ymax=5,
+    xtick={1,2,4,6,8,10,12},
+    ytick={1,2,3,4,5},
+    legend pos=north west,
+    grid=both,
+    grid style={line width=.1pt, draw=gray!10},
+    major grid style={line width=.2pt, draw=gray!20},
+    style={font=\small}
+]
+\addplot[color=blue, mark=square, thick] coordinates {
+    (1,1.04) (4,2.43) (8,3.61) (12,4.52)
+};
+\addlegendentry{Snort (55~MiB)}
+
+\addplot[color=red, mark=triangle, thick] coordinates {
+    (1,1.14) (4,1.99) (8,2.64) (12,2.79)
+};
+\addlegendentry{Emerging Threats (507~MiB)}
+
+\addplot[color=gray, dotted] coordinates {
+    (1,1) (4,4)
+};
+\addlegendentry{Ideal (linear)}
+\end{axis}
+\end{tikzpicture}
+\label{fig:speedup}
+
+{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\end{figure}
+
+Both regimes scale sublinearly. With the moderate dictionary, the best
+text-parallel strategy reaches $4.52\times$ at twelve threads
+($1{,}087.1$~MB/s); on the canonical corpus, the dynamic-dispatch
+strategy peaks slightly higher at $4.79\times$ ($1{,}148.1$~MB/s), the highest
+search speedup observed on the intrusion-detection-scale dictionaries. With the memory-bound dictionary, the
+curve flattens far earlier: the best strategy reaches only $2.79\times$ at
+twelve threads, and on the canonical corpus the peak occurs near six threads
+($2.85\times$) and then \textit{regresses} as more threads are added. This early
+plateau is the most important observation of the scaling analysis. Once the
+automaton is forty-two times larger than the cache, the shared DRAM bus
+saturates, and adding more threads (especially the slower Efficiency cores past
+the two Performance cores) no longer buys throughput. The physical limit is
+memory bandwidth, not the number of cores.
+
+A separate experiment fixed the dictionary and strategy while changing the
+corpus, to confirm that the content of the text is not the governing variable.
+The sequential throughput on the two corpora is nearly identical
+($241.0$~MB/s versus $248.4$~MB/s), and the twelve-thread speedup differs only
+modestly ($4.42\times$ on the e-mail corpus versus $3.66\times$ on the
+encyclopedic corpus). Because Aho-Corasick performs one transition per input
+byte regardless of match density, the footprint of the automaton dominates the
+behaviour far more than the nature of the corpus.
+
+\subsecao{The Flattened Output Layout}
+
+The proposed output-layout optimization replaces the pointer-chasing emission of
+matches with a sequential read of a contiguous array. Because it changes only
+the memory layout, its effect can be measured in isolation on a single thread.
+Table~\ref{tab:flat} shows that the gain is regime-dependent and, importantly,
+grows precisely as memory pressure increases.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Single-threaded gain of the flattened output layout, by regime.}
+    \label{tab:flat}
+    \small
+    \begin{tabular}{@{} l r r r r @{}}
+        \toprule
+        \textbf{Regime (dictionary)} & \textbf{Automaton} & \textbf{Baseline} & \textbf{Flattened} & \textbf{Gain} \\
+         & & \textbf{(MB/s)} & \textbf{(MB/s)} & \\
+        \midrule
+        Snort-100 ($\ll$L3)      & 1.93~MiB   & 483.1 & 488.1 & $+1.0\%$ \\ \addlinespace
+        Snort (full, $>$L3)      & 55.23~MiB  & 240.7 & 252.0 & $+4.7\%$ \\ \addlinespace
+        Emerging Threats ($\gg$L3) & 506.78~MiB & 125.6 & 142.0 & $+13.0\%$ \\
+        \bottomrule
+    \end{tabular}
+
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Single thread.\par}
+\end{table}
+
+When the automaton fits in cache, the optimization is essentially free of
+benefit ($+1.0\%$), because the linked structures are already cache-resident.
+When the automaton is far larger than the cache, the contiguous layout avoids
+the scattered misses of the pointer walk and delivers $+13.0\%$ on a single
+thread, which is the cheapest gain available in the memory-bound regime. In the
+parallel case, the layout is inherited by the chunked strategies, and the
+flattened variants lead or tie their pointer-chasing counterparts in both intrusion-detection-scale regimes; the best results, both
+for the moderate dictionary at the multi-gigabyte scale ($4.52\times$) and at the peak of the memory-bound
+regime on the canonical corpus ($2.85\times$), come from strategies that incorporate this layout. It is
+worth noting that the gain does not compound multiplicatively with text
+parallelism in the moderate regime: there, the DRAM stalls of the transition
+table already partially mask the emission cost, so the layout contributes a more
+modest increment than its single-threaded figure would suggest. The optimization
+is therefore best described as a cheap, broadly applicable improvement whose
+payoff is largest exactly where the problem is hardest.
+
+\subsecao{Load Balancing on Heterogeneous Cores}
+
+On the hybrid processor, uniformly sized text segments create stragglers: the
+threads assigned to Efficiency cores finish later than those on the faster
+Performance cores, and the early finishers idle at the barrier. The effect is
+visible not in the mean throughput but in its stability across repetitions.
+Table~\ref{tab:balance} reports, for the canonical workload at twelve threads,
+the coefficient of variation of the per-iteration timing.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Run-to-run stability of the text-parallel strategies (twelve threads).}
+    \label{tab:balance}
+    \small
+    \begin{tabular}{@{} l r r @{}}
+        \toprule
+        \textbf{Strategy} & \textbf{Throughput (MB/s)} & \textbf{Variation (CV)} \\
+        \midrule
+        Static homogeneous chunking            & 1{,}064.7 & $39.9\%$ \\ \addlinespace
+        Static chunking (cache-padded)         & 902.0     & $52.9\%$ \\ \addlinespace
+        Topology-aware (frequency-weighted)    & 879.8     & $1.7\%$  \\ \addlinespace
+        Dynamic dispatch                       & 864.4     & $3.3\%$  \\ \addlinespace
+        Flattened output with chunking         & 1{,}007.2 & $0.4\%$  \\ \addlinespace
+        Topology-aware with flattened output   & 994.2     & $4.3\%$  \\
+        \bottomrule
+    \end{tabular}
+
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Canonical workload, twelve threads; dedicated stability diagnostic (three timed iterations under sustained load). The mean throughputs are subject to the run-to-run variance the table quantifies and are not directly comparable with the sustained figures of the scalability analysis.\par}
+\end{table}
+
+The static homogeneous strategies exhibit a coefficient of variation between
+$39.9\%$ and $52.9\%$, consistent with stragglers on the slow cores intermittently lengthening the critical path. Both
+remedies proposed in the design collapse this dispersion: frequency-weighted
+partitioning reduces it to $1.7\%$ and dynamic dispatch to $3.3\%$, while the
+flattened chunking strategy is the most stable of all (down to $0.4\%$) --- indicating that uniform partitioning makes the run-to-run timing sensitive to how the scheduler places the slow-core segments, rather than imposing a fixed penalty. The correct
+reading is that topology awareness does not make the transition function faster;
+it removes synchronization waste at the barrier, trading a marginal change in
+mean throughput for a large gain in predictability. This is valuable for
+reproducibility and worst-case latency, but it does not by itself change the
+ranking of strategies, because the underlying ceiling remains the memory
+subsystem.
+
+\subsecao{Parallel Construction of the Automaton}
+
+The construction phase can also be parallelized, because each level of the
+breadth-first traversal that computes the failure links depends only on shallower
+levels and can therefore be processed in parallel with a barrier between levels.
+The trie insertion remains sequential; only the traversal is parallelized.
+Table~\ref{tab:build} reports the resulting build speedup.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Speedup of the parallel automaton construction.}
+    \label{tab:build}
+    \small
+    \begin{tabular}{@{} l r r l @{}}
+        \toprule
+        \textbf{Dictionary} & \textbf{States} & \textbf{Sequential build} & \textbf{Parallel build} \\
+         & & \textbf{(ms)} & \\
+        \midrule
+        Snort-100        & 1{,}939   & 1.5   & Regresses (overhead dominates) \\ \addlinespace
+        Snort (full)     & 55{,}479  & 48.2  & $1.19\times$ peak (four threads) \\ \addlinespace
+        Emerging Threats & 508{,}896 & 485.2 & $1.55\times$ peak (eight threads) \\
+        \bottomrule
+    \end{tabular}
+
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\end{table}
+
+Parallel construction only pays off for the large dictionary, where it reduces
+the build time from $485$ to roughly $313$~milliseconds ($1.55\times$ at eight
+threads, falling to $1.41\times$ at twelve). For the small dictionaries the
+per-level spawn-and-join overhead exceeds the work, and the build slows down.
+This optimization should therefore be understood as an operational benefit, a
+reduction in rule-reloading latency for systems that frequently update their
+signatures, rather than as a contribution to scanning throughput; on the
+multi-gigabyte workloads it accounts for less than $1\%$ of the total time.
+
+\subsecao{Partitioning the Dictionary: A Qualified Negative Result}
+
+Partitioning the dictionary, rather than the text, was evaluated as a contrast.
+Of the partitioning policies tried, only sharding by pattern prefix ever exceeds
+the sequential baseline. Table~\ref{tab:shard} compares it against plain text
+parallelism on the canonical workload.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Dictionary sharding compared to text parallelism (Snort, canonical corpus).}
+    \label{tab:shard}
+    \small
+    \begin{tabular}{@{} l r r r @{}}
+        \toprule
+        \textbf{Strategy} & \textbf{Throughput (MB/s)} & \textbf{vs.\ sequential} & \textbf{vs.\ text parallelism} \\
+        \midrule
+        Dictionary sharding (by prefix)  & 327.2 & $1.37\times$ & $0.34\times$ \\ \addlinespace
+        Text chunking with flat output   & 976.1 & $4.07\times$ & $1.00\times$ \\
+        \bottomrule
+    \end{tabular}
+
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Sharding at its best shard count (six); text chunking at twelve threads.\par}
+\end{table}
+
+Prefix sharding reaches $1.37\times$ over the baseline, and its gain saturates
+almost immediately --- $1.35\times$ at two shards, within $2\%$ of the six-shard peak, declining thereafter --- which indicates that the benefit comes from
+improved cache locality within each smaller sub-automaton rather than from
+genuine aggregate parallelism. Even at its best it attains only about a third of
+the throughput of plain text parallelism. The conclusion is that, on this class
+of hardware, partitioning the text dominates partitioning the dictionary: a real
+but small effect, not a competitive strategy.
+
+\subsecao{Composing Sharding with Chunking: A Falsified Hypothesis}
+
+A natural conjecture is that combining dictionary sharding (for cache locality)
+with text chunking (for parallelism) would recover the throughput lost in the
+memory-bound regime, by making each sub-automaton small enough to approach the
+cache. Table~\ref{tab:twod} tests this two-dimensional composition against flat-output
+text chunking and falsifies the conjecture.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Two-dimensional composition versus flat-output text chunking (twelve threads).}
+    \label{tab:twod}
+    \small
+    \begin{tabular}{@{} l r r r @{}}
+        \toprule
+        \textbf{Workload} & \textbf{Composition} & \textbf{Text chunking} & \textbf{Ratio} \\
+         & \textbf{(MB/s)} & \textbf{(MB/s)} & \\
+        \midrule
+        Snort, canonical corpus              & 785.4 & 976.1 & $0.80\times$ \\ \addlinespace
+        Emerging Threats, canonical corpus   & 289.0 & 312.3 & $0.93\times$ \\ \addlinespace
+        Emerging Threats, $\sim$10.6~GiB     & 314.5 & 350.0 & $0.90\times$ \\
+        \bottomrule
+    \end{tabular}
+
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\end{table}
+
+The composition is slower than flat-output text chunking in every measured scenario,
+between $7\%$ and $20\%$. The reason is that each shard must scan the entire
+input text, so $K$ shards multiply the text traffic on the memory bus by a factor
+of $K$. In the memory-bound regime that traffic is already the bottleneck, so
+the extra reads outweigh any locality gained inside the smaller sub-automata. To
+shrink the sub-automaton below the last-level cache for the largest dictionary
+would require more than forty shards, multiplying the text traffic
+proportionally, which is unrecoverable on a memory bus of this bandwidth. This
+negative result is a substantive contribution: it closes a plausible region of
+the design space and reinforces the conclusion that text parallelism is the
+correct axis on memory-bound workloads.
+
+\subsecao{End-to-End Evaluation}
+
+Finally, the complete pipeline, including construction, search, and merge, was
+measured as wall-clock time on the $\sim$10.6~GiB corpus.
+Table~\ref{tab:e2e} reports the best end-to-end speedup for each dictionary.
+
+\begin{table}[htbp]
+    \centering
+    \caption{End-to-end wall-clock speedup on the $\sim$10.6~GiB corpus.}
+    \label{tab:e2e}
+    \small
+    \begin{tabular}{@{} l r r r @{}}
+        \toprule
+        \textbf{Dictionary} & \textbf{Sequential (ms)} & \textbf{Best parallel (ms)} & \textbf{Speedup} \\
+        \midrule
+        Snort (full)     & 94{,}706  & 21{,}158 & $4.48\times$ \\ \addlinespace
+        Emerging Threats & 198{,}906 & 65{,}428 & $3.04\times$ \\
+        \bottomrule
+    \end{tabular}
+
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Build, search, and merge combined.\par}
+\end{table}
+
+For the moderate dictionary, the full parallel stack delivers up to a
+$4.48\times$ end-to-end acceleration, reducing the wall-clock time from roughly
+ninety-five seconds to twenty-one. For the memory-bound dictionary, the best
+end-to-end figure is $3.04\times$, and it is obtained with flat-output text chunking
+and a sequential build, because under sustained load the topology-aware variant
+regresses sharply and the parallel build contributes less than one percent of the
+total time. This asymmetry is consistent with the rest of the study: in the
+memory-bound regime, the simplest strategy that respects the bandwidth ceiling is
+the most robust.
+
+\subsecao{Discussion and Positioning}
+
+Taken together, the results support a single coherent conclusion. The dominant
+obstacle to accelerating Aho-Corasick at intrusion-detection scale is
+microarchitectural: when the automaton greatly exceeds the last-level cache,
+performance is limited by the memory subsystem, and the most effective response
+is to parallelize the text while keeping the per-byte transition cost as low as
+possible. No single strategy wins across all regimes; leadership rotates between
+dynamic dispatch (moderate dictionary on the canonical corpus) and the flattened
+variants, with and without topology awareness, in the remaining scenarios, which
+itself reflects that, as the dictionary grows, the binding
+constraint shifts from thread scheduling to DRAM bandwidth --- the regime in which a cache-friendly emission path pays the most.
+
+These findings can be positioned against the related literature. Compared with
+approaches that restructure the automaton itself to gain cache friendliness,
+such as the head--body decomposition of the matcher for multi-core intrusion
+detection~\cite{LeeYang2017FHBM}, the present work attains a comparable order of
+magnitude of throughput while leaving the classical automaton mathematically
+intact, which keeps correctness easy to validate against the sequential
+reference. The failure-less variant of the algorithm designed for massively
+parallel accelerators~\cite{Vajira2018} is, by contrast, contraindicated on a
+multi-core CPU, because its independent per-byte traversals multiply work in a
+way that the memory bus cannot absorb; this is consistent with the negative
+result observed here for over-partitioning. Single-threaded vectorized engines
+that replace the automaton with SIMD literal matching~\cite{Xu2023Harry} operate
+on an orthogonal axis, exploiting data parallelism within a thread rather than
+across threads, and are therefore complementary to, rather than competitive
+with, the inter-thread parallelism studied here. The observation that
+layout-level changes to the emission path yield real gains echoes work on
+transition-table compression for the same algorithm~\cite{Regeciova2021MYARA}.
+Finally, the use of realistic rule sets and large corpora follows the guidance on
+representative signature-based intrusion-detection benchmarks~\cite{Aldwairi2018Characterizing},
+which is what allows the memory-bound regime, rather than an artificially
+cache-friendly one, to be the object of study.

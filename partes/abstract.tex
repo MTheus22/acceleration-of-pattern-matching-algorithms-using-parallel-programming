@@ -1,0 +1,24 @@
+The Aho-Corasick algorithm is a cornerstone of signature-based network
+intrusion detection systems and malware analysis tools, owing to its linear-time
+complexity in the size of the input. Its state-transition dependency, however,
+ties the canonical implementation to sequential execution, leaving modern
+multi-core processors underused. This work designs, implements, and evaluates
+data-parallel scanning strategies built on POSIX Threads for shared-memory
+multi-core CPUs. The input text is partitioned into overlapping segments that
+worker threads scan concurrently over a shared, strictly read-only automaton,
+which keeps the hot path free of locks; a flattened, contiguous output layout is
+further proposed to eliminate the pointer-chasing cost of emitting matches. The
+study deliberately targets the memory-bound regime in which the automaton greatly
+exceeds the last-level cache, using realistic Snort and Emerging Threats rule
+sets (up to roughly $507$~MiB of automaton) over multi-gigabyte corpora on a
+hybrid Intel Core i5-1235U processor. The results show that text-level data
+parallelism clearly dominates pattern-set partitioning: search speedups reach up
+to $4.79\times$ on twelve threads for a moderate dictionary and $4.52\times$ at
+the multi-gigabyte scale, while the flattened layout adds a regime-dependent gain
+that grows with memory pressure, up to $+13.0\%$ on a single thread. When the
+automaton is forty-two times larger than the cache, however, throughput drops by
+$74.0\%$ and the parallel speedup saturates near $2.85\times$, exposing memory
+bandwidth as the physical ceiling. End-to-end accelerations reach up to
+$4.48\times$. The central finding is that the dominant barrier to scaling
+Aho-Corasick for intrusion detection is microarchitectural, namely cache
+overflow and DRAM bandwidth, rather than the matching logic itself.
