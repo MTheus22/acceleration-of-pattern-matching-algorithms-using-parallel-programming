@@ -1,0 +1,77 @@
+This thesis investigated data-parallel scanning strategies and
+microarchitectural optimizations to accelerate the Aho-Corasick multi-pattern
+matching algorithm on shared-memory multi-core CPUs, using the POSIX Threads
+programming model. The work was framed around a computational regime rather than
+a particular machine: the behaviour of multi-pattern matching when the automaton
+greatly exceeds the last-level cache, which is the operating point of
+signature-based intrusion detection over realistic rule sets.
+
+The experimental campaign confirmed the principal hypotheses while also
+delimiting their scope. Text-level partitioning with a boundary overlap of
+$L_{\max}-1$ bytes scales sublinearly, reaching up to $4.79\times$ on twelve
+threads for a moderate dictionary and $4.52\times$ at the multi-gigabyte scale.
+The size of the automaton, and not the content of the corpus, was confirmed to
+be the dominant determinant of throughput: as the dictionary grows from a
+cache-resident set to one forty-two times larger than the last-level cache,
+single-threaded throughput falls by $74.0\%$, and the parallel speedup collapses
+accordingly. On the heterogeneous processor, frequency-weighted partitioning and
+dynamic dispatch were shown to remove the load imbalance of uniform segments,
+reducing the run-to-run variation from as much as $53\%$ to under $5\%$; this is a
+gain in predictability rather than in peak throughput, since the ceiling remains
+the memory subsystem. The proposed flattened output layout, which replaces the
+pointer-chasing emission of matches with a contiguous read, proved to be the
+cheapest broadly applicable optimization, and its benefit grows with memory
+pressure, reaching $+13.0\%$ on a single thread precisely in the memory-bound
+regime where it matters most. Parallelizing the construction of the automaton
+accelerated the build of the largest dictionary by up to $1.55\times$, a useful
+operational gain for rule reloading, though negligible in the total time of a
+multi-gigabyte scan.
+
+Equally important are the strategies that were falsified. Partitioning the
+dictionary instead of the text yields only a small, locality-driven gain that
+saturates early and never approaches the throughput of text parallelism. The
+two-dimensional composition of sharding and chunking is consistently slower than
+flat-output text chunking, because scanning the text once per shard multiplies the memory
+traffic that already constitutes the bottleneck. These negative results are a
+substantive part of the contribution: they close plausible regions of the design
+space and reinforce the central thesis that, on this class of hardware, the
+binding constraint is DRAM bandwidth rather than the matching logic, and that
+text parallelism combined with a cache-friendly layout is the response that
+composes correctly. End-to-end, the full pipeline achieves up to $4.48\times$ on
+the moderate dictionary and $3.04\times$ on the memory-bound one.
+
+\subsecao{Threats to Validity}
+
+The main threat to external validity is the reliance on a single mobile
+processor with a constrained thermal envelope, which throttled its frequency
+under the sustained, multi-hour measurements and introduced non-trivial variance
+in the longer sweeps. The reported figures are deliberately the conservative,
+under-load values, and the variability is documented rather than hidden.
+Crucially, however, the central conclusion does not depend on the modest cache of
+this particular machine: the largest automaton studied ($\sim$507~MiB) exceeds
+the last-level cache of nearly every current server processor, and even on the
+few parts whose aggregate L3 is large enough to contain it---AMD's stacked
+V-Cache models---that capacity is split across core complexes rather than being
+uniformly accessible to a single matching thread, so the memory-bandwidth
+bottleneck observed here is not an artifact of a small cache but a property that
+carries over to server-class hardware. Measuring on a modest chip makes the
+phenomenon sharper, while a larger machine with more homogeneous cores and more
+memory channels would shift the knee of the curve without removing the wall.
+A further limitation is that the microarchitectural explanations, although
+consistent with the timing data, were not corroborated with direct hardware
+telemetry.
+
+\subsecao{Future Work}
+
+Two directions follow naturally from these limitations. The first is to
+instrument the benchmark harness with hardware performance counters, in order to
+measure cache misses and pipeline stalls directly and so confirm the
+memory-bound explanation with quantitative evidence rather than inference from
+end-to-end timing. The second is to repeat the experiments, and in particular the
+falsified two-dimensional composition, on server-class processors with much
+larger last-level caches and higher memory bandwidth, to locate the cross-over
+point at which dictionary sharding might become beneficial. Complementary avenues
+include sharding policies driven by the actual state footprint of the
+sub-automata rather than by pattern prefixes, and a more rigorous thermal
+protocol with controlled cool-down periods to further reduce measurement
+variance.
