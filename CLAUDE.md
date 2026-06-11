@@ -78,9 +78,6 @@ configs/                  Custom IDP class. AVOID editing unless you
 pacotes/pacotes.tex       Central place to add LaTeX packages.
 figuras/                  Figures. graphicspath already includes this.
 .github/                  Copilot instructions.
-.agents/skills/           Agent skills (e.g., review-studies).
-tools/article-ai/         Auxiliary AI workflow to summarize papers
-                          (outputs to ../tcc_notes/related_work_summaries).
 ```
 
 ## Class conventions (DO NOT use plain \section)
@@ -126,6 +123,8 @@ Other custom commands relevant for editing:
 | Task                              | Where / how                                          |
 |-----------------------------------|------------------------------------------------------|
 | Add or edit a paragraph           | `partes/<chapter>.tex`                               |
+| Consolidate section evidence first| `../tcc_notes/sections/notes/<section>.md`           |
+| Draft a section before LaTeX      | `../tcc_notes/sections/text/<section>.md`            |
 | Add a new top-level section       | create `partes/new.tex`, then add `\secao{Title}{partes/new}` to `main.tex` |
 | Add a figure                      | put PDF/PNG in `figuras/`, then `\includegraphics{name}` |
 | Add a bibliography entry          | append to `referencias.bib`, cite with `\cite{key}`  |
@@ -134,16 +133,15 @@ Other custom commands relevant for editing:
 
 ## Helpers in this repo
 
-- [`tools/article-ai/`](tools/article-ai/) — Claude + Gemini pipeline
-  to summarize PDFs in `../articles/` into reviewed summaries placed
-  in `../tcc_notes/related_work_summaries/`. Read its `README.md`
-  before running.
-- [`.agents/skills/review-studies.md`](.agents/skills/review-studies.md)
-  — skill for writing formal reviews of selected studies to be
-  inserted into `partes/rsl.tex`. Already aligned with the current
-  scope (Aho–Corasick parallelism, **not** YARA).
 - [`.github/copilot-instructions.md`](.github/copilot-instructions.md)
   — GitHub Copilot rules, mirroring this file in shorter form.
+
+For AI-driven automations that span sub-repos (e.g., scheduled cron
+workflows calling Claude or Antigravity to write into
+`../tcc_notes/`), see the workspace-level `agent-cron` skill at
+`../.claude/skills/agent-cron/` and the `automation/` directory at
+the workspace root. Those tools are intentionally kept **outside**
+this versioned LaTeX source.
 
 ## Things to leave alone unless asked
 
@@ -161,4 +159,6 @@ Other custom commands relevant for editing:
 - `../parallel-aho-corasick` — C implementation, datasets, benchmarks.
   Its own `CLAUDE.md` is the source of truth for the empirical side.
 - `../tcc_notes` — Obsidian vault with the systematic-review notes
-  and related-work summaries. Mostly Portuguese.
+  and related-work summaries. Use `sections/notes/` for consolidated
+  raw material and `sections/text/` for prose drafts before touching
+  `partes/*.tex`.

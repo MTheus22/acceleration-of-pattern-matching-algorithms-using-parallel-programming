@@ -1,0 +1,26 @@
+# LaTeX build artifacts (xelatex + bibtex)
+*.aux
+*.bbl
+*.blg
+*.log
+*.toc
+*.out
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.xdv
+
+# Editor / IDE
+.vscode/*
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Local agent configs (not part of the thesis source)
+.agents/
+.copilot/

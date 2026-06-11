@@ -126,6 +126,8 @@ Other custom commands relevant for editing:
 | Task                              | Where / how                                          |
 |-----------------------------------|------------------------------------------------------|
 | Add or edit a paragraph           | `partes/<chapter>.tex`                               |
+| Consolidate section evidence first| `../tcc_notes/sections/notes/<section>.md`           |
+| Draft a section before LaTeX      | `../tcc_notes/sections/text/<section>.md`            |
 | Add a new top-level section       | create `partes/new.tex`, then add `\secao{Title}{partes/new}` to `main.tex` |
 | Add a figure                      | put PDF/PNG in `figuras/`, then `\includegraphics{name}` |
 | Add a bibliography entry          | append to `referencias.bib`, cite with `\cite{key}`  |
@@ -161,4 +163,6 @@ Other custom commands relevant for editing:
 - `../parallel-aho-corasick` — C implementation, datasets, benchmarks.
   Its own `CLAUDE.md` is the source of truth for the empirical side.
 - `../tcc_notes` — Obsidian vault with the systematic-review notes
-  and related-work summaries. Mostly Portuguese.
+  and related-work summaries. Use `sections/notes/` for consolidated
+  raw material and `sections/text/` for prose drafts before touching
+  `partes/*.tex`.

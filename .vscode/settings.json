@@ -3,34 +3,51 @@
     "editor.wordWrap": "on",
     "editor.wrappingIndent": "same"
   },
-  "editor.wordWrapColumn": 100
-}{
-  // --- Ferramentas (tools) ---
+  "editor.wordWrapColumn": 100,
   "latex-workshop.latex.tools": [
     {
-      "name": "latexmk-xelatex-bibtex",
-      "command": "latexmk",
-      "args": [
-        "-f",
-        "-xelatex",              // usa XeLaTeX
-        "-bibtex",               // chama bibtex
-        "-synctex=1",            // gera .synctex.gz
-        "-interaction=nonstopmode",
-        "-file-line-error",        // gera tudo em ./build
-        "%DOCFILE%"                 
-      ]
+      "name": "xelatex",
+      "command": "xelatex",
+      "args": ["-synctex=1", "-interaction=nonstopmode", "-file-line-error", "%DOC%"]
+    },
+    {
+      "name": "bibtex",
+      "command": "bibtex",
+      "args": ["%DOCFILE%"]
+    },
+    {
+      "name": "make",
+      "command": "make",
+      "args": []
     }
   ],
-
-  // --- Receitas (recipes) ---
   "latex-workshop.latex.recipes": [
     {
-      "name": "XeLaTeX + BibTeX (latexmk)",
-      "tools": [
-        "latexmk-xelatex-bibtex"
-      ]
+      "name": "xelatex -> bibtex -> xelatex*2",
+      "tools": ["xelatex", "bibtex", "xelatex", "xelatex"]
+    },
+    {
+      "name": "Makefile (make)",
+      "tools": ["make"]
     }
   ],
-  // --- Visualização interna de PDF ---
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "latex-workshop.latex.build.forceRecipeUsage": true,
   "latex-workshop.view.pdf.viewer": "tab",
+  "latex-workshop.latex.outDir": "./",
+  "latex-workshop.latex.clean.enabled": true,
+  "latex-workshop.latex.clean.fileTypes": [
+    "*.aux",
+    "*.bbl",
+    "*.blg",
+    "*.log",
+    "*.toc",
+    "*.out",
+    "*.lof",
+    "*.lot",
+    "*.fls",
+    "*.fdb_latexmk",
+    "*.synctex.gz",
+    "*.xdv"
+  ]
 }
