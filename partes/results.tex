@@ -2,7 +2,7 @@ This chapter presents and discusses the empirical results, following the
 protocol described in the previous chapter. All search and construction figures
 reported here come from the same sustained measurement campaign; the end-to-end
 pipeline times evaluated later in this chapter were collected in a dedicated
-end-to-end benchmark on the same platform and under the same correctness constraints. Every parallel strategy was first verified
+benchmark on the same platform and under the same correctness constraints. Every parallel strategy was first verified
 to reproduce the exact match set of the sequential baseline. The
 analysis proceeds in a deliberate order: it first characterizes the bottleneck
 that motivates the entire study (the relationship between automaton footprint
@@ -46,7 +46,7 @@ fits comfortably within the shared L3 to $125.6$~MB/s when it is forty-two times
 larger than that same cache.
 The cause is structural: each input byte triggers a lookup in the
 state-transition table, and once that table no longer fits in cache, every
-transition risks a main-memory access. The degradation persists in parallel execution: at twelve threads, the speedup of the same chunked strategy drops from $6.68\times$ in the
+transition risks a main-memory access. The degradation persists in parallel execution: at twelve threads, the speedup of the same topology-aware chunked strategy drops from $6.68\times$ in the
 cache-resident regime to $2.63\times$ in the memory-bound regime, confirming
 that the limit is the memory subsystem rather than a threading artifact. This is
 the central obstacle to scaling Aho-Corasick at intrusion-detection scale, and
@@ -86,12 +86,12 @@ dictionary (Snort, 55~MiB) and a memory-bound dictionary (Emerging Threats,
 \addlegendentry{Snort (55~MiB)}
 
 \addplot[color=red, mark=triangle, thick] coordinates {
-    (1,1.14) (4,1.99) (8,2.64) (12,2.79)
+    (1,1.14) (4,1.98) (8,2.64) (12,2.79)
 };
 \addlegendentry{Emerging Threats (507~MiB)}
 
 \addplot[color=gray, dotted] coordinates {
-    (1,1) (4,4)
+    (1,1) (5,5)
 };
 \addlegendentry{Ideal (linear)}
 \end{axis}
@@ -120,7 +120,8 @@ corpus, to confirm that the content of the text is not the governing variable.
 The sequential throughput on the two corpora is nearly identical
 ($241.0$~MB/s versus $248.4$~MB/s), and the twelve-thread speedup differs only
 modestly ($4.42\times$ on the e-mail corpus versus $3.66\times$ on the
-encyclopedic corpus). Because Aho-Corasick performs one transition per input
+encyclopedic corpus), a gap within the run-to-run dispersion of the e-mail
+measurement (CV $\approx 66\%$). Because Aho-Corasick performs one transition per input
 byte regardless of match density, the footprint of the automaton dominates the
 behaviour far more than the nature of the corpus.
 
@@ -157,9 +158,7 @@ When the automaton is far larger than the cache, the contiguous layout avoids
 the scattered misses of the pointer walk and delivers $+13.0\%$ on a single
 thread, which is the cheapest gain available in the memory-bound regime. In the
 parallel case, the layout is inherited by the chunked strategies, and the
-flattened variants lead or tie their pointer-chasing counterparts in both intrusion-detection-scale regimes; the best results, both
-for the moderate dictionary at the multi-gigabyte scale ($4.52\times$) and at the peak of the memory-bound
-regime on the canonical corpus ($2.85\times$), come from strategies that incorporate this layout. It is
+flattened variants lead or tie their pointer-chasing counterparts in both intrusion-detection-scale regimes; the best results --- $4.52\times$ for the moderate dictionary at the multi-gigabyte scale and $2.85\times$ at the peak of the memory-bound regime on the canonical corpus --- come from strategies that incorporate this layout. It is
 worth noting that the gain does not compound multiplicatively with text
 parallelism in the moderate regime: there, the DRAM stalls of the transition
 table already partially mask the emission cost, so the layout contributes a more
@@ -302,7 +301,7 @@ text chunking and falsifies the conjecture.
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Twelve threads in both columns; the comparator is the flat-output text chunking of Table~\ref{tab:shard}.\par}
 \end{table}
 
 The composition is slower than flat-output text chunking in every measured scenario,
