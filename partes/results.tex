@@ -1,7 +1,9 @@
 This chapter presents and discusses the empirical results, following the
-protocol described in the previous chapter. All figures reported here come from
-the same sustained measurement campaign, in which every parallel strategy was
-first verified to reproduce the exact match set of the sequential baseline. The
+protocol described in the previous chapter. All search and construction figures
+reported here come from the same sustained measurement campaign; the end-to-end
+pipeline times evaluated later in this chapter were collected in a dedicated
+end-to-end benchmark on the same platform and under the same correctness constraints. Every parallel strategy was first verified
+to reproduce the exact match set of the sequential baseline. The
 analysis proceeds in a deliberate order: it first characterizes the bottleneck
 that motivates the entire study (the relationship between automaton footprint
 and throughput); it then isolates the contribution of each optimization axis;
@@ -44,8 +46,7 @@ fits comfortably within the shared L3 to $125.6$~MB/s when it is forty-two times
 larger than that same cache.
 The cause is structural: each input byte triggers a lookup in the
 state-transition table, and once that table no longer fits in cache, every
-transition risks a main-memory access. The same degradation persists under
-twelve threads, where the twelve-thread speedup of the same chunked strategy drops from $6.68\times$ in the
+transition risks a main-memory access. The degradation persists in parallel execution: at twelve threads, the speedup of the same chunked strategy drops from $6.68\times$ in the
 cache-resident regime to $2.63\times$ in the memory-bound regime, confirming
 that the limit is the memory subsystem rather than a threading artifact. This is
 the central obstacle to scaling Aho-Corasick at intrusion-detection scale, and
@@ -246,10 +247,10 @@ multi-gigabyte workloads it accounts for less than $1\%$ of the total time.
 
 \subsecao{Partitioning the Dictionary: A Qualified Negative Result}
 
-Partitioning the dictionary, rather than the text, was evaluated as a contrast.
-Of the partitioning policies tried, only sharding by pattern prefix ever exceeds
-the sequential baseline. Table~\ref{tab:shard} compares it against plain text
-parallelism on the canonical workload.
+Partitioning the dictionary, rather than the text, was evaluated as a contrast,
+assigning patterns to shards by their first byte (prefix sharding).
+Table~\ref{tab:shard} compares it against plain text parallelism on the
+canonical workload.
 
 \begin{table}[htbp]
     \centering
@@ -295,6 +296,7 @@ text chunking and falsifies the conjecture.
          & \textbf{(MB/s)} & \textbf{(MB/s)} & \\
         \midrule
         Snort, canonical corpus              & 785.4 & 976.1 & $0.80\times$ \\ \addlinespace
+        Snort, $\sim$10.6~GiB                & 861.6 & 1{,}073.3 & $0.80\times$ \\ \addlinespace
         Emerging Threats, canonical corpus   & 289.0 & 312.3 & $0.93\times$ \\ \addlinespace
         Emerging Threats, $\sim$10.6~GiB     & 314.5 & 350.0 & $0.90\times$ \\
         \bottomrule

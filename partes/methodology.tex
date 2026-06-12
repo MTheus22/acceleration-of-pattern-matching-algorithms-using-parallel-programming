@@ -80,7 +80,7 @@ Table~\ref{tab:corpora} summarizes the text corpora.
         \toprule
         \textbf{Corpus} & \textbf{Size} & \textbf{Characterization and role} \\
         \midrule
-        SimpleWiki & $\sim$1.2~GiB & Natural-language text with low match density; used to isolate the effect of the output layout. \\ \addlinespace
+        SimpleWiki & $\sim$1.2~GiB & Natural-language encyclopedic text with low match density; used as the contrast corpus in the cross-corpus experiment, which isolates the effect of the text content. \\ \addlinespace
         Enron      & $\sim$1.32~GiB & Real e-mail messages with medium match density; the canonical benchmark corpus. \\ \addlinespace
         Enron ($8\times$) & $\sim$10.59~GiB & The Enron corpus replicated eightfold; amortizes the build phase and reduces scheduler and thermal noise in scaling curves. \\
         \bottomrule
@@ -121,11 +121,7 @@ parallelization sound. The automaton is strictly read-only during the search;
 the hot loop uses neither locks nor atomics; matches remain thread-local until
 the join; and the partitioning preserves match ownership without duplication.
 For any text-level partitioning, the minimum overlap between adjacent segments
-is $L_{\max}-1$ bytes, where $L_{\max}$ is the length of the longest pattern.
-This warm-up margin is the smallest value that guarantees that a pattern
-straddling a segment boundary is detected by exactly one worker: a shorter
-overlap would silently miss boundary matches, whereas a longer one would only
-add redundant work. Match ownership is made disjoint by assigning each
+is $L_{\max}-1$ bytes, where $L_{\max}$ is the length of the longest pattern --- as established in the previous chapter, the smallest margin that guarantees a boundary-straddling pattern is detected by exactly one worker. Match ownership is made disjoint by assigning each
 boundary-crossing match to a single segment according to its end position.
 
 \subsecao{Evaluated Strategies}

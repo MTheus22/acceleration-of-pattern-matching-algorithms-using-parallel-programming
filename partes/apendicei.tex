@@ -1,7 +1,10 @@
 This appendix documents the protocol used to query the raw measurement
-database from which every quantitative result reported in this thesis is
-derived, so that the figures can be reproduced and audited independently. The
-benchmark campaign stores its measurements in a single typed SQLite file,
+database from which the search, footprint, stability and construction results
+reported in this thesis are derived; the end-to-end wall-clock times of
+Table~\ref{tab:e2e} were recorded by a dedicated pipeline benchmark and are
+documented separately. This allows the primary figures to be reproduced and
+audited independently. The benchmark campaign stores its measurements in a
+single typed SQLite file,
 \texttt{sweep.db}, holding one \texttt{runs} table (one row per timed
 execution) together with a set of aggregating views. The headline figures are
 obtained from those views rather than from the raw execution logs.
