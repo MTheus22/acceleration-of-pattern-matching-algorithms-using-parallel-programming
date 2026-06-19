@@ -48,20 +48,20 @@ The subsequent criteria were established for the selection of primary studies:
     \item \textbf{IC2 (Parallelism Aspect):} The study investigates, proposes, implements, analyzes, or explicitly discusses the parallelization or concurrent execution of the Aho-Corasick algorithm.
     \item \textbf{IC3 (Target Platform):} The study reports empirical results or analyses about multi-core CPU platforms.
     \item \textbf{IC4 (RQ Relevance):} The study provides information relevant to addressing at least one RQ.
-    \item \textbf{IC6 (Language):} Published in English or Portuguese.
-    \item \textbf{IC7 (Accessibility):} Full-text availability of the study.
-    \item \textbf{IC8 (Publication Window):} Published between January 2015 and May 2025, inclusive.
+    \item \textbf{IC5 (Language):} Published in English or Portuguese.
+    \item \textbf{IC6 (Accessibility):} Full-text availability of the study.
+    \item \textbf{IC7 (Publication Window):} Published between January 2015 and May 2025, inclusive.
 \end{itemize}
 
 \textbf{Exclusion Criteria (EC):}
 \begin{itemize}
     \item \textbf{EC1 (Irrelevant Focus):} Studies with only superficial mentions of the Aho-Corasick algorithm or pattern matching, lacking a primary focus on its parallelization or optimization.
     \item \textbf{EC2 (Non-CPU Platform Exclusivity):} Studies exclusively focused on non-CPU platforms (e.g., GPU, FPGA) without analysis or insights transferable to multi-core CPU environments.
-    \item \textbf{EC4 (Insufficient Detail):} Studies lacking sufficient detail regarding methodology, implementation, or reported results.
-    \item \textbf{EC5 (Publication Type):} Opinion pieces, editorials, and non-peer-reviewed gray literature.
-    \item \textbf{EC6 (Language Barrier):} Publications in languages other than English or Portuguese.
-    \item \textbf{EC7 (Duplication):} Duplicate publications (the most comprehensive or recent version was retained).
-    \item \textbf{EC8 (Inaccessibility):} Full-text unobtainable.
+    \item \textbf{EC3 (Insufficient Detail):} Studies lacking sufficient detail regarding methodology, implementation, or reported results.
+    \item \textbf{EC4 (Publication Type):} Opinion pieces, editorials, and non-peer-reviewed gray literature.
+    \item \textbf{EC5 (Language Barrier):} Publications in languages other than English or Portuguese.
+    \item \textbf{EC6 (Duplication):} Duplicate publications (the most comprehensive or recent version was retained).
+    \item \textbf{EC7 (Inaccessibility):} Full-text unobtainable.
 \end{itemize}
 
 \subsubsecao{Selection Process and Initial Search Outcomes}
@@ -86,21 +86,13 @@ The study selection was a multi-stage process. Initially, the constructed search
     \end{tabular}
 \end{table}
 
-Following the initial database search and filtering stage, the resultant sets of candidate articles were aggregated.
+The \texttt{Title excl.: GPU} filter listed in Table~\ref{tab:search_results} acted only as a coarse identification-stage noise reducer, not as the formal platform criterion: the platform decision is governed by EC2, under which studies on non-CPU platforms (GPU, FPGA, ASIC, SIMD) were retained whenever they offered techniques or findings transferable to shared-memory multi-core CPUs, as argued individually in each review below.
 
-The filtered outputs from each database and search query were subsequently merged, and duplicate entries were eliminated. Thereafter, a title and abstract screening was performed on the unique articles, and the established inclusion and exclusion criteria were applied. % The articles that passed this screening phase (30) proceeded to a full-text review for a conclusive evaluation against the IC/EC. This procedure yielded a selection of Y primary studies designated for comprehensive analysis.
-
-%At the end of the selection process, Z studies were considered relevant and included in this systematic review.
-
-%\subsecao{Analysis and Synthesis from Selected Studies}
-%The ‘Z’ selected primary studies were critically analyzed in order to extract relevant information to answer the research questions.
-
-%\subsubsecao{Analysis related to RQ1: Techniques and Challenges in Parallelizing Aho-Corasick on Multicore CPUs}
-%The reviewed literature indicates that the Aho-Corasick algorithm, despite its efficiency in sequential implementations for multiple pattern matching, especially in applications such as Network Intrusion Detection Systems (NIDS)...(to be continue)
+Following the initial database search and filtering stage, the resultant sets of candidate articles were aggregated. The 196 records retained across both search strings and all four databases (Table~\ref{tab:search_results}) were merged, and duplicate entries were removed, yielding 24 unique studies. Each of these was screened by reading its abstract and conclusion against the inclusion and exclusion criteria; the 10 studies most directly pertinent to the research questions were selected as primary studies for the detailed review that follows, while the remaining studies were consulted only as background.
 
 \subsecao{Review of Selected Studies}
 
-The selection process described above yielded the corpus of primary studies analyzed in this review. The following subsections examine in detail the studies most directly pertinent to the research questions, spanning shared-memory multi-core parallelizations of Aho--Corasick (RQ1) and optimizations of the algorithm in security-oriented matching workloads (RQ2); each review summarizes the problem addressed, the proposed technique, the experimental evidence, and its relation to the present design.
+The selection process described above yielded the corpus of primary studies analyzed in this review. The following subsections examine in detail the ten selected primary studies, spanning shared-memory multi-core parallelizations of Aho--Corasick (RQ1) and optimizations of the algorithm in security-oriented matching workloads (RQ2); each review summarizes the problem addressed, the proposed technique, the experimental evidence, and its relation to the present design.
 
 \subsubsecao{A Parallel Algorithm of String Matching Based on Message Passing Interface for Multicore Processors}
 

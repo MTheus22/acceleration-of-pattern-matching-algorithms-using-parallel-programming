@@ -67,7 +67,7 @@ An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law, establishes 
     S \leq \frac{1}{s + f/p}
     \label{eq:amdahl}
 \end{equation}
-In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by $\frac{1}{s}$. This implies that even a small sequential fraction (\texttt{s} large) can severely limit the total speedup, regardless of the number of processors available. Figure \ref{fig:speedup-plot} illustrates the theoretical speedup according to Amdahl's Law compared to ideal speedup for a given sequential fraction. 
+In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by $\frac{1}{s}$. This implies that even a small sequential fraction (small \texttt{s}) can severely limit the total speedup, regardless of the number of processors available. Figure \ref{fig:speedup-plot} illustrates the theoretical speedup according to Amdahl's Law compared to ideal speedup for a given sequential fraction. 
 
 \begin{figure}[ht]
   \centering
@@ -79,7 +79,7 @@ In the limit, as the number of processors (\texttt{p}) tends to infinity, the ma
 A complementary perspective is offered by the Gustafson-Barsis Law in Eq. \ref{eq:gustafson}. This law argues that a speedup approximately linear is achievable for problems that benefit from this scalability. This formulation suggests that for problems that can be scaled, it is possible to obtain speedup approximately linear with the number of processors, even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios \cite{Pacheco2011}.
 
 \begin{equation}
-    S_{\text{escalado}} = s + (1-s) \cdot p
+    S_{\text{scaled}} = s + (1-s) \cdot p
     \label{eq:gustafson}
 \end{equation}
 
@@ -96,8 +96,6 @@ Efficiency values range between 0 and 1 (inclusive), often expressed as a percen
 \subsubsecao{Scalability}
 
 In parallel computing, scalability denotes a system’s ability to sustain high performance (often via efficiency) as both the number of processors and/or the problem size grow \cite{Grama2003}.
-
-% TODO adicionar coesão
 
 \begin{itemize}
     \item \textbf{Strong Scalability}: Measures how execution time changes when you increase the processor count $p$ for a fixed total problem size, denoted $W$ (for example, the total number of array elements to process). The goal is to keep efficiency nearly constant as $p$ increases. Amdahl’s Law directly applies in this scenario;
@@ -258,7 +256,7 @@ Because each character can trigger at most one eventual successful $\operatornam
 
 \subsubsecao{Time and Space Complexity}
 
-The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for multi-pattern matching \cite{AhoCorasick1975},{Gusfield1997}. The complexities for the construction and search phases and storing the automaton are as follows:
+The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for multi-pattern matching \cite{AhoCorasick1975, Gusfield1997}. The complexities for the construction and search phases and storing the automaton are as follows:
 
 \begin{itemize}
     \item \textbf{Construction phase}: building the goto, failure, and output functions takes $O(L)$ time, where $L$ is the total length of all keywords. If a dense array is used for the root, an additional $O(|\Sigma|)$ initialization cost is incurred, giving $O(L + |\Sigma|)$;
