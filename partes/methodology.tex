@@ -103,8 +103,8 @@ automaton roughly forty-two times larger than the shared LLC.
 
 \subsecao{Execution Model and Invariants}
 
-Every execution of the laboratory follows three strictly separated phases, a
-separation that is the foundation of the lock-free design.
+Every execution of the laboratory follows three strictly separated phases; this
+separation is the foundation of the lock-free design.
 
 \begin{enumerate}
     \item \textbf{Construction.} The patterns are inserted into a trie, and a
@@ -126,14 +126,14 @@ parallelization sound. The automaton is strictly read-only during the search;
 the hot loop uses neither locks nor atomics; matches remain thread-local until
 the join; and the partitioning preserves match ownership without duplication.
 For any text-level partitioning, the minimum overlap between adjacent segments
-is $L_{\max}-1$ bytes, where $L_{\max}$ is the length of the longest pattern --- as established in the previous chapter, the smallest margin that guarantees a boundary-straddling pattern is detected by exactly one worker. Match ownership is made disjoint by assigning each
+is $L_{\max}-1$ bytes, where $L_{\max}$ is the length of the longest pattern --- as established in the previous chapter, the smallest margin that guarantees that a boundary-straddling pattern is detected by exactly one worker. Match ownership is made disjoint by assigning each
 boundary-crossing match to a single segment according to its end position.
 
 \subsecao{Evaluated Strategies}
 
 To attribute each performance effect to a single cause, the strategies were
 organized as an additive grid over four orthogonal axes, all selectable at
-runtime within the same binary and all sharing the identical automaton. Beyond
+runtime within the same binary and all sharing the same automaton. Beyond
 the sequential baseline, the controlled set of variants is summarized in
 Table~\ref{tab:variants}.
 
@@ -161,9 +161,9 @@ Table~\ref{tab:variants}.
 \end{table}
 
 The text-parallelism axis partitions the input across threads; the output-layout
-axis attacks the cost of emitting matches; the dictionary axis partitions the
+axis addresses the cost of emitting matches; the dictionary axis partitions the
 pattern set instead of the text; and the composition axis tests whether the
-first two dictionary/text strategies combine. The construction phase has a
+text and dictionary strategies combine. The construction phase has a
 separate, optional level-synchronous parallel variant. Because the automaton
 produced by the parallel construction is bit-for-bit identical to the sequential
 one, any pairing of a construction mode with a search strategy is valid, which
@@ -243,10 +243,9 @@ the exact set of matches, across thread counts of $\{1,2,3,4,7,8\}$. Second, on
 the full-scale workloads, the MD5 digest of the ordered match stream produced by
 each parallel strategy was compared against the digest produced by the
 sequential baseline; agreement was confirmed up to a thread count of $64$
-(a $5.3\times$ oversubscription of the hardware), demonstrating that the
-partitioning logic is robust under heavy oversubscription. The match count was
-verified to be unique for each (dictionary, corpus) pair across all strategies.
-Finally, ThreadSanitizer reported no data races on the parallel search,
+(a $5.3\times$ oversubscription of the hardware), demonstrating that the partitioning logic is robust under heavy oversubscription. The match count was
+verified to be consistent for each (dictionary, corpus) pair across all strategies.
+Finally, ThreadSanitizer reported no data races during the parallel search,
 empirically confirming the read-only-automaton invariant and the absence of
 unsynchronized shared writes on the hot path.
 
@@ -264,7 +263,7 @@ can recover throughput in the memory-bound regime by shrinking the per-shard
 working set; and that a two-dimensional composition of sharding and chunking
 could combine cache locality with text parallelism. Each hypothesis maps to a
 controlled experiment that varies a single axis while holding the others fixed,
-comparing always against the sequential baseline for headline speedup and against
+always comparing against the sequential baseline for headline speedup and against
 the strongest text-parallel strategy when the question concerns composition.
 Reporting the strategies that fail to outperform their simpler counterparts is
 treated as a scientific result in its own right, since it delimits the boundary

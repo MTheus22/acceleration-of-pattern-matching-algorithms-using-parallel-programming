@@ -1,5 +1,5 @@
 This appendix documents the protocol used to query the raw measurement
-database from which the search, footprint, stability and construction results
+database from which the search, footprint, stability, and construction results
 reported in this thesis are derived. The end-to-end wall-clock times of
 Table~\ref{tab:e2e} were collected in a dedicated pipeline benchmark conducted
 on 2026-05-22 and are documented in the companion repository's synthesis report
@@ -9,21 +9,21 @@ sweep script and timing log are not currently archived in the repository.
 This allows the primary figures to be reproduced and audited independently.
 The benchmark campaign stores its measurements in a single typed SQLite
 database located at \texttt{parallel-aho-corasick/runs/overnight/sweep.db},
-holding one \texttt{runs} table (one row per timed execution) together with a
-set of aggregating views. The headline figures are obtained from those views
-rather than from the raw execution logs.
+containing one \texttt{runs} table (one row per timed execution) and a
+set of aggregating views. The headline figures are retrieved from these views
+instead of the raw execution logs.
 
 \subsecao{Database Schema}
 
 Each row of the \texttt{runs} table identifies an execution by its phase,
-pattern dictionary, corpus, searcher strategy and thread count, and records the
-timing statistics (minimum, mean, median and maximum wall-clock time in
-milliseconds, together with the coefficient of variation across the timed
+pattern dictionary, corpus, searcher strategy, and thread count. It records the
+timing statistics (minimum, mean, median, and maximum wall-clock time in
+milliseconds, along with the coefficient of variation across the timed
 iterations), the derived throughput (in MB/s and Gbit/s), the input volume and
 match count, and the automaton descriptors (pattern count, number of states,
 footprint in kibibytes, and sequential or parallel build time). The views
-listed in Table~\ref{tab:dbviews} pre-aggregate the analysis so that no headline
-figure depends on ad hoc post-processing of the raw rows.
+listed in Table~\ref{tab:dbviews} pre-aggregate the data so no headline
+figure requires ad hoc post-processing of the raw rows.
 
 \begin{table}[htbp]
     \centering
@@ -48,8 +48,8 @@ figure depends on ad hoc post-processing of the raw rows.
 
 \subsecao{Canonical Queries}
 
-The queries below reproduce the principal results of the study. They are issued
-against the database with the standard \texttt{sqlite3} client.
+The queries below reproduce the main results of the study. They can be executed
+against the database using the standard \texttt{sqlite3} client.
 
 \begin{verbatim}
 -- Speedup curve of a searcher (Snort dictionary, canonical corpus)
@@ -73,6 +73,6 @@ ORDER BY patterns, build_threads;
 \end{verbatim}
 
 Before any timing was reported, the correctness of every parallel strategy was
-established through the \texttt{v\_correctness} view, which returns a single
+verified using the \texttt{v\_correctness} view. This view returns a single
 distinct match count for each dictionary and corpus, confirming that all
 strategies reproduce the exact match set of the sequential baseline.

@@ -24,8 +24,8 @@ Each worker traverses the shared automaton over its own segment and records
 matches in a private list, so that no synchronization is required while
 scanning.
 
-Partitioning a stream of bytes naively would, however, miss any pattern that
-straddles the boundary between two adjacent segments, because neither worker
+However, a naive partitioning of the byte stream would miss any pattern that
+crosses the boundary between two adjacent segments, because neither worker
 would observe the full pattern. To prevent these boundary false negatives, the
 design uses a controlled overlap. Let $L_{\max}$ be the length of the longest
 pattern in the dictionary. A worker responsible for the segment spanning offsets
@@ -35,10 +35,10 @@ the time the worker reaches the start of its owned region at $S$, the automaton 
 in the same state it would have reached in a single sequential pass from offset
 $0$, so every boundary-crossing pattern is observed by exactly one worker. Any
 match whose end position falls before $S$ is suppressed, because it is owned and
-reported by the previous worker; conversely, attributing each match to the segment
-that contains its end position keeps ownership disjoint, which preserves an exact
-one-to-one correspondence with the sequential baseline and duplicates no
-detection. An overlap of $L_{\max}-1$ is the minimum that achieves
+reported by the previous worker. Conversely, assigning each match to the segment
+containing its end position keeps ownership disjoint. This preserves an exact
+one-to-one correspondence with the sequential baseline and avoids duplicate
+detections. An overlap of $L_{\max}-1$ is the minimum that achieves
 this property; any smaller value loses matches, and any larger value only adds
 redundant work.
 
@@ -46,12 +46,12 @@ redundant work.
 
 Uniform segments are optimal only when all cores are equally fast. On a hybrid
 processor, where Performance and Efficiency cores run at different clock
-frequencies, equally sized segments cause the threads on slower cores to finish
+frequencies, equal-sized segments cause the threads on slower cores to finish
 late, leaving the faster threads idle at the final synchronization barrier. The
 proposed framework therefore includes a topology-aware partitioning strategy
-that detects the heterogeneous layout and weights each segment in proportion to
-the relative speed of the core that will process it. The aim is to equalize the
-finishing times of all workers and thereby reduce the idle time wasted at the
+that detects the heterogeneous layout and scales each segment in proportion to
+the relative speed of the core processing it. The goal is to equalize the
+finishing times of all workers, reducing the idle time wasted at the
 barrier. As an alternative that requires no knowledge of the topology, the
 framework also supports dynamic dispatch, in which the text is divided into many
 small tasks that idle workers claim through a single atomic counter, so that
@@ -61,30 +61,30 @@ faster cores naturally process more tasks.
 
 In the canonical Aho-Corasick algorithm, each accepting state references the
 patterns that end there through linked structures, and reporting all matches at
-a given state requires walking these pointer chains. Under a large dictionary,
-those pointers are scattered across an automaton far larger than the cache, so
-each emission incurs cache misses and serialized pointer dereferences that
-compete with the much hotter state-transition traffic.
+a given state requires walking these pointer chains. With a large dictionary,
+these pointers are scattered across an automaton much larger than the cache. As
+a result, each emission causes cache misses and serialized pointer dereferences
+that compete with the hot state-transition traffic.
 
 To remove this cost, the design proposes a flattened output layout. During
 construction, the patterns associated with every state are collected into a
 single contiguous array, and each state stores only a starting offset and a
 count into that array. At scan time, emitting the matches of a state becomes a
-sequential read of a short, contiguous range, which the hardware prefetcher
-handles efficiently and which removes pointer dereferences from the inner loop.
+sequential read of a short, contiguous range. The hardware prefetcher
+handles this efficiently, removing pointer dereferences from the inner loop.
 This optimization is purely a memory-layout change: it preserves the exact set
 of reported matches and is inherited by every scanning variant, whether
 sequential or parallel.
 
 \subsecao{Partitioning the Dictionary}
 
-The strategies above all partition the text while keeping the dictionary whole.
-A complementary axis, evaluated as a contrast, partitions the dictionary
-instead. Here the pattern set is divided into $K$ groups according to the first
+All the strategies above partition the text while keeping the dictionary intact.
+A complementary approach, evaluated for contrast, partitions the dictionary
+instead. In this approach, the pattern set is divided into $K$ groups based on the first
 byte of each pattern, and a smaller sub-automaton is built for each group. Every
 sub-automaton is then scanned over the input. The motivation is that each
-sub-automaton has a smaller working set, which might fit closer to the cache and
-mitigate the memory pressure of a single monolithic automaton. The framework
+sub-automaton has a smaller working set, which might fit better in the cache and
+reduce the memory pressure of a single monolithic automaton. The framework
 also supports a two-dimensional composition that combines dictionary sharding
 with text chunking. Whether either approach actually outperforms plain text
 parallelism on memory-bound workloads is an empirical question, answered in the

@@ -16,7 +16,7 @@ Parallel computer architectures are classified according to various criteria. A 
 Within the MIMD category, systems are further distinguished based on their memory organization \cite{Pacheco2011}:
 \begin{itemize}
     \item \textbf{Shared-Memory Systems}: In these systems, multiple processors share a physical memory address space. Inter-processor communication (IPC) is typically achieved by reading from and writing to shared variables in memory or through message passing mechanisms. Multi-core processors are the most common and widely available example of this architecture, where all cores on a chip share access to main memory;
-    \item \textbf{Distributed-Memory Systems}: Each processor in these systems possesses their own locally accessible memory, and communication between processors is usually done by exchanging messages across an interconnection network. Computer clusters are examples of this architectural model.
+    \item \textbf{Distributed-Memory Systems}: Each processor in these systems has its own locally accessible memory, and communication between processors is usually done by exchanging messages across an interconnection network. Computer clusters are examples of this architectural model.
 \end{itemize}
 
 The present work focuses on the acceleration of algorithms in environments with multi-core processors, which fall into the shared memory MIMD category. A multi-core processor (MCP) is a single chip that contains two or more central processing units (CPUs) called ‘cores’. Each of these cores is capable of reading and executing program instructions independently, essentially functioning as a complete processor.
@@ -37,7 +37,7 @@ A thread, on the other hand, is a lighter unit of execution started by a process
 
 \subsubsecao{POSIX Thread Model (Pthreads)}
 
-The POSIX Thread Model, commonly referred to as “Pthreads”, is a standard that defines an application programming interface (API) for thread creation and management, as specified by IEEE Std 1003.1c-1995. Pthreads provides a portable suite of data types, functions, and constants that allows developers to create multithreaded applications that are compilable and executable across diverse POSIX-compliant operating systems (e.g., Linux, macOS, and various Unix variants). The Pthreads API provides functionality for managing the thread lifecycle—including creation, termination, and joining—and, critically, incorporates synchronization primitives. These primitives, such as mutexes and condition variables, are indispensable for orchestrating access to shared resources within shared-memory environments \cite{Butenhof1997} \cite{Pacheco2011}.
+The POSIX Thread Model, commonly referred to as “Pthreads”, is a standard that defines an application programming interface (API) for thread creation and management, as specified by IEEE Std 1003.1c-1995. Pthreads provides a portable suite of data types, functions, and constants that allows developers to create multithreaded applications that are compilable and executable across diverse POSIX-compliant operating systems (e.g., Linux, macOS, and various Unix variants). The Pthreads API provides functionality for managing the thread lifecycle—including creation, termination, and joining—and, critically, incorporates synchronization primitives. These primitives, such as mutexes and condition variables, are essential for managing access to shared resources within shared-memory environments \cite{Butenhof1997} \cite{Pacheco2011}.
 
 \subsubsecao{Cache Architecture and Memory-Bound Parallelism}
 
@@ -64,7 +64,7 @@ P-cores feature wider out-of-order execution pipelines and higher operating
 frequencies, delivering greater per-thread throughput at higher power
 consumption. E-cores are physically smaller and optimized for
 throughput-per-watt rather than single-thread latency; they operate at lower
-frequencies. A memory-bound workload therefore achieves materially higher
+frequencies. A memory-bound workload therefore achieves significantly higher
 per-thread throughput on a P-core than on an E-core.
 
 This heterogeneity shapes parallel scaling curves in a characteristic way. At
@@ -95,12 +95,12 @@ Ideally, \texttt{Tp} is expected to be substantially less than \texttt{Ts}. Howe
 
 \subsubsecao{Speedup}
 
-Speedup (\texttt{S}) measures the performance gain achieved through parallel execution relative to sequential execution and it is referenced as Eq. \ref{eq:speedup}. It is defined as the ratio of sequential execution time to parallel execution time:
+Speedup (\texttt{S}) measures the performance gain achieved through parallel execution relative to sequential execution, as shown in Eq. \ref{eq:speedup}. It is defined as the ratio of sequential execution time to parallel execution time:
 \begin{equation}
     S = \frac{T_s}{T_p}
     \label{eq:speedup}
 \end{equation}
-An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law, establishes a theoretical upper bound on the speedup achievable by parallelizing a program with a fixed problem size. \texttt{s} represents the fraction of a program's sequential execution time that is inherently serial (non-parallelizable), and \texttt{f} is the parallelizable fraction (\texttt{s + f = 1}), the maximum speedup on \texttt{p} processors is given by Eq. \ref{eq:amdahl}.
+An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law establishes a theoretical upper bound on the speedup achievable by parallelizing a program with a fixed problem size. If \texttt{s} represents the fraction of a program's sequential execution time that is inherently serial (non-parallelizable), and \texttt{f} is the parallelizable fraction (\texttt{s + f = 1}), the maximum speedup on \texttt{p} processors is given by Eq. \ref{eq:amdahl}.
 \begin{equation}
     S \leq \frac{1}{s + f/p}
     \label{eq:amdahl}
@@ -114,7 +114,7 @@ In the limit, as the number of processors (\texttt{p}) tends to infinity, the ma
   \label{fig:speedup-plot}
 \end{figure}
 
-A complementary perspective is offered by the Gustafson-Barsis Law in Eq. \ref{eq:gustafson}. This law argues that a speedup approximately linear is achievable for problems that benefit from this scalability. This formulation suggests that for problems that can be scaled, it is possible to obtain speedup approximately linear with the number of processors, even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios \cite{Pacheco2011}.
+A complementary perspective is offered by the Gustafson-Barsis Law in Eq. \ref{eq:gustafson}. This law argues that an approximately linear speedup is achievable for problems that benefit from this scalability. This formulation suggests that for problems that can be scaled, it is possible to obtain an approximately linear speedup with the number of processors, even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios \cite{Pacheco2011}.
 
 \begin{equation}
     S_{\text{scaled}} = s + (1-s) \cdot p
@@ -136,8 +136,8 @@ Efficiency values range between 0 and 1 (inclusive), often expressed as a percen
 In parallel computing, scalability denotes a system’s ability to sustain high performance (often via efficiency) as both the number of processors and/or the problem size grow \cite{Grama2003}.
 
 \begin{itemize}
-    \item \textbf{Strong Scalability}: Measures how execution time changes when you increase the processor count $p$ for a fixed total problem size, denoted $W$ (for example, the total number of array elements to process). The goal is to keep efficiency nearly constant as $p$ increases. Amdahl’s Law directly applies in this scenario;
-    \item \textbf{Weak Scalability}: Measures how execution time changes when you increase both the processor count $p$ and the total problem size $W$ such that the work per processor ($W/p$) stays constant. The aim is to maintain efficiency as $p$ and $W$ grow proportionally. Gustafson’s Law is most relevant here.
+    \item \textbf{Strong Scalability}: Measures how execution time changes when the processor count $p$ increases for a fixed total problem size, denoted $W$ (for example, the total number of array elements to process). The goal is to keep efficiency nearly constant as $p$ increases. Amdahl’s Law directly applies in this scenario;
+    \item \textbf{Weak Scalability}: Measures how execution time changes when both the processor count $p$ and the total problem size $W$ increase such that the work per processor ($W/p$) stays constant. The aim is to maintain efficiency as $p$ and $W$ grow proportionally. Gustafson’s Law is most relevant here.
 \end{itemize}
 
 A parallel system is considered scalable if its efficiency remains above an acceptable threshold as both the number of processors $p$ and the problem size $W$ increase.
@@ -147,7 +147,7 @@ A parallel system is considered scalable if its efficiency remains above an acce
 
 \subsecao{Tries (Prefix Trees)}
 
-This section elucidates the Trie data structure, detailing its defining properties, core operational mechanics, performance aspects, and its significance as a foundational element in advanced string processing algorithms, particularly the Aho-Corasick algorithm.
+This section explains the Trie data structure, detailing its defining properties, core operational mechanics, performance aspects, and its significance as a foundational element in advanced string processing algorithms, particularly the Aho-Corasick algorithm.
 
 \subsubsecao{Definition and Basic Structure}
 
@@ -194,7 +194,7 @@ While prefix sharing can save space, the overall space complexity of $R$-way tri
 
 \subsubsecao{Foundational Role in String Processing}
 
-The trie data structure is a cornerstone for numerous advanced string processing algorithms. Critically for this work, the Aho-Corasick algorithm, engineered for the efficient, simultaneous matching of multiple patterns within a text, employs a trie---constructed from the set of patterns (the dictionary)---as its initial structural framework \cite{AhoCorasick1975}. A thorough grasp of trie principles is thus indispensable for developing and analyzing the Aho-Corasick algorithm.
+The trie data structure is a cornerstone for numerous advanced string processing algorithms. Critically for this work, the Aho-Corasick algorithm, engineered for the efficient, simultaneous matching of multiple patterns within a text, employs a trie---constructed from the set of patterns (the dictionary)---as its initial structural framework \cite{AhoCorasick1975}. A thorough grasp of trie principles is thus essential for developing and analyzing the Aho-Corasick algorithm.
 
 % Fim da subseção "Tries".
 
@@ -202,11 +202,11 @@ The trie data structure is a cornerstone for numerous advanced string processing
 
 \subsecao{Pattern Matching}
 
-This section introduces the fundamental problem of pattern matching within strings, explores key algorithmic approaches to its solution, and underscores its significance across various computational domains. This foundational discussion provides the essential context for understanding advanced multi-pattern matching algorithms, such as the Aho-Corasick algorithm. In general information processing, pattern (or \textit{string}) matching underpins the functionality of text editors and web search engines for keyword searches. The field of computational biology extensively utilizes pattern matching for analyzing genetic sequences \cite{SedgewickWayne2011}. Furthermore, in the field of information security, pattern matching is crucial: Network Intrusion Detection Systems (NIDS) utilize it to identify malicious signatures in network traffic. Tools like YARA, for instance, define rules based on textual or binary patterns to classify and identify malware \cite{YARADocs}.
+This section introduces the fundamental problem of pattern matching within strings, explores key algorithmic approaches to its solution, and highlights its significance across various computational domains. This foundational discussion provides the essential context for understanding advanced multi-pattern matching algorithms, such as the Aho-Corasick algorithm. In general information processing, pattern (or \textit{string}) matching underpins the functionality of text editors and web search engines for keyword searches. The field of computational biology extensively utilizes pattern matching for analyzing genetic sequences \cite{SedgewickWayne2011}. Furthermore, in the field of information security, pattern matching is crucial: Network Intrusion Detection Systems (NIDS) utilize it to identify malicious signatures in network traffic. Tools like YARA, for instance, define rules based on textual or binary patterns to classify and identify malware \cite{YARADocs}.
 
 \subsubsecao{The Pattern Matching Problem}
 
-The \textit{string matching} problem consists in determining whether a string $P$ (the \textit{pattern}) of length $M$ occurs within a string $T$ (the \textit{text}) of length $N$, where $M \leq N$. Formally, it seeks all positions $pos$ such that the condition in Eq. \ref{eq:string_matching_condition} holds for every $i \in \{0, 1, \dots, M-1\}$, and each valid $pos$ corresponds to an occurrence of the pattern in the text:
+The \textit{string matching} problem consists of determining whether a string $P$ (the \textit{pattern}) of length $M$ occurs within a string $T$ (the \textit{text}) of length $N$, where $M \leq N$. Formally, it seeks all positions $pos$ such that the condition in Eq. \ref{eq:string_matching_condition} holds for every $i \in \{0, 1, \dots, M-1\}$, and each valid $pos$ corresponds to an occurrence of the pattern in the text:
 \begin{equation}
     P[i] = T[pos + i], \quad \text{with} \quad pos + i < N
     \label{eq:string_matching_condition} 
@@ -248,7 +248,7 @@ When the task involves searching for multiple patterns simultaneously from a set
 
 To efficiently handle applications that require simultaneous searches for a large number of patterns, specialized algorithms are essential. These methods usually preprocess the entire set of patterns to create a unified data structure, which enables a single, efficient pass over the text to identify all occurrences of any pattern within the set \cite{Gusfield1997}.
 
-The theoretical framework of \textit{finite automata} provides a robust and elegant solution for this problem. By constructing a single \textit{finite automaton} (FA) that can recognize all patterns in a given set, the text can be processed in a single continuous scan. Each character read from the text triggers a \textit{state transition} within the FA. When the FA reaches an \textit{accepting state}---a state explicitly designed to indicate the successful recognition of one or more patterns---the algorithm reports an occurrence. Algorithms like the Aho-Corasick algorithm exemplify this approach; they automate the construction of such a \textit{pattern-matching machine}, typically based on a trie structure augmented with specialized \textit{failure transitions} \cite{AhoCorasick1975}. This automaton-based paradigm forms the critical foundation for efficiently solving multi-pattern matching problems.
+The theoretical framework of \textit{finite automata} provides a robust and elegant solution to this problem. By constructing a single \textit{finite automaton} (FA) that can recognize all patterns in a given set, the text can be processed in a single continuous scan. Each character read from the text triggers a \textit{state transition} within the FA. When the FA reaches an \textit{accepting state}---a state explicitly designed to indicate the successful recognition of one or more patterns---the algorithm reports an occurrence. Algorithms like the Aho-Corasick algorithm exemplify this approach; they automate the construction of such a \textit{pattern-matching machine}, typically based on a trie structure augmented with specialized \textit{failure transitions} \cite{AhoCorasick1975}. This automaton-based paradigm forms the critical foundation for efficiently solving multi-pattern matching problems.
 
 % Fim da seção/subseção "Pattern Matching".
 
