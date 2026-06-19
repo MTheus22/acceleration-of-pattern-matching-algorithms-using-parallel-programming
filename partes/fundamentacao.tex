@@ -38,6 +38,44 @@ A thread, on the other hand, is a lighter unit of execution started by a process
 \subsubsecao{POSIX Thread Model (Pthreads)}
 
 The POSIX Thread Model, commonly referred to as “Pthreads”, is a standard that defines an application programming interface (API) for thread creation and management, as specified by IEEE Std 1003.1c-1995. Pthreads provides a portable suite of data types, functions, and constants that allows developers to create multithreaded applications that are compilable and executable across diverse POSIX-compliant operating systems (e.g., Linux, macOS, and various Unix variants). The Pthreads API provides functionality for managing the thread lifecycle—including creation, termination, and joining—and, critically, incorporates synchronization primitives. These primitives, such as mutexes and condition variables, are indispensable for orchestrating access to shared resources within shared-memory environments \cite{Butenhof1997} \cite{Pacheco2011}.
+
+\subsubsecao{Cache Architecture and Memory-Bound Parallelism}
+
+Modern shared-memory processors organize their caches in a hierarchy. Each core has private L1 and L2 caches—typically tens to hundreds of kilobytes—for low-latency access to recently used data. A shared last-level cache (LLC), often several megabytes, is accessible to all cores on the chip and serves as the final caching tier before main memory \cite{Pacheco2011}.
+
+A workload is \textit{compute-bound} when its execution time is dominated by arithmetic operations, leaving memory bandwidth underutilized. It is \textit{memory-bandwidth-bound} (or simply \textit{memory-bound}) when the bottleneck is the rate at which data can be fetched from DRAM rather than computational throughput. Pattern-matching algorithms that operate on large automata—whose transition tables exceed the LLC capacity—fall into this regime: each state transition triggers a cache miss that must be resolved from DRAM, making throughput a function of available memory bandwidth rather than CPU frequency or core count \cite{Grama2003}.
+
+Parallelism can intensify memory pressure. When multiple threads simultaneously traverse different regions of a large, read-only automaton, the combined working set exceeds the LLC, raising the aggregate cache-miss rate for all threads. Two additional hazards arise when threads share writable data. \textit{Cache coherence} protocols (such as MESI) ensure that modifications made by one core become visible to all others; they introduce inter-core invalidation traffic whenever a shared cache line is written \cite{Pacheco2011}. \textit{False sharing} occurs when two threads write to logically independent variables that happen to reside on the same cache line, causing coherence invalidations despite the absence of a true data dependency. Aligning per-thread accumulators to cache-line boundaries eliminates false sharing.
+
+Non-Uniform Memory Access (NUMA) architectures differentiate memory latency based on which socket owns the physical memory being accessed. Although the experimental platform used in this work—the Intel i5-1235U—employs a single-socket Uniform Memory Access (UMA) topology, NUMA is an important consideration in multi-socket server deployments where memory-bound workloads exhibit significant latency asymmetry \cite{Grama2003}.
+
+\subsubsecao{Hybrid P/E-Core Architectures}
+
+Modern consumer and mobile processors have introduced a \textit{hybrid}
+microarchitecture that integrates two distinct core types on a single die.
+Intel's Alder Lake platform---which includes the Intel Core i5-1235U used as
+the experimental platform in this work---pairs two high-performance cores
+(P-cores), each supporting Hyper-Threading (two logical hardware threads per
+core), with eight energy-efficient cores (E-cores), each providing a single
+hardware thread, for a total of twelve logical hardware threads.
+% REVIEW-TODO(cite): Intel Core i5-1235U datasheet / Alder Lake architecture brief
+
+P-cores feature wider out-of-order execution pipelines and higher operating
+frequencies, delivering greater per-thread throughput at higher power
+consumption. E-cores are physically smaller and optimized for
+throughput-per-watt rather than single-thread latency; they operate at lower
+frequencies. A memory-bound workload therefore achieves materially higher
+per-thread throughput on a P-core than on an E-core.
+
+This heterogeneity shapes parallel scaling curves in a characteristic way. At
+low thread counts, threads are preferentially dispatched to P-core hardware
+threads; speedup rises steeply because each additional thread contributes
+high-throughput capacity. Once all P-core hardware threads are occupied---four
+on the i5-1235U---additional threads are scheduled onto E-cores, which contribute
+lower per-thread throughput. The cumulative scaling curve therefore exhibits a
+\textit{knee} near the P-core saturation point, beyond which the marginal speedup
+per additional thread declines. This architectural asymmetry underpins the scaling
+patterns discussed in the Results and Discussion chapter.
 % Fim da subseção "Fundamentos do Paralelismo".
 
 % A subseção "Parallel Performance Evaluation Metrics" começa aqui.
@@ -263,6 +301,12 @@ The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for 
     \item \textbf{Search phase}: Scanning a text of length $n$ performs fewer than $2n$ state transitions. Reporting matches costs time proportional to the total number of occurrences $z$, so the total search time is $O(n + z)$;
     \item \textbf{Space complexity}: Storing the automaton requires $O(L + |\Sigma|)$ space: $O(L)$ for trie edges, $O(L)$ pointers for failure links, and additional space for output lists (proportional to the number of stored outputs).
 \end{itemize}
+
+\subsubsecao{NFA versus DFA Representations}
+
+The automaton described above is, strictly speaking, a \textit{nondeterministic finite automaton} (NFA): the goto function is undefined on many (state, character) pairs, and the search algorithm resolves those gaps by traversing failure links at runtime, requiring multiple memory accesses per character in the worst case. A widely adopted optimization converts this NFA into a \textit{deterministic finite automaton} (DFA) by precomputing the failure-link chains during construction: for every state $s$ and character $a$, the full deterministic transition $\delta(s,a)$ is stored in a flat two-dimensional table of size $|Q| \times |\Sigma|$, where $|Q|$ is the number of states and $|\Sigma|$ is the alphabet size \cite{AhoCorasick1975, Gusfield1997}. With this representation every character in the input triggers exactly one array lookup; no runtime failure-link traversal occurs, which reduces per-character latency and simplifies the inner search loop.
+
+The cost of the DFA representation is memory: for the standard 256-symbol byte alphabet the flat transition table occupies $4 \cdot |Q| \cdot 256$ bytes. This footprint grows linearly with the pattern-set size and can easily exceed the processor's last-level cache (LLC). When the table no longer fits in cache, each state transition becomes a potential cache miss, shifting the workload from compute-bound to \textit{memory-bandwidth-bound}. The implementation in this work uses the DFA (flat transition table) representation exclusively; the goto function, failure function, and output function described in the preceding subsection are intermediate construction artefacts that are not retained at search time.
 
 \subsubsecao{Applications and Relevance}
 

@@ -1,13 +1,17 @@
 This appendix documents the protocol used to query the raw measurement
 database from which the search, footprint, stability and construction results
-reported in this thesis are derived; the end-to-end wall-clock times of
-Table~\ref{tab:e2e} were recorded by a dedicated pipeline benchmark and are
-documented separately. This allows the primary figures to be reproduced and
-audited independently. The benchmark campaign stores its measurements in a
-single typed SQLite file,
-\texttt{sweep.db}, holding one \texttt{runs} table (one row per timed
-execution) together with a set of aggregating views. The headline figures are
-obtained from those views rather than from the raw execution logs.
+reported in this thesis are derived. The end-to-end wall-clock times of
+Table~\ref{tab:e2e} were collected in a dedicated pipeline benchmark conducted
+on 2026-05-22 and are documented in the companion repository's synthesis report
+(\texttt{parallel-aho-corasick/docs/tcc-synthesis.html}, Section~3.9); the raw
+sweep script and timing log are not currently archived in the repository.
+% REVIEW-TODO: archive scripts/run_f3_v3flat_build_par_sweep.sh and f3_sweep.log for full reproducibility
+This allows the primary figures to be reproduced and audited independently.
+The benchmark campaign stores its measurements in a single typed SQLite
+database located at \texttt{parallel-aho-corasick/runs/overnight/sweep.db},
+holding one \texttt{runs} table (one row per timed execution) together with a
+set of aggregating views. The headline figures are obtained from those views
+rather than from the raw execution logs.
 
 \subsecao{Database Schema}
 

@@ -29,20 +29,25 @@ source of the load-balancing problem addressed by the frequency-weighted
 partitioning strategy. The memory hierarchy comprises a private L1 data cache
 per core ($48$~KiB on P-cores, $32$~KiB on E-cores), $1.25$~MiB of L2 per P-core (and $2$~MiB per E-core
 cluster), and a single $12$~MiB L3 cache shared by all cores. Main memory is
-$31$~GiB of dual-channel DDR4, whose measured peak bandwidth is approximately
-$25$~GB/s. This $12$~MiB shared LLC is the architectural threshold that
+$31$~GiB of dual-channel DDR4, with a peak bandwidth of approximately
+$25$~GB/s.
+% REVIEW-TODO(cite): source or direct measurement tool for the 25 GB/s DDR4 bandwidth figure not documented in lab files.
+This $12$~MiB shared LLC is the architectural threshold that
 separates the cache-resident regime from the memory-bound regime studied in
 this work.
 
 The software stack is a purpose-built laboratory written in C11, compiled with
-GCC using \texttt{-O3 -march=native} and an aggressive warning profile, and
-linked against the POSIX Threads library \cite{Nichols1996}. Experiments ran under Linux
-(kernel~6.x). To minimize scheduling and frequency-scaling artifacts, worker
-threads were pinned to dedicated logical cores, and the CPU frequency governor
-was set to \texttt{performance} for the canonical measurement campaign. The
-build was additionally validated under sanitizer instrumentation, namely
-the Address and Undefined Behavior sanitizers and the Thread Sanitizer, as
-discussed in Section~\ref{subsec:correctness}.
+GCC~13.3.0 using \texttt{-O3 -march=native} and an aggressive warning profile,
+and linked against the POSIX Threads library \cite{Nichols1996}. Experiments ran
+under Linux (kernel~6.17.0). To minimize scheduling and frequency-scaling
+artifacts, the CPU frequency governor was set to \texttt{performance} for the
+canonical measurement campaign; topology-aware searchers
+(\texttt{pthread\_chunked\_v3} and \texttt{pthread\_chunked\_v3\_flat})
+additionally pin each worker thread to a dedicated logical CPU via
+\texttt{pthread\_setaffinity\_np}, while the remaining searchers rely on OS
+scheduling without explicit binding. The build was additionally validated under
+sanitizer instrumentation, namely the Address and Undefined Behavior sanitizers
+and the Thread Sanitizer, as discussed in Section~\ref{subsec:correctness}.
 
 \subsecao{Pattern Dictionaries and Text Corpora}
 
@@ -182,14 +187,38 @@ own right.
 
 \subsecao{Measurement Protocol}
 
-Each reported search data point is the result of at least one warm-up iteration
-followed by three or more timed iterations; the speedup, footprint, and cross-corpus phases
-of the formal sweep used two warm-up and five timed iterations, the per-thread
-diagnostic used three timed iterations, and the construction benchmark recorded a single
-timed build per configuration. The warm-up iteration pays for page faults and warms the caches, so
-that the timed iterations measure steady-state behaviour. Both the mean and the
-best (minimum) times are recorded; the mean is used for the reported throughput,
-and the dispersion between iterations is retained as an indicator of stability.
+Each reported data point follows the exact per-phase repetition protocol
+summarized in Table~\ref{tab:protocol}. Phase~A (speedup curves) sweeps thread
+counts $T \in \{1,2,4,6,8,10,12\}$ for the canonical Enron corpus and
+$T \in \{1,4,8,12\}$ for the eight-fold replica, as recorded in
+\texttt{sweep.db}. Phases A--C (speedup curves, footprint, and cross-corpus)
+each execute two warm-up iterations followed by five timed iterations; phase D (per-thread diagnostic) executes one warm-up followed by
+three timed iterations; and phase E (parallel construction) executes a single
+timed build with no warm-up. The warm-up iterations pay for page faults and warm
+the caches so that the timed iterations measure steady-state behaviour. Both the
+mean and the best (minimum) times are recorded; the mean is used for the reported
+throughput, and the dispersion between iterations is retained as an indicator of
+stability.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Per-phase repetition protocol of the formal sweep (2026-05-29), verified against \texttt{sweep.db}.}
+    \label{tab:protocol}
+    \small
+    \begin{tabular}{@{} c l r r @{}}
+        \toprule
+        \textbf{Phase} & \textbf{Description} & \textbf{Warm-ups} & \textbf{Timed iters} \\
+        \midrule
+        A & Speedup curves        & 2 & 5 \\
+        B & Footprint sweep       & 2 & 5 \\
+        C & Cross-corpus          & 2 & 5 \\
+        D & Per-thread diagnostic & 1 & 3 \\
+        E & Parallel construction & 0 & 1 \\
+        \bottomrule
+    \end{tabular}
+
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author from \texttt{sweep.db} (sweep 2026-05-29).\par}
+\end{table}
 
 A caveat specific to the measurement platform must be stated explicitly. The
 reference machine is a thermally constrained mobile processor.

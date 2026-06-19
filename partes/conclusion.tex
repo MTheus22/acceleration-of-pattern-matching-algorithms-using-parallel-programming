@@ -8,13 +8,19 @@ signature-based intrusion detection over realistic rule sets.
 
 The experimental campaign confirmed the principal hypotheses while also
 delimiting their scope. Text-level partitioning with a boundary overlap of
-$L_{\max}-1$ bytes scales sublinearly, reaching up to $4.79\times$ on twelve
-threads for a moderate dictionary and $4.52\times$ at the multi-gigabyte scale.
+$L_{\max}-1$ bytes scales sublinearly, reaching $4.52\times$ at twelve threads
+on the multi-gigabyte corpus and a canonical-corpus peak of $4.79\times$ via
+dynamic dispatch.
 The size of the automaton, and not the content of the corpus, was confirmed to
 be the dominant determinant of throughput: as the dictionary grows from a
 cache-resident set to one forty-two times larger than the last-level cache,
 single-threaded throughput falls by $74.0\%$, and the parallel speedup collapses
-accordingly. On the heterogeneous processor, frequency-weighted partitioning and
+accordingly. In the memory-bound regime, the speedup peaks at $2.85\times$ near
+six threads (canonical corpus) and then \textit{regresses} as additional threads
+are added: the shared DRAM bus saturates before the full thread complement is
+engaged, making further concurrency counterproductive.
+The corresponding parallel efficiency at twelve threads is $37.7\%$ for the moderate-dictionary regime and $23.3\%$ for the memory-bound one, reflecting DRAM saturation as the dominant overhead rather than thread coordination.
+On the heterogeneous processor, frequency-weighted partitioning and
 dynamic dispatch were shown to remove the load imbalance of uniform segments,
 reducing the run-to-run variation from as much as $53\%$ to under $5\%$; this is a
 gain in predictability rather than in peak throughput, since the ceiling remains
@@ -39,6 +45,24 @@ binding constraint is DRAM bandwidth rather than the matching logic, and that
 text parallelism combined with a cache-friendly layout is the response that
 composes correctly. End-to-end, the full pipeline achieves up to $4.48\times$ on
 the moderate dictionary and $3.04\times$ on the memory-bound one.
+
+The three specific objectives stated in the introduction were each addressed in full.
+The first --- to design and implement a parallel Aho-Corasick algorithm in C using
+the POSIX Threads API, exploiting intra-input parallelism on shared-memory multi-core
+CPUs --- was met through a family of text-partitioning, load-balancing, and
+output-layout strategies whose correctness was validated exhaustively across all tested
+workloads.
+The second --- to quantify performance gains in terms of speedup, throughput, and
+parallel efficiency against a sequential baseline --- was met by reporting search
+speedups of $4.79\times$ (canonical corpus, dynamic dispatch) and $4.52\times$
+(multi-gigabyte corpus, flat-output chunking), alongside parallel efficiencies of
+$37.7\%$ and $23.3\%$ for the moderate-dictionary and memory-bound regimes,
+respectively.
+The third --- to analyse scalability under different workload, pattern-set, and
+thread-count configurations --- was met by a systematic sweep spanning seven thread
+counts, three corpora, and automata occupying a forty-two-fold range of cache
+capacity, from which the memory-bandwidth saturation ceiling and the post-peak
+regression were identified and quantified.
 
 \subsecao{Threats to Validity}
 

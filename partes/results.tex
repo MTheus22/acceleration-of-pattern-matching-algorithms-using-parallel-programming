@@ -62,8 +62,10 @@ count for the two representative regimes, measured on the largest corpus
 \begin{figure}[htbp]
 \centering
 \caption{Speedup of text parallelism versus thread count, for a moderate
-dictionary (Snort, 55~MiB) and a memory-bound dictionary (Emerging Threats,
-507~MiB), on the $\sim$10.6~GiB corpus.}
+dictionary (Snort, 55~MiB; \texttt{pthread\_chunked\_v3\_flat}) and a
+memory-bound dictionary (Emerging Threats, 507~MiB;
+\texttt{pthread\_chunked\_flat}), on the $\sim$10.6~GiB corpus
+(\texttt{enron\_x8}).}
 \begin{tikzpicture}
 \begin{axis}[
     width=0.82\textwidth,
@@ -103,17 +105,26 @@ dictionary (Snort, 55~MiB) and a memory-bound dictionary (Emerging Threats,
 
 Both regimes scale sublinearly. With the moderate dictionary, the best
 text-parallel strategy reaches $4.52\times$ at twelve threads
-($1{,}087.1$~MB/s); on the canonical corpus, the dynamic-dispatch
-strategy peaks slightly higher at $4.79\times$ ($1{,}148.1$~MB/s), the highest
+($1{,}087.1$~MB/s; CV~$10\%$); on the canonical corpus, the dynamic-dispatch
+strategy peaks slightly higher at $4.79\times$ ($1{,}148.1$~MB/s; CV~$2\%$), the highest
 search speedup observed on the intrusion-detection-scale dictionaries. With the memory-bound dictionary, the
 curve flattens far earlier: the best strategy reaches only $2.79\times$ at
-twelve threads, and on the canonical corpus the peak occurs near six threads
-($2.85\times$) and then \textit{regresses} as more threads are added. This early
+twelve threads (CV~$8\%$), and on the canonical corpus the peak occurs near six threads
+($2.85\times$; CV~$16\%$) and then \textit{regresses} as more threads are added. This early
 plateau is the most important observation of the scaling analysis. Once the
 automaton is forty-two times larger than the cache, the shared DRAM bus
 saturates, and adding more threads (especially the slower Efficiency cores past
 the two Performance cores) no longer buys throughput. The physical limit is
 memory bandwidth, not the number of cores.
+
+For the moderate-dictionary regime, where memory bandwidth is not the binding constraint, the $4.52\times$ ceiling at twelve threads is consistent with Amdahl's law~\cite{Grama2003}: the observed $37.7\%$ parallel efficiency implies an inherent serial fraction of approximately $15\%$---arising from merge coordination and work dispatch---compounded by the P/E asymmetry of the thread pool, in which the four Performance-core hardware threads carry disproportionately more per-thread weight than the eight Efficiency cores.
+
+Parallel efficiency (Eq.~\ref{eq:efficiency}) quantifies this overhead directly: at
+twelve threads, the moderate-dictionary regime achieves $37.7\%$ efficiency ($4.52\times
+/ 12$), while the memory-bound regime achieves only $23.3\%$ ($2.79\times / 12$). The
+gap between the two is attributable primarily to DRAM saturation rather than to
+threading overhead, since it mirrors the cache-residency difference and not the
+per-thread synchronization cost.
 
 A separate experiment fixed the dictionary and strategy while changing the
 corpus, to confirm that the content of the text is not the governing variable.
