@@ -13,13 +13,15 @@ exceeds the last-level cache, using realistic Snort and Emerging Threats rule
 sets (up to roughly $507$~MiB of automaton) over multi-gigabyte corpora on a
 hybrid Intel Core i5-1235U processor. The results show that text-level data
 parallelism outperforms pattern-set partitioning: search speedups reach up
-to $4.79\times$ on twelve threads for a moderate dictionary and $4.52\times$ at
-the multi-gigabyte scale, while the flattened layout adds a regime-dependent gain
+to $4.79\times$ on the canonical corpus and $4.52\times$ on the multi-gigabyte
+corpus --- both at twelve threads for the same moderate dictionary --- while the
+flattened layout adds a regime-dependent gain
 that grows with memory pressure, up to $+13.0\%$ on a single thread. When the
 automaton is forty-two times larger than the cache, however, throughput drops by
 $74.0\%$ and the parallel speedup peaks near $2.85\times$ at six threads on the
 canonical corpus before regressing, reaching $2.79\times$ at twelve threads on the
 multi-gigabyte corpus, exposing memory bandwidth as the physical ceiling. End-to-end accelerations reach up to
-$4.48\times$. The central finding is that the dominant barrier to scaling
-Aho-Corasick for intrusion detection is microarchitectural, namely cache
-overflow and DRAM bandwidth, rather than the matching logic itself.
+$4.48\times$. The central finding is that, once the automaton exceeds the
+last-level cache, the dominant barrier to scaling Aho-Corasick is
+microarchitectural --- namely cache overflow and DRAM bandwidth --- rather than
+the matching logic itself.
