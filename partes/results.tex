@@ -332,7 +332,7 @@ correct axis on memory-bound workloads. This difference in memory traffic is ill
 \begin{figure}[H]
 \centering
 \caption{Visual comparison of text reading traffic: (a) pure text chunking (text parallelism) where each byte is read once, keeping bus load moderate; and (b) two-dimensional composition (chunking + sharding) which multiplies the text reads by $K$ shards, saturating the DRAM bus and degrading speedup.}
-\includegraphics[width=0.9\linewidth]{6.7.png}
+\includegraphics[width=0.9\linewidth]{memory_traffic.pdf}
 \par\smallskip
 {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
 \label{fig:memory_traffic}

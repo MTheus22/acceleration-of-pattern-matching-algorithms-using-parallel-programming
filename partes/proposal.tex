@@ -19,7 +19,7 @@ parallel cases. The remainder of this chapter describes each component. The over
 \begin{figure}[H]
 \centering
 \caption{Parallel execution pipeline of the proposed framework, divided into three phases: sequential construction of the read-only automaton (Phase 1), concurrent parallel search across text segments (Phase 2), and sequential deterministic merge of match lists (Phase 3).}
-\includegraphics[width=0.9\linewidth]{5.3.png}
+\includegraphics[width=0.9\linewidth]{pipeline.pdf}
 \par\smallskip
 {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
 \label{fig:pipeline}
@@ -55,7 +55,7 @@ redundant work. This boundary-crossing detection and overlap logic is illustrate
 \begin{figure}[H]
 \centering
 \caption{Data partitioning and boundary overlap scanning layout, showing matching ownership and warm-up margins across Thread 0 and Thread 1.}
-\includegraphics[width=1.0\linewidth]{4.1.png}
+\includegraphics[width=1.0\linewidth]{boundary_overlap.pdf}
 \par\smallskip
 {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
 \label{fig:boundary_overlap}
@@ -99,7 +99,7 @@ sequential or parallel. Figure~\ref{fig:flattened_output} contrasts this contigu
 \begin{figure}[H]
 \centering
 \caption{Comparison of match-emission layouts: (a) canonical linked outputs using pointer-chasing across scattered memory nodes, and (b) proposed flattened output layout storing contiguous pattern indices.}
-\includegraphics[width=0.88\linewidth]{4.3.png}
+\includegraphics[width=0.88\linewidth]{flattened_output.pdf}
 \par\smallskip
 {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
 \label{fig:flattened_output}
