@@ -46,9 +46,11 @@ fits comfortably within the shared L3 to $125.6$~MB/s when it is forty-two times
 larger than that same cache.
 The cause is structural: each input byte triggers a lookup in the
 state-transition table, and once that table no longer fits in cache, every
-transition risks a main-memory access. The degradation persists in parallel execution: at twelve threads, the speedup of the same topology-aware chunked strategy drops from $6.68\times$ in the
-cache-resident regime to $2.63\times$ in the memory-bound regime, confirming
-that the limit is the memory subsystem rather than a threading artifact. This is
+transition risks a main-memory access. The degradation persists in parallel execution: in the same footprint sweep, the
+twelve-thread speedup of the topology-aware chunked strategy (measured against the
+sequential baseline) drops from $6.68\times$ in the cache-resident regime
+(Snort-100) to $2.63\times$ in the memory-bound regime (Emerging Threats),
+confirming that the limit is the memory subsystem rather than a threading artifact. This is
 the central obstacle to scaling Aho-Corasick at intrusion-detection scale, and
 it frames the interpretation of every subsequent result.
 
@@ -359,6 +361,19 @@ regresses sharply and the parallel build contributes less than one percent of th
 total time. This asymmetry is consistent with the rest of the study: in the
 memory-bound regime, the simplest strategy that respects the bandwidth ceiling is
 the most robust.
+
+One caveat is necessary when reading these figures. The end-to-end campaign was
+collected in a separate, earlier benchmark whose sequential reference ran under
+less favourable (slower) baseline conditions than the canonical search sweep.
+Each end-to-end speedup is therefore internally consistent --- parallel and
+sequential wall-clock times were measured under the same conditions in that
+benchmark --- but the resulting ratios are \textit{not} directly comparable with
+the search-only speedups of Figure~\ref{fig:speedup}. In particular, the
+memory-bound end-to-end value of $3.04\times$ exceeds the corresponding
+search-only speedup ($2.79$--$2.85\times$) only because of this slower baseline,
+not because adding the construction phase improved scaling. The end-to-end
+numbers should thus be read as an indication of whole-pipeline behaviour on this
+platform, not as a refinement of the search-phase speedups.
 
 \subsecao{Discussion and Positioning}
 

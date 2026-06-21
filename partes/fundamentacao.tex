@@ -15,7 +15,7 @@ Parallel computer architectures are classified according to various criteria. A 
 
 Within the MIMD category, systems are further distinguished based on their memory organization \cite{Pacheco2011}:
 \begin{itemize}
-    \item \textbf{Shared-Memory Systems}: In these systems, multiple processors share a physical memory address space. Inter-processor communication (IPC) is typically achieved by reading from and writing to shared variables in memory or through message passing mechanisms. Multi-core processors are the most common and widely available example of this architecture, where all cores on a chip share access to main memory;
+    \item \textbf{Shared-Memory Systems}: In these systems, multiple processors share a physical memory address space. Inter-processor communication is typically achieved by reading from and writing to shared variables in memory. Multi-core processors are the most common and widely available example of this architecture, where all cores on a chip share access to main memory;
     \item \textbf{Distributed-Memory Systems}: Each processor in these systems has its own locally accessible memory, and communication between processors is usually done by exchanging messages across an interconnection network. Computer clusters are examples of this architectural model.
 \end{itemize}
 
@@ -45,7 +45,7 @@ Modern shared-memory processors organize their caches in a hierarchy. Each core 
 
 A workload is \textit{compute-bound} when its execution time is dominated by arithmetic operations, leaving memory bandwidth underutilized. It is \textit{memory-bandwidth-bound} (or simply \textit{memory-bound}) when the bottleneck is the rate at which data can be fetched from DRAM rather than computational throughput. Pattern-matching algorithms that operate on large automata—whose transition tables exceed the LLC capacity—fall into this regime: each state transition triggers a cache miss that must be resolved from DRAM, making throughput a function of available memory bandwidth rather than CPU frequency or core count \cite{Grama2003}.
 
-Parallelism can intensify memory pressure. When multiple threads simultaneously traverse different regions of a large, read-only automaton, the combined working set exceeds the LLC, raising the aggregate cache-miss rate for all threads. Two additional hazards arise when threads share writable data. \textit{Cache coherence} protocols (such as MESI) ensure that modifications made by one core become visible to all others; they introduce inter-core invalidation traffic whenever a shared cache line is written \cite{Pacheco2011}. \textit{False sharing} occurs when two threads write to logically independent variables that happen to reside on the same cache line, causing coherence invalidations despite the absence of a true data dependency. Aligning per-thread accumulators to cache-line boundaries eliminates false sharing.
+Parallelism can intensify memory pressure. When multiple threads simultaneously traverse different regions of a large, read-only automaton, the combined working set exceeds the LLC, raising the aggregate cache-miss rate for all threads. Two additional hazards arise when threads share writable data. \textit{Cache coherence} protocols (such as MESI) ensure that modifications made by one core become visible to all others; they introduce inter-core invalidation traffic whenever a shared cache line is written \cite{Pacheco2011}. \textit{False sharing} occurs when two threads write to logically independent variables that happen to reside on the same cache line, causing coherence invalidations despite the absence of a true data dependency. False sharing can be avoided by aligning per-thread accumulators to cache-line boundaries.
 
 Non-Uniform Memory Access (NUMA) architectures differentiate memory latency based on which socket owns the physical memory being accessed. Although the experimental platform used in this work—the Intel i5-1235U—employs a single-socket Uniform Memory Access (UMA) topology, NUMA is an important consideration in multi-socket server deployments where memory-bound workloads exhibit significant latency asymmetry \cite{Grama2003}.
 
@@ -57,8 +57,8 @@ Intel's Alder Lake platform---which includes the Intel Core i5-1235U used as
 the experimental platform in this work---pairs two high-performance cores
 (P-cores), each supporting Hyper-Threading (two logical hardware threads per
 core), with eight energy-efficient cores (E-cores), each providing a single
-hardware thread, for a total of twelve logical hardware threads.
-% REVIEW-TODO(cite): Intel Core i5-1235U datasheet / Alder Lake architecture brief
+hardware thread, for a total of twelve logical hardware threads
+\cite{IntelI51235U}.
 
 P-cores feature wider out-of-order execution pipelines and higher operating
 frequencies, delivering greater per-thread throughput at higher power
@@ -67,15 +67,20 @@ throughput-per-watt rather than single-thread latency; they operate at lower
 frequencies. A memory-bound workload therefore achieves significantly higher
 per-thread throughput on a P-core than on an E-core.
 
-This heterogeneity shapes parallel scaling curves in a characteristic way. At
-low thread counts, threads are preferentially dispatched to P-core hardware
-threads; speedup rises steeply because each additional thread contributes
-high-throughput capacity. Once all P-core hardware threads are occupied---four
-on the i5-1235U---additional threads are scheduled onto E-cores, which contribute
-lower per-thread throughput. The cumulative scaling curve therefore exhibits a
-\textit{knee} near the P-core saturation point, beyond which the marginal speedup
-per additional thread declines. This architectural asymmetry underpins the scaling
-patterns discussed in the Results and Discussion chapter.
+Because the experimental platform of this work happens to be such a hybrid
+design, this heterogeneity is a property of the measurement environment rather
+than an object of study, but it does have a predictable effect on the observed
+scaling curves. At low thread counts, threads are preferentially dispatched to
+P-core hardware threads; speedup rises steeply because each additional thread
+contributes high-throughput capacity. Once all P-core hardware threads are
+occupied---four on the i5-1235U---additional threads are scheduled onto E-cores,
+which contribute lower per-thread throughput. The cumulative scaling curve
+therefore exhibits a \textit{knee} near the P-core saturation point, beyond which
+the marginal speedup per additional thread declines. This is noted here only so
+that the scaling curves reported in the Results and Discussion chapter can be
+read in context; it also motivates the load-balancing strategy introduced in the
+proposed solution, whose purpose is to keep the heterogeneous cores from idling
+at the synchronization barrier.
 % Fim da subseção "Fundamentos do Paralelismo".
 
 % A subseção "Parallel Performance Evaluation Metrics" começa aqui.
@@ -114,10 +119,10 @@ In the limit, as the number of processors (\texttt{p}) tends to infinity, the ma
   \label{fig:speedup-plot}
 \end{figure}
 
-A complementary perspective is offered by the Gustafson-Barsis Law in Eq. \ref{eq:gustafson}. This law argues that an approximately linear speedup is achievable for problems that benefit from this scalability. This formulation suggests that for problems that can be scaled, it is possible to obtain an approximately linear speedup with the number of processors, even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios \cite{Pacheco2011}.
+A complementary perspective is offered by the Gustafson-Barsis Law in Eq. \ref{eq:gustafson}, where $\alpha$ denotes the fraction of the \textit{parallel} run time spent in non-parallelizable (serial) work (and is therefore a distinct quantity from Amdahl's $s$, which is the serial fraction of the \textit{sequential} run). This law argues that, for problems whose size can be scaled with the available processors, an approximately linear speedup is attainable even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios \cite{Pacheco2011}.
 
 \begin{equation}
-    S_{\text{scaled}} = s + (1-s) \cdot p
+    S_{\text{scaled}} = \alpha + (1-\alpha) \cdot p
     \label{eq:gustafson}
 \end{equation}
 
@@ -228,7 +233,7 @@ Following this comparison (whether a match or a mismatch), the algorithm shifts 
 
 \subsubsecao{Knuth-Morris-Pratt (KMP) Algorithm}
 
-The KMP algorithm \cite{KnuthMorrisPratt1977} efficiently resolves the pattern matching problem with an optimal worst-case time complexity of $O(N + M)$. Unlike the na\"ive approach, KMP avoids re-checking characters that have already been matched. To achieve this, KMP first preprocesses the pattern $P$ by constructing a special array known as the \textit{failure array} (or \textit{prefix array}), typically denoted by $p[1..M]$. This array indicates the length of the longest prefix that is also a suffix for each prefix of $P$. With this information, when a mismatch occurs during the search, the algorithm utilizes the failure array to determine how far the pattern should shift to the right, bypassing unnecessary comparisons and preventing redundant checks.
+The KMP algorithm \cite{KnuthMorrisPratt1977} efficiently resolves the pattern matching problem with an optimal worst-case time complexity of $O(N + M)$. Unlike the na\"ive approach, KMP avoids re-checking characters that have already been matched. To achieve this, KMP first preprocesses the pattern $P$ by constructing a special array known as the \textit{failure array} (or \textit{prefix array}), typically denoted by $p[1..M]$. This array indicates the length of the longest prefix that is also a suffix for each prefix of $P$. With this information, when a mismatch occurs during the search, the algorithm uses the failure array to decide which pattern index to resume comparison from, so the text pointer never backtracks, bypassing unnecessary comparisons and preventing redundant checks.
 
 \vspace{1em}
 
@@ -290,7 +295,7 @@ Figure~\ref{fig:ac-matching-flow} illustrates this control flow in detail, which
     \label{fig:ac-matching-flow}
 \end{figure}
 
-Because each character can trigger at most one eventual successful $\operatorname{goto}$ and any number of failure-link traversals, the total number of transitions (goto plus failure) over the entire scan is bounded by $< 2n$ \cite{AhoCorasick1975}.
+Each input character advances the automaton by at most one $\operatorname{goto}$ transition, which increases the current depth by one, whereas every failure-link traversal strictly decreases that depth. Since the depth is non-negative, the total number of failure transitions over the scan cannot exceed the number of goto transitions, which bounds the total number of transitions (goto plus failure) by $< 2n$ \cite{AhoCorasick1975}.
 
 \subsubsecao{Time and Space Complexity}
 
@@ -304,7 +309,7 @@ The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for 
 
 \subsubsecao{NFA versus DFA Representations}
 
-The automaton described above is, strictly speaking, a \textit{nondeterministic finite automaton} (NFA): the goto function is undefined on many (state, character) pairs, and the search algorithm resolves those gaps by traversing failure links at runtime, requiring multiple memory accesses per character in the worst case. A widely adopted optimization converts this NFA into a \textit{deterministic finite automaton} (DFA) by precomputing the failure-link chains during construction: for every state $s$ and character $a$, the full deterministic transition $\delta(s,a)$ is stored in a flat two-dimensional table of size $|Q| \times |\Sigma|$, where $|Q|$ is the number of states and $|\Sigma|$ is the alphabet size \cite{AhoCorasick1975, Gusfield1997}. With this representation every character in the input triggers exactly one array lookup; no runtime failure-link traversal occurs, which reduces per-character latency and simplifies the inner search loop.
+The goto-plus-failure automaton described above is commonly distinguished, in the network-intrusion-detection literature, as the \textit{nondeterministic finite automaton} (NFA) configuration of Aho--Corasick, in contrast to the fully precomputed \textit{deterministic finite automaton} (DFA) discussed below \cite{Qu2016MPI}. This NFA label is conventional rather than formal---the goto-plus-failure machine in fact behaves deterministically---but it captures the operational difference: the goto function is undefined on many (state, character) pairs, and the search algorithm resolves those gaps by traversing failure links at runtime, so a single character may require several memory accesses in the worst case (the cost is constant only in the amortized sense established above). A widely adopted optimization converts this NFA into a \textit{deterministic finite automaton} (DFA) by precomputing the failure-link chains during construction: for every state $s$ and character $a$, the full deterministic transition $\delta(s,a)$ is stored in a flat two-dimensional table of size $|Q| \times |\Sigma|$, where $|Q|$ is the number of states and $|\Sigma|$ is the alphabet size \cite{AhoCorasick1975}, \cite{Gusfield1997}. With this representation every character in the input triggers exactly one array lookup; no runtime failure-link traversal occurs, which reduces per-character latency and simplifies the inner search loop.
 
 The cost of the DFA representation is memory: for the standard 256-symbol byte alphabet the flat transition table occupies $4 \cdot |Q| \cdot 256$ bytes. This footprint grows linearly with the pattern-set size and can easily exceed the processor's last-level cache (LLC). When the table no longer fits in cache, each state transition becomes a potential cache miss, shifting the workload from compute-bound to \textit{memory-bandwidth-bound}. The implementation in this work uses the DFA (flat transition table) representation exclusively; the goto function, failure function, and output function described in the preceding subsection are intermediate construction artefacts that are not retained at search time.
 
