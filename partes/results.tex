@@ -61,7 +61,7 @@ threads. Figure~\ref{fig:speedup} shows the speedup as a function of thread
 count for the two representative regimes, measured on the largest corpus
 ($\sim$10.6~GiB) to minimize scheduler and thermal noise.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \caption{Speedup of text parallelism versus thread count, for a moderate
 dictionary (Snort, 55~MiB; \texttt{pthread\_chunked\_v3\_flat}) and a
@@ -327,7 +327,16 @@ would require more than forty shards, multiplying the text traffic
 proportionally, which is unrecoverable on a memory bus of this bandwidth. This
 negative result is an important contribution: it closes a plausible region of
 the design space and reinforces the conclusion that text parallelism is the
-correct axis on memory-bound workloads.
+correct axis on memory-bound workloads. This difference in memory traffic is illustrated in Figure~\ref{fig:memory_traffic}.
+
+\begin{figure}[H]
+\centering
+\caption{Visual comparison of text reading traffic: (a) pure text chunking (text parallelism) where each byte is read once, keeping bus load moderate; and (b) two-dimensional composition (chunking + sharding) which multiplies the text reads by $K$ shards, saturating the DRAM bus and degrading speedup.}
+\includegraphics[width=0.9\linewidth]{6.7.png}
+\par\smallskip
+{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\label{fig:memory_traffic}
+\end{figure}
 
 \subsecao{End-to-End Evaluation}
 

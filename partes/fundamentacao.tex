@@ -112,10 +112,12 @@ An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law establishes a
 \end{equation}
 In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by $\frac{1}{s}$. This implies that even a small sequential fraction (small \texttt{s}) can severely limit the total speedup, regardless of the number of processors available. Figure \ref{fig:speedup-plot} illustrates the theoretical speedup according to Amdahl's Law compared to ideal speedup for a given sequential fraction. 
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \caption{Ideal vs.\ Amdahl’s theoretical speedup ($s=0.1$).}
   \includegraphics[width=0.7\linewidth]{speedup-plot.png}
+  \par\smallskip
+  {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
   \label{fig:speedup-plot}
 \end{figure}
 
@@ -271,13 +273,24 @@ The Aho-Corasick algorithm overcomes this by building one \textit{finite automat
 
 \subsubsecao{Algorithm Components and Construction}
 
-Aho-Corasick has two main phases: (i) construction, which builds the automaton, and (ii) search, which scans the text. The automaton, introduced in \cite{AhoCorasick1975}, has three key tables, built in the following order:
+Aho-Corasick has two main phases: (i) construction, which builds the automaton, and (ii) search, which scans the text. The automaton has three key tables, built in the following order:
 
 \begin{itemize}
     \item \textbf{Keyword Trie (goto)}: a \textit{keyword trie} is first constructed from the pattern set $K=\{ P_1, P_2, \dots, P_k \}$. Each node represents a state, and each edge corresponds to a character transition. A path from the root to any state $s$ spells a prefix of one or more keywords. Formally, the \textit{goto function} $\operatorname{goto}(s, a)$ returns the next state $s'$ when an edge labelled $a$ exists; otherwise the transition fails. Undefined transitions from the root are assigned back to the root, i.e., $\operatorname{goto}(0, a) = 0$, creating implicit self-loops for every alphabet symbol;
     \item \textbf{Failure Function (f)}: for any state $s$ (except the root), $\operatorname{f}(s)$ is the state $s'$ whose path label is the longest proper suffix of the path label of $s$ that is also a prefix of some keyword. On a mismatch, the automaton follows $\operatorname{f}(s)$ and resumes matching without consuming the current character. The \textit{failure function} is computed level-by-level (breadth-first) after the goto table is complete;
     \item \textbf{The Output Function}: the \textit{output function}, $\operatorname{output}(s)$, identifies all keywords that end at state $s$. For a given state $s$, $\operatorname{output}(s)$ is the set of all patterns $P_i$ in $K$ such that the string corresponding to the path to $s$ is $P_i$. To ensure all matches are reported, including those that are suffixes of other patterns, $\operatorname{output}(s)$ is augmented during the failure function computation: if $\operatorname{f}(s) = s'$, then $\operatorname{output}(s) \leftarrow \operatorname{output}(s) \cup \operatorname{output}(\operatorname{f}(s))$. This incremental union lets each state report every pattern that ends either at that state or at any suffix state reached through its failure chain.
 \end{itemize}
+
+The complete automaton, combining the goto transitions, failure links, and output match sets, is illustrated in Figure~\ref{fig:ac_automaton} for the pattern set $K=\{\text{"he"}, \text{"she"}, \text{"hers"}\}$.
+
+\begin{figure}[H]
+\centering
+\caption{Complete Aho–Corasick automaton for the pattern set $K=\{\text{"he"}, \text{"she"}, \text{"hers"}\}$, showing solid blue goto transitions, dashed red failure links, double-circled accepting states, and their corresponding output match sets.}
+\includegraphics[width=1.0\linewidth]{ac_automaton.png}
+\par\smallskip
+{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\label{fig:ac_automaton}
+\end{figure}
 
 
 \subsubsecao{Matching Phase}

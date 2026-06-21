@@ -14,7 +14,17 @@ and measured independently. Two complementary forms of parallelism are
 considered: partitioning the \textit{input text} among threads, and partitioning
 the \textit{pattern dictionary}. In addition, an algorithmic optimization of the
 match-emission step is proposed that benefits both the sequential and the
-parallel cases. The remainder of this chapter describes each component.
+parallel cases. The remainder of this chapter describes each component. The overall phased execution flow of the proposed parallel framework is illustrated in Figure~\ref{fig:pipeline}.
+
+\begin{figure}[H]
+\centering
+\caption{Parallel execution pipeline of the proposed framework, divided into three phases: sequential construction of the read-only automaton (Phase 1), concurrent parallel search across text segments (Phase 2), and sequential deterministic merge of match lists (Phase 3).}
+\includegraphics[width=0.9\linewidth]{5.3.png}
+\par\smallskip
+{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\label{fig:pipeline}
+\end{figure}
+
 
 \subsecao{Data Partitioning and Boundary Overlap}
 
@@ -40,7 +50,17 @@ containing its end position keeps ownership disjoint. This preserves an exact
 one-to-one correspondence with the sequential baseline and avoids duplicate
 detections. An overlap of $L_{\max}-1$ is the minimum that achieves
 this property; any smaller value loses matches, and any larger value only adds
-redundant work.
+redundant work. This boundary-crossing detection and overlap logic is illustrated in Figure~\ref{fig:boundary_overlap}.
+
+\begin{figure}[H]
+\centering
+\caption{Data partitioning and boundary overlap scanning layout, showing matching ownership and warm-up margins across Thread 0 and Thread 1.}
+\includegraphics[width=1.0\linewidth]{4.1.png}
+\par\smallskip
+{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\label{fig:boundary_overlap}
+\end{figure}
+
 
 \subsecao{Load Balancing on Heterogeneous Cores}
 
@@ -74,7 +94,17 @@ sequential read of a short, contiguous range. The hardware prefetcher
 handles this efficiently, removing pointer dereferences from the inner loop.
 This optimization is purely a memory-layout change: it preserves the exact set
 of reported matches and is inherited by every scanning variant, whether
-sequential or parallel.
+sequential or parallel. Figure~\ref{fig:flattened_output} contrasts this contiguous layout with the canonical linked list structure.
+
+\begin{figure}[H]
+\centering
+\caption{Comparison of match-emission layouts: (a) canonical linked outputs using pointer-chasing across scattered memory nodes, and (b) proposed flattened output layout storing contiguous pattern indices.}
+\includegraphics[width=0.88\linewidth]{4.3.png}
+\par\smallskip
+{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\label{fig:flattened_output}
+\end{figure}
+
 
 \subsecao{Partitioning the Dictionary}
 
