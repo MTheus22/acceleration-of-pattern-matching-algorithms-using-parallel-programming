@@ -4,7 +4,7 @@ LATEX=xelatex
 BIB=bibtex
 
 PARTES = $(wildcard partes/*.tex)
-PARTES = $(wildcard figuras/*)
+FIGURAS = $(wildcard figuras/*)
 
 all: main.pdf
 	$(MAKE) clean
