@@ -4,14 +4,34 @@ reported in this thesis are derived. The end-to-end wall-clock times of
 Table~\ref{tab:e2e} were collected in a dedicated pipeline benchmark conducted
 on 2026-05-22 and are documented in the companion repository's synthesis report
 (\texttt{parallel-aho-corasick/docs/tcc-synthesis.html}, Section~3.9); the raw
-sweep script and timing log are not currently archived in the repository.
-% REVIEW-TODO: archive scripts/run_f3_v3flat_build_par_sweep.sh and f3_sweep.log for full reproducibility
+sweep script and timing log for that earlier campaign are not currently archived
+in the repository, a reproducibility limitation noted explicitly in the Results
+chapter when those figures are discussed.
 This allows the primary figures to be reproduced and audited independently.
 The benchmark campaign stores its measurements in a single typed SQLite
 database located at \texttt{parallel-aho-corasick/runs/overnight/sweep.db},
 containing one \texttt{runs} table (one row per timed execution) and a
 set of aggregating views. The headline figures are retrieved from these views
 instead of the raw execution logs.
+
+\subsecao{Artifact Availability}
+
+The complete artifacts of this work are publicly available in two Git
+repositories: the \LaTeX{} source of this document at
+\url{https://github.com/MTheus22/acceleration-of-pattern-matching-algorithms-using-parallel-programming},
+and the C implementation---together with the searchers, the benchmark harness,
+the dataset descriptors, and the measurement database---at
+\url{https://github.com/MTheus22/parallel-aho-corasick}. Every empirical figure
+reported in this thesis is derived from the latter repository. After cloning it,
+the sequential and parallel searchers can be built and exercised through the
+project Makefile: \texttt{make} compiles the laboratory, \texttt{make test}
+checks that every strategy reproduces the exact match set of the sequential
+baseline, \texttt{make digest} runs the MD5 multiset validation described in
+Section~\ref{subsec:correctness} (up to sixty-four threads), and
+\texttt{make bench} executes the measurement sweep. The remainder of this
+appendix documents the schema and the canonical queries of the resulting
+measurement database, so that each headline number can be traced back to the
+raw measurements.
 
 \subsecao{Database Schema}
 
