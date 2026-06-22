@@ -175,8 +175,9 @@ this versioned LaTeX source.
   visual/layout regressions.
 - The build pipeline order (`xelatex → bibtex → xelatex × 2`).
 - File names in `partes/` referenced from `main.tex` (`abstract.tex`,
-  `apendicei.tex`, `anexoi.tex`, `introduction.tex`, `fundamentacao.tex`,
-  `rsl.tex`, `proposal.tex`, `results.tex`).
+  `apendicei.tex`, `introduction.tex`, `fundamentacao.tex`,
+  `rsl.tex`, `proposal.tex`, `results.tex`, `conclusion.tex`,
+  `methodology.tex`).
 - Top-level metadata commands (`\autor`, `\titulo`, etc.) unless the
   user explicitly requests an update.
 
