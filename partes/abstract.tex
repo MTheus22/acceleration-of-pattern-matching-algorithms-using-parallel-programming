@@ -18,10 +18,13 @@ corpus --- both at twelve threads for the same moderate dictionary --- while the
 flattened layout adds a regime-dependent gain
 that grows with memory pressure, up to $+13.0\%$ on a single thread. When the
 automaton is forty-two times larger than the cache, however, throughput drops by
-$74.0\%$ and the parallel speedup peaks near $2.85\times$ at six threads on the
-canonical corpus before regressing, reaching $2.79\times$ at twelve threads on the
-multi-gigabyte corpus, exposing memory bandwidth as the physical ceiling. End-to-end accelerations reach up to
-$4.48\times$. The central finding is that, once the automaton exceeds the
+$74.0\%$ and parallel scaling collapses: on the canonical corpus the speedup
+peaks near $2.85\times$ at six threads and then regresses, while on the
+multi-gigabyte corpus it saturates at only $2.79\times$ at twelve threads,
+exposing memory bandwidth as the physical ceiling. Whole-pipeline (build,
+search, and merge) accelerations reach $4.50\times$ on the moderate dictionary
+and $2.76\times$ on the memory-bound one; since construction is under one percent
+of the runtime, these track the search-only speedups almost exactly. The central finding is that, once the automaton exceeds the
 last-level cache, the dominant barrier to scaling Aho-Corasick is
 microarchitectural --- namely cache overflow and DRAM bandwidth --- rather than
 the matching logic itself.

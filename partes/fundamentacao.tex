@@ -100,17 +100,17 @@ Ideally, \texttt{Tp} is expected to be substantially less than \texttt{Ts}. Howe
 
 \subsubsecao{Speedup}
 
-Speedup (\texttt{S}) measures the performance gain achieved through parallel execution relative to sequential execution, as shown in Eq. \ref{eq:speedup}. It is defined as the ratio of sequential execution time to parallel execution time:
+Speedup (\texttt{S}) measures the performance gain achieved through parallel execution relative to sequential execution, as shown in Eq.~\ref{eq:speedup}. It is defined as the ratio of sequential execution time to parallel execution time:
 \begin{equation}
     S = \frac{T_s}{T_p}
     \label{eq:speedup}
 \end{equation}
-An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law establishes a theoretical upper bound on the speedup achievable by parallelizing a program with a fixed problem size. If \texttt{s} represents the fraction of a program's sequential execution time that is inherently serial (non-parallelizable), and \texttt{f} is the parallelizable fraction (\texttt{s + f = 1}), the maximum speedup on \texttt{p} processors is given by Eq. \ref{eq:amdahl}.
+An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law~\cite{Amdahl1967} establishes a theoretical upper bound on the speedup achievable by parallelizing a program with a fixed problem size. If \texttt{s} represents the fraction of a program's sequential execution time that is inherently serial (non-parallelizable), and \texttt{f} is the parallelizable fraction (\texttt{s + f = 1}), the maximum speedup on \texttt{p} processors is given by Eq.~\ref{eq:amdahl}.
 \begin{equation}
     S \leq \frac{1}{s + f/p}
     \label{eq:amdahl}
 \end{equation}
-In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by $\frac{1}{s}$. This implies that even a small sequential fraction (small \texttt{s}) can severely limit the total speedup, regardless of the number of processors available. Figure \ref{fig:speedup-plot} illustrates the theoretical speedup according to Amdahl's Law compared to ideal speedup for a given sequential fraction. 
+In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by $\frac{1}{s}$. This implies that even a small sequential fraction (small \texttt{s}) can severely limit the total speedup, regardless of the number of processors available. Figure~\ref{fig:speedup-plot} illustrates the theoretical speedup according to Amdahl's Law compared to ideal speedup for a given sequential fraction. 
 
 \begin{figure}[H]
   \centering
@@ -121,7 +121,7 @@ In the limit, as the number of processors (\texttt{p}) tends to infinity, the ma
   \label{fig:speedup-plot}
 \end{figure}
 
-A complementary perspective is offered by the Gustafson-Barsis Law in Eq. \ref{eq:gustafson}, where $\alpha$ denotes the fraction of the \textit{parallel} run time spent in non-parallelizable (serial) work (and is therefore a distinct quantity from Amdahl's $s$, which is the serial fraction of the \textit{sequential} run). This law argues that, for problems whose size can be scaled with the available processors, an approximately linear speedup is attainable even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios \cite{Pacheco2011}.
+A complementary perspective is offered by the Gustafson-Barsis Law~\cite{Gustafson1988} in Eq.~\ref{eq:gustafson}, where $\alpha$ denotes the fraction of the \textit{parallel} run time spent in non-parallelizable (serial) work (and is therefore a distinct quantity from Amdahl's $s$, which is the serial fraction of the \textit{sequential} run). This law argues that, for problems whose size can be scaled with the available processors, an approximately linear speedup is attainable even in the presence of a serial fraction. Both Amdahl's and Gustafson's laws are important for understanding the limits and potential of parallelism in different scenarios \cite{Pacheco2011}.
 
 \begin{equation}
     S_{\text{scaled}} = \alpha + (1-\alpha) \cdot p
@@ -130,7 +130,7 @@ A complementary perspective is offered by the Gustafson-Barsis Law in Eq. \ref{e
 
 \subsubsecao{Efficiency}
 
-Efficiency (\texttt{E}) measures the effectiveness of processor utilization in a parallel program. It is defined as the ratio of speedup to the number of processors \texttt{p}, as in Eq. \ref{eq:efficiency}:
+Efficiency (\texttt{E}) measures the effectiveness of processor utilization in a parallel program. It is defined as the ratio of speedup to the number of processors \texttt{p}, as in Eq.~\ref{eq:efficiency}:
 \begin{equation}
     E = \frac{S}{p} = \frac{T_s}{p \cdot T_p}
     \label{eq:efficiency}
@@ -158,7 +158,7 @@ This section explains the Trie data structure, detailing its defining properties
 
 \subsubsecao{Definition and Basic Structure}
 
-A Trie---also known as a prefix tree---is a specialized tree-like data structure optimized for the efficient storage and retrieval of a dynamic set of strings. Edward Fredkin introduced the term ``trie'' in 1960, highlighting its primary application in information retrieval \cite{Fredkin1960}, \cite{Knuth1998}. Figure \ref{fig:trie-example} illustrates an example of a trie storing a set of words.
+A Trie---also known as a prefix tree---is a specialized tree-like data structure optimized for the efficient storage and retrieval of a dynamic set of strings. Edward Fredkin introduced the term ``trie'' in 1960, highlighting its primary application in information retrieval \cite{Fredkin1960}, \cite{Knuth1998}. Figure~\ref{fig:trie-example} illustrates an example of a trie storing a set of words.
 
 % Figura da Trie
 \begin{figure}[H]
@@ -193,7 +193,7 @@ Tries support several primary operations, including search, insertion, and delet
 Tries provide distinct advantages for operations on string collections, as detailed below.
 
 \begin{itemize}
-    \item \textbf{Time Complexity}: a primary advantage is that the time required for search and insertion operations depends primarily on the length of the key ($L$), not on the total number ($N$) of keys stored. Specifically, these operations typically require examining a number of nodes proportional to $L$. \cite{SedgewickWayne2011} state that the number of array accesses (node visits) is at most $L+1$ \cite{SedgewickWayne2011}. This $O(L)$ performance makes tries highly efficient for prefix-based searches (e.g., retrieving all keys starting with a given prefix) and ensures that search performance does not substantially degrade as the dataset size increases;
+    \item \textbf{Time Complexity}: a primary advantage is that the time required for search and insertion operations depends primarily on the length of the key ($L$), not on the total number ($N$) of keys stored. Specifically, these operations typically require examining a number of nodes proportional to $L$. Sedgewick and Wayne~\cite{SedgewickWayne2011} state that the number of array accesses (node visits) is at most $L+1$. This $O(L)$ performance makes tries highly efficient for prefix-based searches (e.g., retrieving all keys starting with a given prefix) and ensures that search performance does not substantially degrade as the dataset size increases;
     \item \textbf{Prefix Sharing}: when stored strings share common prefixes, tries inherently exploit this by having those strings share the initial path from the root. This sharing can lead to significant space savings compared to storing each string independently, particularly if there is substantial prefix overlap among keys \cite{Fredkin1960}.
 \end{itemize}
 
@@ -213,7 +213,7 @@ This section introduces the fundamental problem of pattern matching within strin
 
 \subsubsecao{The Pattern Matching Problem}
 
-The \textit{string matching} problem consists of determining whether a string $P$ (the \textit{pattern}) of length $M$ occurs within a string $T$ (the \textit{text}) of length $N$, where $M \leq N$. Formally, it seeks all positions $pos$ such that the condition in Eq. \ref{eq:string_matching_condition} holds for every $i \in \{0, 1, \dots, M-1\}$, and each valid $pos$ corresponds to an occurrence of the pattern in the text:
+The \textit{string matching} problem consists of determining whether a string $P$ (the \textit{pattern}) of length $M$ occurs within a string $T$ (the \textit{text}) of length $N$, where $M \leq N$. Formally, it seeks all positions $pos$ such that the condition in Eq.~\ref{eq:string_matching_condition} holds for every $i \in \{0, 1, \dots, M-1\}$, and each valid $pos$ corresponds to an occurrence of the pattern in the text:
 \begin{equation}
     P[i] = T[pos + i], \quad \text{with} \quad pos + i < N
     \label{eq:string_matching_condition} 
@@ -312,7 +312,7 @@ Each input character advances the automaton by at most one $\operatorname{goto}$
 
 \subsubsecao{Time and Space Complexity}
 
-The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for multi-pattern matching \cite{AhoCorasick1975, Gusfield1997}. The complexities for the construction and search phases and storing the automaton are as follows:
+The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for multi-pattern matching \cite{AhoCorasick1975}, \cite{Gusfield1997}. The complexities for the construction and search phases and storing the automaton are as follows:
 
 \begin{itemize}
     \item \textbf{Construction phase}: building the goto, failure, and output functions takes $O(L)$ time, where $L$ is the total length of all keywords. If a dense array is used for the root, an additional $O(|\Sigma|)$ initialization cost is incurred, giving $O(L + |\Sigma|)$;

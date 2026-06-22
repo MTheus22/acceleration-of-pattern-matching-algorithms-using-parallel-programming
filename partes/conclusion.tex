@@ -41,8 +41,10 @@ traffic that is already the bottleneck. These negative results are a
 key part of the contribution: they rule out plausible approaches and
 reinforce the central thesis that, on this hardware, DRAM bandwidth is the main
 constraint rather than the matching logic. Therefore, text parallelism combined
-with a cache-friendly layout is the correct approach. End-to-end, the full pipeline achieves up to $4.48\times$ on
-the moderate dictionary and $3.04\times$ on the memory-bound one.
+with a cache-friendly layout is the correct approach. End-to-end, the full pipeline achieves $4.50\times$ on
+the moderate dictionary and $2.76\times$ on the memory-bound one---figures that
+track the search-only speedups, since construction is under one percent of the
+runtime.
 
 The three specific objectives from the introduction were fully met.
 The first --- to design and implement a parallel Aho-Corasick algorithm in C using

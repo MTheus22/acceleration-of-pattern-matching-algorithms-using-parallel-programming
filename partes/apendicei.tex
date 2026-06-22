@@ -1,13 +1,11 @@
 This appendix documents the protocol used to query the raw measurement
-database from which the search, footprint, stability, and construction results
-reported in this thesis are derived. The end-to-end wall-clock times of
-Table~\ref{tab:e2e} were collected in a dedicated pipeline benchmark conducted
-on 2026-05-22 and are documented in the companion repository's synthesis report
-(\texttt{parallel-aho-corasick/docs/tcc-synthesis.html}, Section~3.9); the raw
-sweep script and timing log for that earlier campaign are not currently archived
-in the repository, a reproducibility limitation noted explicitly in the Results
-chapter when those figures are discussed.
-This allows the primary figures to be reproduced and audited independently.
+database from which every result reported in this thesis is derived, including
+the end-to-end wall-clock times of Table~\ref{tab:e2e}. Those end-to-end figures
+are not a separate campaign: each is the sum of two quantities that the canonical
+sweep already records for the corresponding execution---the construction time
+(\texttt{build\_ms}) and a single full-corpus search pass (\texttt{mean\_ms}).
+They can therefore be reproduced and audited from the same database as every
+other figure.
 The benchmark campaign stores its measurements in a single typed SQLite
 database located at \texttt{parallel-aho-corasick/runs/overnight/sweep.db},
 containing one \texttt{runs} table (one row per timed execution) and a
@@ -45,7 +43,7 @@ footprint in kibibytes, and sequential or parallel build time). The views
 listed in Table~\ref{tab:dbviews} pre-aggregate the data so no headline
 figure requires ad hoc post-processing of the raw rows.
 
-\begin{table}[htbp]
+\begin{table}[H]
     \centering
     \caption{Aggregating views of the measurement database.}
     \label{tab:dbviews}
@@ -90,6 +88,14 @@ WHERE thr = 12 ORDER BY automaton_mib;
 -- Speedup of the parallel automaton construction
 SELECT patterns, build_threads, build_speedup FROM v_build
 ORDER BY patterns, build_threads;
+
+-- End-to-end wall-clock (build + one full-corpus scan) on enron_x8
+SELECT patterns, searcher, thr, build_ms, mean_ms,
+       build_ms + mean_ms AS e2e_ms
+FROM runs
+WHERE corpus='enron_x8' AND thr IN (0, 12)
+  AND searcher IN ('sequential','pthread_chunked_flat','pthread_chunked_v3_flat')
+ORDER BY patterns, searcher, thr;
 \end{verbatim}
 
 Before any timing was reported, the correctness of every parallel strategy was

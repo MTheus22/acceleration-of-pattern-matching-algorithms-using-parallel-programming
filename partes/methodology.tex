@@ -57,7 +57,7 @@ domain. Table~\ref{tab:datasets} summarizes the pattern dictionaries, which were
 derived from publicly available Snort and Emerging Threats rule sets, and
 Table~\ref{tab:corpora} summarizes the text corpora.
 
-\begin{table}[htbp]
+\begin{table}[H]
     \centering
     \caption{Pattern dictionaries and the resulting automaton footprint.}
     \label{tab:datasets}
@@ -76,7 +76,7 @@ Table~\ref{tab:corpora} summarizes the text corpora.
     {\footnotesize\raggedright \textbf{Source:} Prepared by the author from Snort and Emerging Threats rule sets.\par}
 \end{table}
 
-\begin{table}[htbp]
+\begin{table}[H]
     \centering
     \caption{Text corpora used as scanning input.}
     \label{tab:corpora}
@@ -137,7 +137,7 @@ runtime within the same binary and all sharing the same automaton. Beyond
 the sequential baseline, the controlled set of variants is summarized in
 Table~\ref{tab:variants}.
 
-\begin{table}[htbp]
+\begin{table}[H]
     \centering
     \caption{Controlled set of evaluated strategies, grouped by optimization axis.}
     \label{tab:variants}
@@ -191,19 +191,9 @@ own right.
 \subsecao{Measurement Protocol}
 
 Each reported data point follows the exact per-phase repetition protocol
-summarized in Table~\ref{tab:protocol}. Phase~A (speedup curves) sweeps thread
-counts $T \in \{1,2,4,6,8,10,12\}$ for the canonical Enron corpus and
-$T \in \{1,4,8,12\}$ for the eight-fold replica, as recorded in
-\texttt{sweep.db}. Phases A--C (speedup curves, footprint, and cross-corpus)
-each execute two warm-up iterations followed by five timed iterations; phase D (per-thread diagnostic) executes one warm-up followed by
-three timed iterations; and phase E (parallel construction) executes a single
-timed build with no warm-up. The warm-up iterations pay for page faults and warm
-the caches so that the timed iterations measure steady-state behaviour. Both the
-mean and the best (minimum) times are recorded; the mean is used for the reported
-throughput, and the dispersion between iterations is retained as an indicator of
-stability.
+summarized in Table~\ref{tab:protocol}. 
 
-\begin{table}[htbp]
+\begin{table}[H]
     \centering
     \caption{Per-phase repetition protocol of the formal sweep (2026-05-29), verified against \texttt{sweep.db}.}
     \label{tab:protocol}
@@ -222,6 +212,18 @@ stability.
 
     {\footnotesize\raggedright \textbf{Source:} Prepared by the author from \texttt{sweep.db} (sweep 2026-05-29).\par}
 \end{table}
+
+Phase~A (speedup curves) sweeps thread
+counts $T \in \{1,2,4,6,8,10,12\}$ for the canonical Enron corpus and
+$T \in \{1,4,8,12\}$ for the eight-fold replica, as recorded in
+\texttt{sweep.db}. Phases A--C (speedup curves, footprint, and cross-corpus)
+each execute two warm-up iterations followed by five timed iterations; phase D (per-thread diagnostic) executes one warm-up followed by
+three timed iterations; and phase E (parallel construction) executes a single
+timed build with no warm-up. The warm-up iterations pay for page faults and warm
+the caches so that the timed iterations measure steady-state behaviour. Both the
+mean and the best (minimum) times are recorded; the mean is used for the reported
+throughput, and the dispersion between iterations is retained as an indicator of
+stability.
 
 A caveat specific to the measurement platform must be stated explicitly. The
 reference machine is a thermally constrained mobile processor.
