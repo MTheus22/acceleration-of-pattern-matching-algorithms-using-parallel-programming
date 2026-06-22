@@ -111,7 +111,10 @@ Other custom commands relevant for editing:
 - Tone: formal, third-person, no first-person pronouns ("we", "I",
   "our").
 - Citations: introduce a study by author + bracketed citation, e.g.,
-  *"Smith et al. [12] propose…"*. Multiple citations: `\cite{a,b}`.
+  *"Smith et al. [12] propose…"*. Multiple citations must be written
+  as **separate** commands — `\cite{a}, \cite{b}` (renders `[1], [2]`)
+  — NOT merged into `\cite{a,b}` (which renders `[1, 2]`). This is the
+  author's required style; do not "tidy" adjacent `\cite`s into one.
 - New references must have a corresponding entry in
   `referencias.bib`. Do not invent citation keys without adding them.
 - Do not commit `main.pdf` changes that you produced just to "see how
@@ -130,6 +133,29 @@ Other custom commands relevant for editing:
 | Add a bibliography entry          | append to `referencias.bib`, cite with `\cite{key}`  |
 | Add a LaTeX package               | add `\usepackage{...}` in `pacotes/pacotes.tex`      |
 | Generate a clean PDF              | `make`                                               |
+
+## Presentation (`apresentacao/`)
+
+The defense slides live in `apresentacao/`, authored in **Marp**
+(Markdown → HTML/PDF). Source of truth: `apresentacao/slides.md`.
+`slides.html` and `slides.pdf` are **generated** — never edit them by
+hand; regenerate after editing `slides.md`.
+
+Marp is **not** on `PATH`; it runs via `npx` and the package is
+`@marp-team/marp-cli` (v4.4.0), *not* `marp`. PDF export needs Chrome.
+
+```bash
+cd apresentacao
+python3 gerar_grafico_svg.py                                   # if data changed → figuras/speedup_results.svg
+npx @marp-team/marp-cli@4.4.0 slides.md -o slides.html --allow-local-files
+CHROME_PATH=/usr/bin/google-chrome \
+  npx @marp-team/marp-cli@4.4.0 slides.md -o slides.pdf --allow-local-files
+```
+
+`--allow-local-files` is required because slides reference images in
+`figuras/`. Per-slide citations use the Marp directive
+`<!-- _footer: "Author (year); ..." -->`. Any number in the slides must
+match the thesis (and thus `sweep.db`). See `apresentacao/README.md`.
 
 ## Helpers in this repo
 

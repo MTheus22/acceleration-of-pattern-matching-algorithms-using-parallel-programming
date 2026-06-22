@@ -33,6 +33,8 @@ YARA-centric objectives.
 - `configs/idp-model.cls` — institutional class. **Do not edit.**
 - `pacotes/pacotes.tex` — add `\usepackage{...}` here.
 - `figuras/` — figures (PDF/PNG); `graphicspath` already points here.
+- `apresentacao/` — defense slides in **Marp**. Edit `slides.md`;
+  `slides.html`/`slides.pdf` are generated (see below). Don't hand-edit them.
 
 ## Conventions Copilot must follow
 
@@ -41,13 +43,23 @@ YARA-centric objectives.
   - `\subsecao{Title}` and `\subsubsecao{Title}` inside content files.
   - Never suggest `\section`, `\subsection`, `\subsubsection`.
 - Citations: `\cite{key}` (numeric IEEE). Every new key must exist in
-  `referencias.bib`.
+  `referencias.bib`. Multiple citations stay **separate** —
+  `\cite{a}, \cite{b}` → `[1], [2]` — never merge into `\cite{a,b}`.
 - Tone: formal, third-person English. No "we", "I", "our".
 - Comments and identifiers in English; supporting markdown
   (`README.md`, `CLAUDE.md`, `tools/*/README.md`) in Portuguese.
 - Abstract/Resumo files: `partes/abstract.tex`. Do not rename.
 - Add new chapters by creating `partes/new.tex` and registering them
   in `main.tex` via `\secao{...}{partes/new}`.
+
+## Slides (Marp, `apresentacao/`)
+
+- Source of truth: `apresentacao/slides.md`. Regenerate outputs after editing:
+  - `npx @marp-team/marp-cli@4.4.0 slides.md -o slides.html --allow-local-files`
+  - PDF: prefix `CHROME_PATH=/usr/bin/google-chrome` (Marp uses Chrome).
+- Package is `@marp-team/marp-cli` (not `marp`); runs via `npx`, not on PATH.
+- Slide numbers must match the thesis. Full details in
+  [`../CLAUDE.md`](../CLAUDE.md) and `apresentacao/README.md`.
 
 ## Common pitfalls
 
