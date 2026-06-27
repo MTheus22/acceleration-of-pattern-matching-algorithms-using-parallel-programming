@@ -185,6 +185,10 @@ this versioned LaTeX source.
 
 - `../parallel-aho-corasick` — C implementation, datasets, benchmarks.
   Its own `CLAUDE.md` is the source of truth for the empirical side.
+  Body numbers come from the **i5-1235U** sweep (`runs/overnight/sweep.db`);
+  a portability run on a **Ryzen 9 9950X** (`runs/workstation/sweep.db`,
+  analysis in `docs/workstation-analysis.md`) generalizes — but does not
+  replace — those results.
 - `../tcc_notes` — Obsidian vault with the systematic-review notes
   and related-work summaries. Use `sections/notes/` for consolidated
   raw material and `sections/text/` for prose drafts before touching
