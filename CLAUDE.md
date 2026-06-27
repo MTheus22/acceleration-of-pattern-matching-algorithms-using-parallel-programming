@@ -185,7 +185,7 @@ this versioned LaTeX source.
 
 - `../parallel-aho-corasick` — C implementation, datasets, benchmarks.
   Its own `CLAUDE.md` is the source of truth for the empirical side.
-  Body numbers come from the **i5-1235U** sweep (`runs/overnight/sweep.db`);
+  Body numbers come from the **i5-1235U** sweep (`runs/i5/sweep.db`);
   a portability run on a **Ryzen 9 9950X** (`runs/workstation/sweep.db`,
   analysis in `docs/workstation-analysis.md`) generalizes — but does not
   replace — those results.

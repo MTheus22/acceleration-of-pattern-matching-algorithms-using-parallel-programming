@@ -40,7 +40,7 @@ em `figuras/`. Para uma janela de pré-visualização ao vivo: `... -s slides.md
 | `trie-1.png`, `ac_matching-1.png` | Ilustrações do autômato Aho–Corasick. |
 
 > Coerência: qualquer número nos slides deve bater com o TCC, cuja fonte de
-> verdade é `../../parallel-aho-corasick/runs/overnight/sweep.db` (sweep
+> verdade é `../../parallel-aho-corasick/runs/i5/sweep.db` (sweep
 > 2026-05-29). E2E = `build_ms + mean_ms` (ver apêndice do TCC).
 
 ## Citações
