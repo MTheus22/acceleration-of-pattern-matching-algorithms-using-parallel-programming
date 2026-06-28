@@ -1,21 +1,29 @@
-This chapter describes the experimental methodology adopted to design and
-evaluate the parallel scanning strategies introduced in the previous chapter.
-The central object of study is not a particular processor, but a
-\textit{computational regime}: the behaviour of multi-pattern matching when
-the automaton footprint greatly exceeds the last-level cache (LLC), which is
-the operating point of signature-based intrusion detection over large rule
-sets. The reference machine is therefore treated as a \textit{measurement
-platform} rather than as the subject of the investigation, and the conclusions
-are framed in terms of relative scalability behaviour (speedup, throughput, and
-efficiency) instead of absolute production capacity.
+% review: issue #142, comment 31 --- direct, non-marketing opening
+This chapter describes the experimental methodology used to evaluate the
+parallel Aho--Corasick scanning strategies introduced in the previous chapter.
+The evaluation targets three properties of each strategy --- search
+performance, scalability with the number of threads, and correctness with
+respect to the sequential baseline --- under a shared-memory multi-core
+environment and over pattern dictionaries and text corpora representative of
+signature-based intrusion detection. Because the workloads of interest produce
+automata whose footprint far exceeds the last-level cache, the reported figures
+are expressed as relative quantities (speedup, throughput, and parallel
+efficiency) rather than as absolute production capacity, so that the
+conclusions concern scaling behaviour instead of the peak rating of a single
+machine.
 
-The methodology is organized around four principles: (i) every parallel variant
-is validated for correctness against the sequential baseline before any
-performance claim is made; (ii) each optimization axis is isolated so that its
-individual contribution can be attributed unambiguously; (iii) the experimental
-design includes hypotheses that the experiments are intended to
-\textit{falsify}, not merely to confirm; and (iv) measurement noise inherent to
-the hardware is reported explicitly rather than hidden.
+% review: issue #143, comment 32 --- chapter roadmap instead of "principles"
+The chapter is organized in the order in which the reader needs the
+information. It first establishes the experimental environment and software
+stack; then characterizes the pattern dictionaries and text corpora and the
+role each one plays; states the three-phase execution model and the invariants
+that make the parallelization sound; enumerates the evaluated strategies and
+the axes along which they compose; separates the performance metrics from the
+supporting diagnostic instrumentation; defines the per-phase measurement
+protocol; describes how correctness was established before any performance was
+reported; and closes with the experimental design, stating each hypothesis, the
+experiment that tests it, and the section of the next chapter that reports the
+outcome.
 
 \subsecao{Experimental Environment}
 
