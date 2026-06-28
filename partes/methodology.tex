@@ -80,19 +80,21 @@ domain. Table~\ref{tab:datasets} summarizes the pattern dictionaries, which were
 derived from publicly available Snort and Emerging Threats rule sets, and
 Table~\ref{tab:corpora} summarizes the text corpora.
 
+% review: issue #145, comment 34; issue #115, comment 35 --- replace the
+% platform-dependent "cache regime" column with a platform-independent role
 \begin{table}[H]
     \centering
-    \caption{Pattern dictionaries and the resulting automaton footprint.}
+    \caption{Pattern dictionaries, the resulting automaton footprint, and their experimental role.}
     \label{tab:datasets}
     \small
-    \begin{tabular}{@{} l r r r l @{}}
+    \begin{tabular}{@{} l r r r p{4.2cm} @{}}
         \toprule
-        \textbf{Dictionary} & \textbf{Patterns} & \textbf{States} & \textbf{Automaton} & \textbf{Cache regime} \\
+        \textbf{Dictionary} & \textbf{Patterns} & \textbf{States} & \textbf{Footprint} & \textbf{Experimental role} \\
         \midrule
-        Snort-100   & 100      & 1{,}939   & 1.93~MiB   & Well within L3 (cache-resident) \\ \addlinespace
-        Snort-1k    & $\sim$1{,}000 & 11{,}974 & 11.92~MiB & Near the L3 boundary \\ \addlinespace
-        Snort (full) & 4{,}188  & 55{,}479  & 55.23~MiB  & Exceeds L3 (moderate) \\ \addlinespace
-        Emerging Threats & 44{,}678 & 508{,}896 & 506.78~MiB & $42\times$ the L3 (memory-bound) \\
+        Snort-100   & 100      & 1{,}939   & 1.93~MiB   & Smallest automaton; lower-bound contrast regime. \\ \addlinespace
+        Snort-1k    & $\sim$1{,}000 & 11{,}974 & 11.92~MiB & Intermediate footprint; brackets the throughput cross-over. \\ \addlinespace
+        Snort (full) & 4{,}188  & 55{,}479  & 55.23~MiB  & Primary target dictionary (moderate footprint). \\ \addlinespace
+        Emerging Threats & 44{,}678 & 508{,}896 & 506.78~MiB & Largest footprint; most aggressive memory stressor. \\
         \bottomrule
     \end{tabular}
 
@@ -110,19 +112,25 @@ Table~\ref{tab:corpora} summarizes the text corpora.
         \midrule
         SimpleWiki & $\sim$1.19~GiB & Natural-language encyclopedic text with low match density; used as the contrast corpus in the cross-corpus experiment, which isolates the effect of the text content. \\ \addlinespace
         Enron      & $\sim$1.32~GiB & Real e-mail messages with medium match density; the canonical benchmark corpus. \\ \addlinespace
-        Enron ($8\times$) & $\sim$10.59~GiB & The Enron corpus replicated eightfold; amortizes the build phase and reduces scheduler and thermal noise in scaling curves. \\
+        Enron ($8\times$) & $\sim$10.59~GiB & The Enron corpus replicated eightfold; amortizes the build phase and reduces scheduler noise in the scaling curves. \\
         \bottomrule
     \end{tabular}
 
     {\footnotesize\raggedright \textbf{Source:} Prepared by the author. The Enron corpus derives from the public Enron Email Dataset.\par}
 \end{table}
 
+% review: issue #145, comment 34 --- footprints are platform-independent;
+% cache interpretation deferred to the results chapter and tied to a platform
 The two smaller dictionaries (Snort-100 and Snort-1k) serve as
-\textit{contrast regimes}: their automata fit in or near the cache and expose
-the cross-over point at which memory pressure begins to dominate. The full Snort
-dictionary and the Emerging Threats subset represent the actual target of the
-study, the latter being the most aggressive architectural stressor, with an
-automaton roughly forty-two times larger than the shared LLC.
+\textit{contrast regimes} that bracket the point at which the automaton stops
+fitting comfortably in cache; the full Snort dictionary and the Emerging Threats
+subset are the actual targets of the study, the latter being the most aggressive
+stressor, with an automaton far larger than the last-level cache of any platform
+used here. The footprints in Table~\ref{tab:datasets} are reported as absolute,
+platform-independent sizes; how each footprint relates to a particular cache
+level depends on the machine and is therefore interpreted in the next chapter
+against the cache hierarchy of each platform (for the reference i5, the
+$12$~MiB shared L3).
 
 \subsecao{Execution Model and Invariants}
 
@@ -131,9 +139,9 @@ separation is the foundation of the lock-free design.
 
 \begin{enumerate}
     \item \textbf{Construction.} The patterns are inserted into a trie, and a
-    breadth-first traversal computes the goto, failure, and dictionary-suffix
-    links, together with the precomputed output structures. The resulting
-    automaton is then declared immutable.
+    breadth-first (BFS) traversal computes the goto, failure, and
+    dictionary-suffix links, together with the precomputed output structures.
+    The resulting automaton is then declared immutable. % review: issue #148, comment 38
     \item \textbf{Search.} Each worker thread reads the shared, read-only
     automaton and its assigned portion of the input text, emitting matches into
     a private, thread-local list. No mutex or atomic operation is used on the
