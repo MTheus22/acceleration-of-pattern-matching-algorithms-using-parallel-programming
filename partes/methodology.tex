@@ -162,46 +162,65 @@ boundary-crossing match to a single segment according to its end position.
 
 \subsecao{Evaluated Strategies}
 
-To attribute each performance effect to a single cause, the strategies were
-organized as an additive grid over four orthogonal axes, all selectable at
-runtime within the same binary and all sharing the same automaton. Beyond
-the sequential baseline, the controlled set of variants is summarized in
+% review: issue #116, comment 40 --- show which axes are alternatives vs composable
+The strategies are organized as a set of orthogonal design axes so that each
+performance effect can be attributed to a single cause. Every variant is a
+combination of one choice per axis, all selectable at run time within the same
+binary and all sharing the same automaton. The axes, and which choices are
+mutually exclusive versus composable, are summarized in
 Table~\ref{tab:variants}.
 
 \begin{table}[H]
     \centering
-    \caption{Controlled set of evaluated strategies, grouped by optimization axis.}
+    \caption{Evaluated strategies as orthogonal design axes; the work-distribution
+    options are alternatives, while the emission and construction axes compose with any of them.}
     \label{tab:variants}
     \small
-    \begin{tabular}{@{} l p{8.8cm} @{}}
+    \begin{tabular}{@{} l p{9cm} @{}}
         \toprule
-        \textbf{Axis} & \textbf{Strategy} \\
+        \textbf{Axis} & \textbf{Options (one per run; mutually exclusive within the axis)} \\
         \midrule
-        Baseline & Single-threaded sequential scan (reference for correctness and speedup). \\ \addlinespace
-        Text parallelism & Static homogeneous text chunking with boundary overlap. \\
-            & Refined static chunking with cache padding and a split warm-up/owned loop. \\
-            & Topology-aware chunking that weights segment sizes by core frequency. \\
-            & Dynamic chunk dispatch through an atomic task counter (bag of tasks). \\ \addlinespace
-        Output layout & Flattened, contiguous output table that replaces pointer-chasing emission. \\ \addlinespace
-        Dictionary parallelism & Dictionary sharding by pattern prefix into $K$ independent sub-automata. \\ \addlinespace
-        Composition & Two-dimensional combination of dictionary sharding and text chunking. \\
+        Work distribution & Sequential baseline; static homogeneous chunking; topology-aware weighted chunking; dynamic chunk dispatch (bag of tasks); dictionary sharding by pattern prefix; two-dimensional sharding $\times$ chunking. \\ \addlinespace
+        Emission layout & Chained (pointer-chasing) \emph{or} flattened contiguous output table; composes with any work-distribution choice. \\ \addlinespace
+        Construction & Sequential build \emph{or} level-synchronous parallel build (BFS); composes with any work-distribution choice. \\
         \bottomrule
     \end{tabular}
 
     {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
 \end{table}
 
-The text-parallelism axis partitions the input across threads; the output-layout
-axis addresses the cost of emitting matches; the dictionary axis partitions the
-pattern set instead of the text; and the composition axis tests whether the
-text and dictionary strategies combine. The construction phase has a
-separate, optional level-synchronous parallel variant. Because the automaton
-produced by the parallel construction is bit-for-bit identical to the sequential
-one, any pairing of a construction mode with a search strategy is valid, which
-cleanly isolates the contribution of each axis. An exploratory software-prefetch
-variant of the chunked searcher also exists in the laboratory as a
-microarchitectural probe; it is excluded from the controlled grid above and from
-the reported results because it introduces no new optimization axis.
+Two of the three axes compose freely. The emission layout (chained
+pointer-chasing versus a flattened, contiguous output table) and the
+construction mode (sequential versus level-synchronous parallel build) can be
+paired with any work-distribution choice and with the sequential baseline,
+because the parallel build produces an automaton bit-for-bit identical to the
+sequential one and the emission layout does not change which matches are
+produced. The work-distribution axis, in contrast, is mutually exclusive: a run
+partitions the work in exactly one way. The named searchers in the laboratory
+are therefore compositions of these axes --- for example, static chunking with
+the flat layout, or topology-aware chunking with the flat layout --- which is
+precisely what allows one axis to be varied while the others are held fixed.
+
+% review: issue #149, comment 39 --- topology-aware vs dynamic are distinct axes
+The work-distribution options differ in how they assign work to threads. Static
+homogeneous chunking splits the text into equal segments, one per thread, with
+the boundary overlap required for correctness. Topology-aware chunking and
+dynamic dispatch are two \textit{distinct} answers to the load imbalance that
+equal segments cause on a heterogeneous processor, and they are not the same
+mechanism. Topology-aware chunking sizes each segment \textit{statically}, in
+proportion to the maximum clock frequency of the core that will execute it ---
+read once from the operating system's per-core frequency information --- and
+pins the worker to that core, so that a faster P-core receives a proportionally
+larger segment before the scan begins. Dynamic dispatch instead splits the text
+into many small, uniform tasks that idle workers pull from a shared atomic
+counter \textit{at run time} (a bag-of-tasks scheme), correcting imbalance
+reactively rather than from a hardware model. The dictionary-parallelism options
+partition the pattern set instead of the text: prefix sharding builds $K$
+independent sub-automata, and the two-dimensional composition combines sharding
+with text chunking to test whether the two kinds of parallelism add. An
+exploratory software-prefetch variant of the chunked searcher also exists in the
+laboratory as a microarchitectural probe; it introduces no new axis and is
+excluded from the controlled grid and from the reported results.
 
 \subsecao{Metrics}
 
