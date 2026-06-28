@@ -222,21 +222,31 @@ exploratory software-prefetch variant of the chunked searcher also exists in the
 laboratory as a microarchitectural probe; it introduces no new axis and is
 excluded from the controlled grid and from the reported results.
 
-\subsecao{Metrics}
+\subsecao{Metrics and Instrumentation}
 
-The primary metrics follow the standard definitions introduced in the
+% review: issue #117, comment 41 --- separate performance metrics from diagnostics
+The performance metrics follow the standard definitions introduced in the
 theoretical framework. Search throughput is reported in MB/s (and, where useful,
-in Gbps); speedup is the ratio of sequential to parallel search time as in
+in Gbps); speedup is the ratio of sequential to parallel search time, as in
 Eq.~\ref{eq:speedup}; and parallel efficiency is the speedup normalized by the
-thread count as in Eq.~\ref{eq:efficiency}. The construction time is measured and
-reported separately from the search time, so that the cost of rebuilding the
-automaton (relevant to rule reloading) is never conflated with scanning
-throughput. When a hypothesis concerns load balancing between heterogeneous
-cores, per-thread timings and the coefficient of variation across repetitions
-are reported as a direct measure of synchronization waste at the final barrier.
-Finally, the automaton footprint in bytes is recorded as the causal variable
-that explains throughput across regimes, rather than as a headline figure in its
-own right.
+thread count, as in Eq.~\ref{eq:efficiency}. Search time is the quantity these
+are derived from, and it is always measured separately from construction time,
+so that the cost of rebuilding the automaton --- relevant to rule reloading ---
+is never conflated with scanning throughput.
+
+A second group of quantities does not measure performance but supports its
+interpretation, and is reported as diagnostic instrumentation rather than as a
+result. Per-thread timings and the coefficient of variation across repetitions
+measure load balance and stability, respectively: the per-thread spread exposes
+synchronization waste at the final barrier, while the coefficient of variation
+quantifies how noisy a measurement is rather than how fast it is. Match counts
+are recorded for every run as a correctness check, not a performance figure (see
+Section~\ref{subsec:correctness}). Construction (build) time is recorded for the
+parallel-build experiment. Finally, the laboratory writes every run, together
+with a snapshot of its environment, to a structured log that is ingested into an
+SQLite database, which is the substrate for all aggregation and cross-checking;
+the automaton footprint in bytes is retained there too --- not as a headline
+figure, but as the causal variable used to explain throughput across regimes.
 
 \subsecao{Measurement Protocol}
 
