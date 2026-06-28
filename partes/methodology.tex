@@ -363,20 +363,45 @@ unsynchronized shared writes on the hot path.
 
 \subsecao{Experimental Design and Hypotheses}
 
-The experiments were structured to test a set of explicit hypotheses, several of
-which anticipate negative or qualified outcomes. The main hypotheses are: that
-text chunking scales sublinearly on the hybrid processor but suffers from
-load imbalance when segments are sized uniformly; that the automaton footprint,
-rather than the corpus content, governs throughput once the working set escapes
-the cache; that the flattened output layout reduces emission cost in both the
-sequential and parallel cases; that a level-synchronous parallel construction
-reduces build time for large dictionaries; that prefix-based dictionary sharding
-can recover throughput in the memory-bound regime by shrinking the per-shard
-working set; and that a two-dimensional composition of sharding and chunking
-could combine cache locality with text parallelism. Each hypothesis maps to a
-controlled experiment that varies a single axis while holding the others fixed,
-always comparing against the sequential baseline for headline speedup and against
-the strongest text-parallel strategy when the question concerns composition.
-Reporting the strategies that fail to outperform their simpler counterparts is
-treated as a scientific result in its own right, since it delimits the boundary
-beyond which plausible optimizations stop paying off on this class of hardware.
+% review: issue #122, comment 46 --- tie hypotheses to the objective and map each
+% one to an experiment and to the section of the next chapter that reports it
+The objective of this work is to accelerate multi-pattern matching by
+parallelizing Aho--Corasick on shared-memory multi-core CPUs. That objective is
+decomposed into a set of explicit hypotheses, each phrased so that an experiment
+can falsify it and each isolating a single design axis while the others are held
+fixed. Table~\ref{tab:hypotheses} maps every hypothesis to the experiment that
+tests it and to the place in the next chapter where its outcome is reported;
+throughout, the comparison is against the sequential baseline for headline
+speedup and against the strongest text-parallel strategy when the question
+concerns composition.
+
+\begin{table}[H]
+    \centering
+    \caption{Hypotheses, the experiment that tests each one, and where the outcome is reported.}
+    \label{tab:hypotheses}
+    \small
+    \begin{tabular}{@{} p{6.8cm} l l @{}}
+        \toprule
+        \textbf{Hypothesis} & \textbf{Experiment} & \textbf{Reported in} \\
+        \midrule
+        Text chunking scales sublinearly on a multi-core CPU but suffers load imbalance when segments are sized uniformly. & Speedup curves (Phase~A) & Fig.~\ref{fig:speedup} \\ \addlinespace
+        The automaton footprint, not the corpus content, governs throughput once the working set escapes the cache. & Footprint and cross-corpus sweeps (Phases~B--C) & Table~\ref{tab:footprint} \\ \addlinespace
+        The flattened output layout reduces emission cost in both the sequential and the parallel case. & Layout comparison & Table~\ref{tab:flat} \\ \addlinespace
+        Topology-aware weighting reduces barrier idle time relative to uniform chunking on heterogeneous cores. & Per-thread diagnostic (Phase~D) & Table~\ref{tab:balance} \\ \addlinespace
+        A level-synchronous parallel construction reduces build time for large dictionaries. & Build sweep (Phase~E) & Table~\ref{tab:build} \\ \addlinespace
+        Prefix-based dictionary sharding recovers throughput in the memory-bound regime by shrinking the per-shard working set. & Sharding experiment & Table~\ref{tab:shard} \\ \addlinespace
+        A two-dimensional composition of sharding and chunking combines cache locality with text parallelism. & Composition experiment & Table~\ref{tab:twod} \\
+        \bottomrule
+    \end{tabular}
+
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\end{table}
+
+Each row answers a different question: how performance scales with threads, what
+governs throughput, whether the emission layout pays off, whether topology-aware
+balancing helps, whether construction parallelizes, and whether dictionary
+parallelism helps on its own or in composition. Several hypotheses anticipate
+negative or qualified outcomes, and reporting a strategy that fails to outperform
+a simpler counterpart is treated as a result in its own right, since it delimits
+where plausible optimizations stop paying off on this class of hardware. The next
+chapter presents the outcome of this plan, following the same order.
