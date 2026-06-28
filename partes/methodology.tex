@@ -250,8 +250,15 @@ figure, but as the causal variable used to explain throughput across regimes.
 
 \subsecao{Measurement Protocol}
 
-Each reported data point follows the exact per-phase repetition protocol
-summarized in Table~\ref{tab:protocol}. 
+% review: issue #118, comment 42 --- explain warm-up once, up front
+Each reported data point follows the per-phase repetition protocol summarized in
+Table~\ref{tab:protocol}. Every phase begins with a number of \textit{warm-up}
+iterations whose times are discarded: the warm-up pays the one-time costs of
+page faults and cache population so that the subsequent timed iterations measure
+steady-state behaviour. For each timed series both the mean and the best
+(minimum) time are kept; the mean is used for the reported throughput, and the
+dispersion between iterations is retained as the stability indicator described in
+the previous section.
 
 \begin{table}[H]
     \centering
@@ -273,29 +280,44 @@ summarized in Table~\ref{tab:protocol}.
     {\footnotesize\raggedright \textbf{Source:} Prepared by the author from \texttt{sweep.db} (sweep 2026-05-29).\par}
 \end{table}
 
-Phase~A (speedup curves) sweeps thread
-counts $T \in \{1,2,4,6,8,10,12\}$ for the canonical Enron corpus and
-$T \in \{1,4,8,12\}$ for the eight-fold replica, as recorded in
-\texttt{sweep.db}. Phases A--C (speedup curves, footprint, and cross-corpus)
-each execute two warm-up iterations followed by five timed iterations; phase D (per-thread diagnostic) executes one warm-up followed by
-three timed iterations; and phase E (parallel construction) executes a single
-timed build with no warm-up. The warm-up iterations pay for page faults and warm
-the caches so that the timed iterations measure steady-state behaviour. Both the
-mean and the best (minimum) times are recorded; the mean is used for the reported
-throughput, and the dispersion between iterations is retained as an indicator of
-stability.
+% review: issue #118, comment 42 --- one short paragraph per phase
+Phase~A measures the speedup curves, the headline scaling result. It sweeps
+thread counts $T \in \{1,2,4,6,8,10,12\}$ over the canonical Enron corpus and
+$T \in \{1,4,8,12\}$ over the eight-fold replica, running every parallel searcher
+against the two single-thread baselines, with two warm-ups and five timed
+iterations per point.
 
-A caveat specific to the measurement platform must be stated explicitly. The
-reference machine is a thermally constrained mobile processor.
-Under sustained all-core load lasting hours, the package throttles its
-frequency, and the measured multi-threaded throughput settles roughly $15$ to
-$35\%$ below what isolated bursts on a cold processor report. The values
-published in this work are deliberately the sustained, under-load figures, which
-are conservative and reproducible; cold-burst peaks are treated as the
-non-sustainable upper bound and are not used as headline results. This thermal
-sensitivity is itself a finding consistent with the central thesis: at the scale
-of interest, performance is governed by physical resource limits rather than by
-the number of threads.
+Phase~B measures the automaton footprint against throughput. Holding the corpus
+fixed at Enron, it varies the dictionary across the four footprints of
+Table~\ref{tab:datasets} to locate the throughput cross-over, again with two
+warm-ups and five timed iterations.
+
+Phase~C isolates the effect of the text content. Holding the dictionary fixed at
+the full Snort set, it compares the natural-language SimpleWiki corpus against
+Enron, with two warm-ups and five timed iterations, so that any throughput
+difference is attributable to the corpus rather than to the automaton.
+
+Phase~D is the per-thread diagnostic. At the full thread count it records
+per-thread timings for each parallel searcher --- one warm-up and three timed
+iterations --- to quantify barrier idle time and load balance.
+
+Phase~E measures parallel construction. It compares the sequential build against
+the level-synchronous parallel build across the four dictionaries; since only the
+build time is of interest, each build is timed once with no warm-up.
+
+% review: issue #119, comment 43; issue #120, comment 44 --- drop thermal as a
+% premise; keep a short measurement-variance limitation only
+The peak speedups reported at the saturated thread count must be read with one
+limitation in mind. On the reference i5, which exposes only twelve hardware
+threads, repeated full sweeps reproduce the single-thread baseline to within
+about $3\%$ but place the twelve-thread peak in visibly different regimes from
+one invocation to the next, an effect that the within-run coefficient of
+variation does not capture; the saturated peaks are therefore treated as
+run-dependent rather than exact. The reference platform is additionally a
+thermally constrained mobile part, whose sustained all-core clocks sit below its
+short-burst peaks, so the published values are the sustained, reproducible
+figures; the thermal behaviour itself is not used as a premise here and is
+revisited, where the data warrant, in the results and conclusion.
 
 \subsecao{Correctness Validation}
 \label{subsec:correctness}
