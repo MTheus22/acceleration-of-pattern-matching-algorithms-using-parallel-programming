@@ -75,7 +75,23 @@ finishing times of all workers, reducing the idle time wasted at the
 barrier. As an alternative that requires no knowledge of the topology, the
 framework also supports dynamic dispatch, in which the text is divided into many
 small tasks that idle workers claim through a single atomic counter, so that
-faster cores naturally process more tasks.
+faster cores naturally process more tasks. Figure~\ref{fig:load_balancing}
+contrasts the three partitioning policies and the idle time each leaves at the
+barrier.
+
+% review: issue #155, comment 055 — explanatory figure moved here from results
+\begin{figure}[H]
+\centering
+\caption{Partitioning policies on heterogeneous cores: (a) static homogeneous
+chunking leaves the faster Performance core idle at the barrier (stragglers);
+(b) topology-aware, frequency-weighted chunking sizes each segment to its core's
+speed; (c) dynamic dispatch hands out small tasks on demand. Both (b) and (c)
+equalize finishing times.}
+\includegraphics[width=0.78\linewidth]{load_balancing.pdf}
+\par\smallskip
+{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\label{fig:load_balancing}
+\end{figure}
 
 \subsecao{Flattening the Match-Emission Path}
 
