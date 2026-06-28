@@ -322,30 +322,44 @@ revisited, where the data warrant, in the results and conclusion.
 \subsecao{Correctness Validation}
 \label{subsec:correctness}
 
-Performance is only meaningful once correctness is established, so every parallel
-variant was required to reproduce the output of the sequential baseline before
-being benchmarked. Correctness was checked at three complementary levels. First,
-the automated test suite requires every strategy to reproduce the exact match
-\emph{set} of the sequential baseline---each match identified by its end position
-and pattern identifier---across thread counts of $\{1,2,3,4,7,8\}$; the same suite
-also verifies that the level-synchronous parallel construction produces an
-automaton bit-for-bit identical to the sequentially built one, so that swapping in
-the parallel build can never alter the reported matches. Second, on the full-scale
-workloads, the MD5 digest of the canonicalized match stream---the full set of
-matches placed in a deterministic order by end position and pattern
-identifier---was computed for each parallel strategy and compared against the
-digest of the sequential baseline. An agreement certifies the exact \emph{multiset}
-of matches (their count, their end positions, and their pattern identifiers), a far
-stronger guarantee than match-count parity alone; it was confirmed for every
-strategy up to a thread count of $64$ (a $5.3\times$ oversubscription of the
-hardware), demonstrating that the partitioning logic is robust under heavy
-oversubscription. For the static-chunking strategies, whose thread-local results
-are merged in text order, the digest of the raw emission stream agrees as well; the
-dynamic-dispatch and dictionary-sharded strategies emit the identical multiset in a
-different order, so for them only the canonicalized digest coincides. Finally,
-ThreadSanitizer reported no data races during the parallel search, empirically
-confirming the read-only-automaton invariant and the absence of unsynchronized
-shared writes on the hot path.
+% review: issue #121, comment 45 --- intro on why correctness matters, then one
+% paragraph per validation level
+Correctness is a precondition for any performance claim: a faster scan is
+worthless if it does not return exactly the matches that the sequential algorithm
+returns. The goal of every optimization here is to reduce execution time while
+preserving the output of the sequential baseline, so each parallel variant was
+required to reproduce that output before it was benchmarked. Correctness was
+established at three complementary levels, described in turn below.
+
+First, at the level of the match \emph{set}, the automated test suite requires
+every strategy to reproduce the exact set of matches of the sequential baseline
+--- each match identified by its end position and pattern identifier --- across
+thread counts of $\{1,2,3,4,7,8\}$. The same suite verifies that the
+level-synchronous parallel construction yields an automaton bit-for-bit identical
+to the sequentially built one, so that swapping in the parallel build can never
+alter the reported matches.
+
+Second, at the level of the full-scale \emph{multiset}, the MD5 digest of the
+canonicalized match stream --- the complete set of matches placed in a
+deterministic order by end position and pattern identifier --- was computed for
+each parallel strategy on the production-scale workloads and compared against the
+digest of the sequential baseline. Agreement certifies the exact multiset of
+matches (their count, end positions, and pattern identifiers), a far stronger
+guarantee than match-count parity; it held for every strategy up to a thread
+count of $64$, a $5.3\times$ oversubscription of the hardware, demonstrating that
+the partitioning logic is robust well beyond the physical thread count.
+
+Third, at the level of segment boundaries and emission order, the strategies
+whose thread-local results are merged in text order (the static-chunking
+strategies) reproduce even the digest of the raw, un-canonicalized emission
+stream, confirming that every boundary-straddling match is assigned to exactly
+one segment. The dynamic-dispatch and dictionary-sharded strategies emit the
+identical multiset in a different order, so for them only the canonicalized digest
+coincides, which is the expected and correct behaviour.
+
+Finally, ThreadSanitizer reported no data races during the parallel search,
+empirically confirming the read-only-automaton invariant and the absence of
+unsynchronized shared writes on the hot path.
 
 \subsecao{Experimental Design and Hypotheses}
 
