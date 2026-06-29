@@ -474,7 +474,7 @@ the reference machine. Table~\ref{tab:portability} summarizes the comparison.
     Ryzen~9~9950X run probes external validity.}
     \label{tab:portability}
     \small
-    \begin{tabular}{@{} l r r @{}}
+    \begin{tabular}{@{} >{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{3.3cm} @{}}
         \toprule
         \textbf{Quantity} & \textbf{i5-1235U (12T)} & \textbf{Ryzen 9 9950X (32T)} \\
         \midrule
@@ -485,7 +485,7 @@ the reference machine. Table~\ref{tab:portability} summarizes the comparison.
         Single-thread cache cliff                & $-74.0\%$             & $-67\%$ \\ \addlinespace
         Parallel build ceiling (ET, eight threads) & $1.55\times$        & $1.57\times$ \\ \addlinespace
         Chained-chunking run-to-run CV           & $39.9$--$52.9\%$      & $0.10\%$ \\ \addlinespace
-        Best overall strategy                    & topology-aware flat   & dynamic flat \\
+        Winning search strategy                  & Snort: topology-aware flat; ET: flat & dynamic flat \\
         \bottomrule
     \end{tabular}
 
@@ -503,17 +503,18 @@ rather than of one particular cache size. Partitioning the text again dominates
 partitioning the dictionary, the flattened emission layout again helps, and
 parallel construction again saturates at an algorithmic ceiling rather than a
 hardware one: $1.57\times$ at eight threads for the largest dictionary, almost
-identical to the $1.55\times$ measured on the i5 despite eight times as many
-cores. The bottleneck, the winning axis, and the cheap layout optimization
-therefore carry across microarchitectures.
+identical to the $1.55\times$ measured on the i5 despite the wider
+homogeneous core pool. The bottleneck, the winning axis, and the cheap layout
+optimization therefore carry across microarchitectures.
 
 The workstation \textbf{contests} readings that the single-machine data made
 tempting. The early plateau is not universal: where the i5 saturates at twelve
-threads and the memory-bound curve even regresses past six, the workstation
+threads on the multi-gigabyte corpus and, on the canonical corpus, the
+memory-bound curve even regresses past six, the workstation
 scales monotonically to $22.72\times$ at thirty-two threads for the moderate
 dictionary ($7{,}468$~MB/s) and to $19.79\times$ for the memory-bound one
 ($4{,}186$~MB/s). The earlier observation that more threads become
-counterproductive is thus specific to a bandwidth-starved laptop and is not a
+counterproductive is thus specific to the constrained laptop platform and is not a
 general property of the algorithm. By the same token, the inherent serial
 fraction inferred from the i5 (around $15\%$) overstates the algorithm's
 coordination cost: with uniform cores, parallel efficiency stays high well
@@ -540,7 +541,7 @@ In summary, the workstation does not overturn the study; it widens its external
 validity. The memory-bound regime, the primacy of text partitioning, and the
 value of a cache-friendly layout hold on both machines, while the saturation
 point, the topology-aware balancing, and the strategy ranking are recognized as
-artifacts of the hybrid reference platform. The i5-1235U sweep remains the
+platform-dependent effects of the hybrid reference machine. The i5-1235U sweep remains the
 canonical basis of this chapter; the workstation establishes how far its
 conclusions can be carried.
 

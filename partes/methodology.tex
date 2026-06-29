@@ -19,7 +19,9 @@ the hardware is reported explicitly rather than hidden.
 
 \subsecao{Experimental Environment}
 
-All measurements were performed on a single Intel Core i5-1235U processor, a
+% review: comment 033 (issue #144) -- distinguish the canonical i5 campaign
+% from the later workstation portability run.
+The canonical measurement campaign was performed on a single Intel Core i5-1235U processor, a
 hybrid (heterogeneous) design of the Alder Lake generation. The processor
 integrates two Performance cores (P-cores) with simultaneous multithreading and
 eight Efficiency cores (E-cores) without it, exposing twelve logical hardware
@@ -35,6 +37,11 @@ resource for which the parallel scans ultimately contend.
 This $12$~MiB shared LLC is the architectural threshold that
 separates the cache-resident regime from the memory-bound regime studied in
 this work.
+
+A separate portability sweep, reported in the results chapter rather than used
+as the canonical source for the main tables and figures, replayed the same
+laboratory on a homogeneous AMD Ryzen~9~9950X workstation with sixteen cores and
+thirty-two hardware threads.
 
 The software stack is a purpose-built laboratory written in C11, compiled with
 GCC~13.3.0 using \texttt{-O3 -march=native} and an aggressive warning profile,
