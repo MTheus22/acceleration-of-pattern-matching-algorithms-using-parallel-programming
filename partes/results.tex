@@ -207,29 +207,11 @@ payoff is largest exactly where the problem is hardest.
 
 \subsecao{Load Balancing on Heterogeneous Cores}
 
-On the hybrid processor, uniformly sized text segments create stragglers: the
-threads assigned to Efficiency cores finish later than those on the faster
-Performance cores, and the early finishers idle at the barrier. The effect is
-visible not in the mean throughput but in its stability across repetitions.
-Figure~\ref{fig:load_balancing} illustrates the three partitioning policies:
-uniform chunking leaves the Performance-core thread idle at the barrier while the
-Efficiency-core thread finishes, whereas frequency-weighted sizing and dynamic
-dispatch equalize finishing times.
-
-
-\begin{figure}[H]
-\centering
-\caption{Partitioning policies on heterogeneous cores: (a) static homogeneous
-chunking leaves the faster Performance core idle at the barrier (stragglers);
-(b) topology-aware, frequency-weighted chunking sizes each segment to its core's
-speed; (c) dynamic dispatch hands out small tasks on demand. Both (b) and (c)
-equalize finishing times.}
-\includegraphics[width=0.78\linewidth]{load_balancing.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
-\label{fig:load_balancing}
-\end{figure}
-
+% review: issue #155, comment 055 - explanatory figure moved to proposal
+On the hybrid processor, the load-balancing policies defined in the proposal
+chapter (Figure~\ref{fig:load_balancing}) were evaluated for their effect on
+run-to-run stability. The experiment asks whether topology-aware sizing or
+dynamic dispatch reduces the variability caused by heterogeneous core speeds.
 Table~\ref{tab:balance} reports, for the canonical workload at twelve threads,
 the coefficient of variation of the per-iteration timing.
 
@@ -268,28 +250,10 @@ subsystem.
 
 \subsecao{Parallel Construction of the Automaton}
 
-The construction phase can also be parallelized, because each level of the
-breadth-first traversal that computes the failure links depends only on shallower
-levels and can therefore be processed in parallel with a barrier between levels.
-The trie insertion remains sequential; only the traversal is parallelized.
-Figure~\ref{fig:parallel_bfs} sketches the dependency structure: failure links at
-a given level read only links from shallower levels, so the threads computing a
-level can run concurrently and synchronize at a barrier before the next level
-begins.
-
-
-\begin{figure}[H]
-\centering
-\caption{Level-synchronous parallel construction of the failure function. Threads
-compute the failure links of all states at one BFS level in parallel, reading
-only already-finalized links from shallower levels (green), and meet at a barrier
-before advancing to the next level.}
-\includegraphics[width=1.0\linewidth]{parallel_bfs.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
-\label{fig:parallel_bfs}
-\end{figure}
-
+% review: issue #156, comment 056 - build mechanism moved to proposal
+The proposal chapter defines the optional level-synchronous construction
+strategy (Figure~\ref{fig:parallel_bfs}). The experiment here isolates whether
+that build-phase parallelism reduces construction latency.
 Table~\ref{tab:build} reports the resulting build speedup.
 
 \begin{table}[H]
@@ -329,31 +293,39 @@ canonical workload.
 
 \begin{table}[H]
     \centering
-    \caption{Dictionary sharding compared to text parallelism (Snort, canonical corpus).}
+    \caption{Dictionary sharding compared to flat-output text parallelism by worker or shard count (Snort, canonical corpus).}
     \label{tab:shard}
-    \small
-    \begin{tabular}{@{} l r r r @{}}
+    \scriptsize
+    \begin{tabular}{@{} l r r r r r r @{}}
         \toprule
-        \textbf{Strategy} & \textbf{Throughput (MB/s)} & \textbf{vs.\ sequential} & \textbf{vs.\ text parallelism} \\
+        \textbf{Strategy} & \multicolumn{6}{c}{\textbf{Throughput (MB/s)}} \\
+        \cmidrule(l){2-7}
+        & \textbf{2} & \textbf{4} & \textbf{6} & \textbf{8} & \textbf{10} & \textbf{12} \\
         \midrule
-        Dictionary sharding (by prefix)  & 327.2 & $1.37\times$ & $0.34\times$ \\ \addlinespace
-        Text chunking with flat output   & 976.1 & $4.07\times$ & $1.00\times$ \\
+        Dictionary sharding (by prefix)  & 322.6 & 319.9 & 327.2 & 291.3 & 293.9 & 276.6 \\ \addlinespace
+        Text chunking with flat output   & 453.9 & 612.8 & 852.0 & 829.5 & 1{,}122.7 & 976.1 \\
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Sharding at its best shard count (six); text chunking at twelve threads.\par}
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author.
+    Sequential baseline: $239.6$~MB/s. Columns denote shard count for dictionary
+    sharding and thread count for text chunking.\par}
 \end{table}
 
-Prefix sharding reaches $1.37\times$ over the baseline, and its gain saturates
-almost immediately --- $1.35\times$ at two shards, within $2\%$ of the six-shard peak, declining afterwards --- which indicates that the benefit comes from
+% review: issue #126, comment 057; issue #127, comment 058 - table expanded with discussed shard counts
+Prefix sharding reaches its peak at six shards: $327.2$~MB/s, or
+$1.37\times$ over the sequential baseline. The two-shard point is already
+$322.6$~MB/s ($1.35\times$), within $2\%$ of the six-shard peak, and the curve
+declines afterwards. This indicates that the benefit comes from
 improved cache locality within each smaller sub-automaton rather than from
-actual parallelism. Even at its best it attains only about a third of
-the throughput of plain text parallelism. The conclusion is that, on this class
-of hardware, partitioning the text dominates partitioning the dictionary: a real
-but small effect, not a competitive strategy.
+actual parallelism. Even at its best it attains only $0.34\times$ the throughput
+of twelve-thread flat-output text chunking. The conclusion is that, on this
+class of hardware, partitioning the text dominates partitioning the dictionary:
+a real but small effect, not a competitive strategy.
 
-\subsecao{Composing Sharding with Chunking: A Falsified Hypothesis}
+\subsecao{Two-Dimensional Partitioning Evaluation}
 
+% review: issue #157, comment 059 - section title made descriptive
 A natural hypothesis is that combining dictionary sharding (for cache locality)
 with text chunking (for parallelism) would recover the throughput lost in the
 memory-bound regime, by making each sub-automaton small enough to approach the
@@ -381,29 +353,20 @@ text chunking and disproves the hypothesis.
 \end{table}
 
 The composition is slower than flat-output text chunking in every measured scenario,
-by $7\%$ to $20\%$. The reason is that each shard must scan the entire
-input text, so $K$ shards multiply the text traffic on the memory bus by a factor
-of $K$. In the memory-bound regime that traffic is already the bottleneck, so
-the extra reads outweigh any locality gained inside the smaller sub-automata. To
-shrink the sub-automaton below the last-level cache for the largest dictionary
-would require more than forty shards, multiplying the text traffic
-proportionally, which is unrecoverable on a memory bus of this bandwidth. This
-negative result is an important contribution: it closes a plausible region of
-the design space and reinforces the conclusion that text parallelism is the
-correct axis on memory-bound workloads. This difference in memory traffic is illustrated in Figure~\ref{fig:memory_traffic}.
+by $7\%$ to $20\%$. This outcome matches the design-level cost illustrated in
+the proposal chapter (Figure~\ref{fig:memory_traffic}): each shard must scan the
+entire input text, so $K$ shards multiply input reads by a factor of $K$. In the
+memory-bound regime, the measured slowdown indicates that the extra input
+traffic outweighs any locality gained inside the smaller sub-automata. To shrink
+the sub-automaton below the last-level cache for the largest dictionary would
+require more than forty shards, multiplying the input traffic proportionally
+before any such cache benefit could appear. This negative result closes a
+plausible region of the design space and reinforces the conclusion that text
+parallelism is the correct axis on memory-bound workloads.
 
-\begin{figure}[H]
-\centering
-\caption{Visual comparison of text reading traffic: (a) pure text chunking (text parallelism) where each byte is read once, keeping bus load moderate; and (b) two-dimensional composition (chunking + sharding) which multiplies the text reads by $K$ shards, saturating the DRAM bus and degrading speedup.}
-\includegraphics[width=0.9\linewidth]{memory_traffic.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
-\label{fig:memory_traffic}
-\end{figure}
-
-\subsecao{End-to-End Evaluation}
-
-Finally, the complete pipeline---automaton construction followed by a single
+% review: issue #129, comment 061 - demoted from standalone subsection and clarified as a pipeline check
+Finally, as a compact pipeline check rather than a separate strategy, the
+complete execution---automaton construction followed by a single
 scan of the corpus (with the parallel strategies merging their partial results
 at the end)---is reported as end-to-end wall-clock time on the $\sim$10.6~GiB
 corpus. To keep these figures auditable and comparable with the search analysis,
