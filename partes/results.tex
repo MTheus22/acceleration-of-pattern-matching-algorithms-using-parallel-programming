@@ -91,9 +91,9 @@ and it frames the interpretation of every subsequent result.
 \begin{figure}[H]
 \centering
 \caption{Cache-residency regimes governing throughput: (a) a small automaton
-fits within the shared L3, so transitions hit cache and the memory bus is idle;
-(b) a memory-bound automaton ($\gg$L3) forces cache misses that saturate the bus,
-flattening the scaling curve.}
+fits within the shared L3, so transitions are likely to be served from cache;
+(b) a memory-bound automaton ($\gg$L3) is likely to produce more cache misses and
+place sustained pressure on the memory bus, flattening the scaling curve.}
 \includegraphics[width=0.95\linewidth]{cache_hierarchy.pdf}
 \par\smallskip
 {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
@@ -280,15 +280,19 @@ memory pressure---is more robust than the specific per-regime percentages.
 
 \subsecao{Load Balancing on Heterogeneous Cores}
 
-On the hybrid processor, uniformly sized text segments create stragglers: the
-threads assigned to Efficiency cores finish later than those on the faster
-Performance cores, and the early finishers idle at the barrier. The effect is
-visible not in the mean throughput but in its stability across repetitions.
-Figure~\ref{fig:load_balancing} illustrates the three partitioning policies:
-uniform chunking leaves the Performance-core thread idle at the barrier while the
-Efficiency-core thread finishes, whereas frequency-weighted sizing and dynamic
-dispatch equalize finishing times.
+This experiment asks whether the balancing policies proposed for the hybrid
+processor improve mean throughput or instead reduce run-to-run instability. It
+uses the canonical Snort workload at twelve threads and compares both throughput
+and the coefficient of variation of the per-iteration timing. The hypothesis is
+that uniformly sized text segments can create stragglers on the i5: threads
+assigned to Efficiency cores may finish later than those on the faster
+Performance cores, leaving early finishers idle at the barrier.
+Figure~\ref{fig:load_balancing} recalls the three partitioning policies evaluated
+in the table.
 
+% review: comment 055 -- this explanatory figure belongs in the proposal chapter;
+% moving or redesigning it is deferred to epic-02 task-02. This task keeps the
+% empirical framing and makes the i5-specific balancing result explicit.
 
 \begin{figure}[H]
 \centering
@@ -349,15 +353,17 @@ throughput on heterogeneous cores, rather than a universal throughput gain.
 
 \subsecao{Parallel Construction of the Automaton}
 
-The construction phase can also be parallelized, because each level of the
-breadth-first traversal that computes the failure links depends only on shallower
-levels and can therefore be processed in parallel with a barrier between levels.
-The trie insertion remains sequential; only the traversal is parallelized.
-Figure~\ref{fig:parallel_bfs} sketches the dependency structure: failure links at
-a given level read only links from shallower levels, so the threads computing a
-level can run concurrently and synchronize at a barrier before the next level
-begins.
+This experiment evaluates whether parallel construction reduces operational
+rule-reloading latency. The implemented variant parallelizes the breadth-first
+traversal that computes failure links, because each level depends only on
+shallower levels and can therefore be processed in parallel with a barrier between
+levels. The trie insertion remains sequential; only the traversal is
+parallelized. Figure~\ref{fig:parallel_bfs} recalls the dependency structure
+before the measured build-speedup table.
 
+% review: comment 056 -- this explanatory construction figure is also proposal
+% material; its relocation is deferred to epic-02 task-02 while this task keeps
+% the build section focused on the measured operational effect.
 
 \begin{figure}[H]
 \centering
@@ -481,13 +487,14 @@ text chunking and disproves the hypothesis.
 \end{table}
 
 The composition is slower than flat-output text chunking in every measured scenario,
-by $7\%$ to $20\%$. The reason is that each shard must scan the entire
-input text, so $K$ shards multiply the text traffic on the memory bus by a factor
-of $K$. In the memory-bound regime that traffic is already the bottleneck, so
-the extra reads outweigh any locality gained inside the smaller sub-automata. To
-shrink the sub-automaton below the last-level cache for the largest dictionary
-would require more than forty shards, multiplying the text traffic
-proportionally, which is unrecoverable on a memory bus of this bandwidth. This
+by $7\%$ to $20\%$. This is consistent with duplicated text traffic becoming the
+limiting resource: each shard must scan the entire input text, so $K$ shards
+multiply the text traffic on the memory bus by a factor of $K$. In the
+memory-bound regime, the extra reads plausibly outweigh any locality gained inside
+the smaller sub-automata. To shrink the sub-automaton below the last-level cache
+for the largest dictionary would require more than forty shards, multiplying the
+text traffic proportionally, which is unlikely to be recoverable on a memory bus
+of this bandwidth. This
 negative result is an important contribution: it closes a plausible region of
 the design space and reinforces the conclusion that text parallelism is the
 correct axis on memory-bound workloads. This difference in memory traffic is illustrated in Figure~\ref{fig:memory_traffic}.
@@ -497,7 +504,7 @@ correct axis on memory-bound workloads. This difference in memory traffic is ill
 % epic-02 task-02 and is left in place here pending that move.
 \begin{figure}[H]
 \centering
-\caption{Visual comparison of text reading traffic: (a) pure text chunking (text parallelism) where each byte is read once, keeping bus load moderate; and (b) two-dimensional composition (chunking + sharding) which multiplies the text reads by $K$ shards, saturating the DRAM bus and degrading speedup.}
+\caption{Visual comparison of text reading traffic: (a) pure text chunking (text parallelism) where each byte is read once, keeping bus load moderate; and (b) two-dimensional composition (chunking + sharding), which multiplies the text reads by $K$ shards and increases memory-bus pressure, reducing speedup.}
 \includegraphics[width=0.9\linewidth]{memory_traffic.pdf}
 \par\smallskip
 {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
@@ -576,9 +583,10 @@ magnitude of throughput while leaving the classical automaton mathematically
 intact, which keeps correctness easy to validate against the sequential
 reference. The failure-less variant of the algorithm designed for massively
 parallel accelerators~\cite{Vajira2018} is, however, unsuitable for a
-multi-core CPU, because its independent per-byte traversals multiply work in a
-way that the memory bus cannot absorb; this is consistent with the negative
-result observed here for over-partitioning. Single-threaded vectorized engines
+multi-core CPU in this setting, because its independent per-byte traversals
+multiply work in a way that the memory bus is unlikely to absorb; this is
+consistent with the negative result observed here for over-partitioning.
+Single-threaded vectorized engines
 that replace the automaton with SIMD literal matching~\cite{Xu2023Harry} operate
 on an orthogonal axis, exploiting data parallelism within a thread rather than
 across threads, and are therefore complementary to, rather than competitive with, the inter-thread parallelism studied here. The finding that
