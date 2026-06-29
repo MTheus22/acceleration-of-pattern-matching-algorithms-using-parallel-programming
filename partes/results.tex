@@ -371,69 +371,88 @@ before advancing to the next level.}
 \label{fig:parallel_bfs}
 \end{figure}
 
-Table~\ref{tab:build} reports the resulting build speedup.
+Table~\ref{tab:build} reports the build speedup across thread counts, rather than
+a single peak, so that the full thread-count behaviour is visible.
 
+% review: comment 057 -- show the build speedup at each thread count instead of
+% only the per-dictionary peak.
 \begin{table}[H]
     \centering
-    \caption{Speedup of the parallel automaton construction.}
+    \caption{Parallel automaton construction: build speedup versus the sequential
+    build, by thread count.}
     \label{tab:build}
     \small
-    \begin{tabular}{@{} l r r l @{}}
+    \begin{tabular}{@{} l r r r r r r @{}}
         \toprule
-        \textbf{Dictionary} & \textbf{States} & \textbf{Sequential build} & \textbf{Parallel build} \\
-         & & \textbf{(ms)} & \\
+        \textbf{Dictionary} & \textbf{States} & \textbf{Seq.\ (ms)} & \textbf{$T{=}2$} & \textbf{$T{=}4$} & \textbf{$T{=}8$} & \textbf{$T{=}12$} \\
         \midrule
-        Snort-100        & 1{,}939   & 1.5   & Regresses (overhead dominates) \\ \addlinespace
-        Snort (full)     & 55{,}479  & 48.2  & $1.19\times$ peak (four threads) \\ \addlinespace
-        Emerging Threats & 508{,}896 & 485.2 & $1.55\times$ peak (eight threads) \\
+        Snort-100        & 1{,}939   & 1.5   & $0.80\times$ & $0.83\times$ & $0.71\times$ & $0.60\times$ \\ \addlinespace
+        Snort (full)     & 55{,}479  & 48.2  & $1.00\times$ & $1.19\times$ & $1.17\times$ & $0.91\times$ \\ \addlinespace
+        Emerging Threats & 508{,}896 & 485.2 & $1.18\times$ & $1.43\times$ & $1.55\times$ & $1.41\times$ \\
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Build
+    speedup is the sequential build time divided by the parallel build time at
+    each thread count; values below $1.0\times$ mean the parallel build is slower
+    than the sequential one.\par}
 \end{table}
 
-Parallel construction only pays off for the large dictionary, where it reduces
-the build time from $485$ to roughly $313$~milliseconds ($1.55\times$ at eight
-threads, falling to $1.41\times$ at twelve). For the small dictionaries the
-per-level spawn-and-join overhead exceeds the work, and the build slows down.
-This optimization should therefore be understood as an operational benefit, a
-reduction in rule-reloading latency for systems that frequently update their
-signatures, rather than as a contribution to scanning throughput; on the
-multi-gigabyte workloads it accounts for less than $1\%$ of the total time.
+The thread-count breakdown shows that parallel construction only pays off for the
+large dictionary, where it peaks at $1.55\times$ at eight threads (reducing the
+build from $485$ to roughly $313$~milliseconds) before easing to $1.41\times$ at
+twelve. The moderate dictionary barely benefits, peaking at $1.19\times$ at four
+threads and regressing to $0.91\times$ at twelve, while the smallest dictionary is
+slower than sequential at every thread count, because the per-level
+spawn-and-join overhead exceeds the work. This optimization should therefore be
+understood as an operational benefit---a reduction in rule-reloading latency for
+systems that frequently update their signatures---rather than as a contribution to
+scanning throughput; on the multi-gigabyte workloads it accounts for less than
+$1\%$ of the total time.
 
 \subsecao{Partitioning the Dictionary: A Qualified Negative Result}
 
 Partitioning the dictionary, rather than the text, was evaluated as an alternative,
 assigning patterns to shards by their first byte (prefix sharding).
-Table~\ref{tab:shard} compares it against plain text parallelism on the
-canonical workload.
+Table~\ref{tab:shard} reports the throughput across shard counts and compares the
+result against plain text parallelism on the canonical workload.
 
+% review: comment 058 -- the data points discussed in the text (the two-shard
+% figure and the saturation past the peak) are now in the table itself.
 \begin{table}[H]
     \centering
-    \caption{Dictionary sharding compared to text parallelism (Snort, canonical corpus).}
+    \caption{Dictionary sharding (by prefix) across shard counts, compared to text
+    parallelism (Snort, canonical corpus).}
     \label{tab:shard}
     \small
-    \begin{tabular}{@{} l r r r @{}}
+    \begin{tabular}{@{} l r r @{}}
         \toprule
-        \textbf{Strategy} & \textbf{Throughput (MB/s)} & \textbf{vs.\ sequential} & \textbf{vs.\ text parallelism} \\
+        \textbf{Configuration} & \textbf{Throughput (MB/s)} & \textbf{vs.\ sequential} \\
         \midrule
-        Dictionary sharding (by prefix)  & 327.2 & $1.37\times$ & $0.34\times$ \\ \addlinespace
-        Text chunking with flat output   & 976.1 & $4.07\times$ & $1.00\times$ \\
+        Prefix sharding, 2 shards          & 322.6 & $1.35\times$ \\ \addlinespace
+        Prefix sharding, 4 shards          & 319.9 & $1.34\times$ \\ \addlinespace
+        Prefix sharding, 6 shards (peak)   & 327.2 & $1.37\times$ \\ \addlinespace
+        Prefix sharding, 8 shards          & 291.3 & $1.22\times$ \\ \addlinespace
+        Prefix sharding, 12 shards         & 276.6 & $1.15\times$ \\
+        \midrule
+        Text chunking, flat (12 threads)   & 976.1 & $4.07\times$ \\
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Sharding at its best shard count (six); text chunking at twelve threads.\par}
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Speedup is relative to the single-threaded sequential baseline ($239.6$~MB/s); text chunking is shown at twelve threads for reference.\par}
 \end{table}
 
-Prefix sharding reaches $1.37\times$ over the baseline, and its gain saturates
-almost immediately --- $1.35\times$ at two shards, within $2\%$ of the six-shard peak, declining afterwards --- which indicates that the benefit comes from
-improved cache locality within each smaller sub-automaton rather than from
-actual parallelism. Even at its best it attains only about a third of
-the throughput of plain text parallelism. The conclusion is that, on this class
-of hardware, partitioning the text dominates partitioning the dictionary: a real
-but small effect, not a competitive strategy.
+Prefix sharding peaks at $1.37\times$ over the baseline at six shards, but it is
+already within $2\%$ of that peak at just two shards ($1.35\times$) and declines
+past six. This early saturation indicates that the benefit comes from improved
+cache locality within each smaller sub-automaton rather than from added
+parallelism. Even at its best it attains only about a third ($0.34\times$) of the
+throughput of plain text parallelism. The conclusion is that, on this class of
+hardware, partitioning the text dominates partitioning the dictionary: a real but
+small effect, not a competitive strategy.
 
-\subsecao{Composing Sharding with Chunking: A Falsified Hypothesis}
+% review: comment 059 -- more descriptive section title.
+\subsecao{Combined Strategy Evaluation: Sharding with Chunking}
 
 A natural hypothesis is that combining dictionary sharding (for cache locality)
 with text chunking (for parallelism) would recover the throughput lost in the
@@ -473,6 +492,9 @@ negative result is an important contribution: it closes a plausible region of
 the design space and reinforces the conclusion that text parallelism is the
 correct axis on memory-bound workloads. This difference in memory traffic is illustrated in Figure~\ref{fig:memory_traffic}.
 
+% review: comment 060 -- this explanatory figure belongs in the proposal chapter;
+% its relocation (and the accompanying strategy explanation) is owned by
+% epic-02 task-02 and is left in place here pending that move.
 \begin{figure}[H]
 \centering
 \caption{Visual comparison of text reading traffic: (a) pure text chunking (text parallelism) where each byte is read once, keeping bus load moderate; and (b) two-dimensional composition (chunking + sharding) which multiplies the text reads by $K$ shards, saturating the DRAM bus and degrading speedup.}
