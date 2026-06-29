@@ -286,27 +286,10 @@ uses the canonical Snort workload at twelve threads and compares both throughput
 and the coefficient of variation of the per-iteration timing. The hypothesis is
 that uniformly sized text segments can create stragglers on the i5: threads
 assigned to Efficiency cores may finish later than those on the faster
-Performance cores, leaving early finishers idle at the barrier.
-Figure~\ref{fig:load_balancing} recalls the three partitioning policies evaluated
-in the table.
-
-% review: comment 055 -- this explanatory figure belongs in the proposal chapter;
-% moving or redesigning it is deferred to epic-02 task-02. This task keeps the
-% empirical framing and makes the i5-specific balancing result explicit.
-
-\begin{figure}[H]
-\centering
-\caption{Partitioning policies on heterogeneous cores: (a) static homogeneous
-chunking leaves the faster Performance core idle at the barrier (stragglers);
-(b) topology-aware, frequency-weighted chunking sizes each segment to its core's
-speed; (c) dynamic dispatch hands out small tasks on demand. Both (b) and (c)
-equalize finishing times.}
-\includegraphics[width=0.78\linewidth]{load_balancing.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
-\label{fig:load_balancing}
-\end{figure}
-
+Performance cores, leaving early finishers idle at the barrier. The three
+partitioning policies are defined in the proposal chapter
+(Figure~\ref{fig:load_balancing}).
+% review: issue #155, comment 055 -- explanatory figure moved to the proposal chapter (epic-02 task-02)
 Table~\ref{tab:balance} reports, for the canonical workload at twelve threads,
 the coefficient of variation of the per-iteration timing.
 
@@ -358,25 +341,9 @@ rule-reloading latency. The implemented variant parallelizes the breadth-first
 traversal that computes failure links, because each level depends only on
 shallower levels and can therefore be processed in parallel with a barrier between
 levels. The trie insertion remains sequential; only the traversal is
-parallelized. Figure~\ref{fig:parallel_bfs} recalls the dependency structure
-before the measured build-speedup table.
-
-% review: comment 056 -- this explanatory construction figure is also proposal
-% material; its relocation is deferred to epic-02 task-02 while this task keeps
-% the build section focused on the measured operational effect.
-
-\begin{figure}[H]
-\centering
-\caption{Level-synchronous parallel construction of the failure function. Threads
-compute the failure links of all states at one BFS level in parallel, reading
-only already-finalized links from shallower levels (green), and meet at a barrier
-before advancing to the next level.}
-\includegraphics[width=1.0\linewidth]{parallel_bfs.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
-\label{fig:parallel_bfs}
-\end{figure}
-
+parallelized. The level-synchronous construction strategy and its dependency
+structure are defined in the proposal chapter (Figure~\ref{fig:parallel_bfs}).
+% review: issue #156, comment 056 -- explanatory construction figure moved to the proposal chapter (epic-02 task-02)
 Table~\ref{tab:build} reports the build speedup across thread counts, rather than
 a single peak, so that the full thread-count behaviour is visible.
 
@@ -448,6 +415,7 @@ result against plain text parallelism on the canonical workload.
     {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Speedup is relative to the single-threaded sequential baseline ($239.6$~MB/s); text chunking is shown at twelve threads for reference.\par}
 \end{table}
 
+% review: issue #126, comment 057; issue #127, comment 058 -- table expanded with the discussed shard counts
 Prefix sharding peaks at $1.37\times$ over the baseline at six shards, but it is
 already within $2\%$ of that peak at just two shards ($1.35\times$) and declines
 past six. This early saturation indicates that the benefit comes from improved
@@ -457,9 +425,10 @@ throughput of plain text parallelism. The conclusion is that, on this class of
 hardware, partitioning the text dominates partitioning the dictionary: a real but
 small effect, not a competitive strategy.
 
-% review: comment 059 -- more descriptive section title.
+% review: issue #157, comment 059 -- more descriptive section title.
 \subsecao{Combined Strategy Evaluation: Sharding with Chunking}
 
+% review: issue #157, comment 059 - section title made descriptive
 A natural hypothesis is that combining dictionary sharding (for cache locality)
 with text chunking (for parallelism) would recover the throughput lost in the
 memory-bound regime, by making each sub-automaton small enough to approach the
@@ -497,23 +466,13 @@ text traffic proportionally, which is unlikely to be recoverable on a memory bus
 of this bandwidth. This
 negative result is an important contribution: it closes a plausible region of
 the design space and reinforces the conclusion that text parallelism is the
-correct axis on memory-bound workloads. This difference in memory traffic is illustrated in Figure~\ref{fig:memory_traffic}.
+correct axis on memory-bound workloads. This difference in memory traffic is
+illustrated in the proposal chapter (Figure~\ref{fig:memory_traffic}).
+% review: issue #128, comment 060 -- explanatory memory-traffic figure moved to the proposal chapter (epic-02 task-02)
 
-% review: comment 060 -- this explanatory figure belongs in the proposal chapter;
-% its relocation (and the accompanying strategy explanation) is owned by
-% epic-02 task-02 and is left in place here pending that move.
-\begin{figure}[H]
-\centering
-\caption{Visual comparison of text reading traffic: (a) pure text chunking (text parallelism) where each byte is read once, keeping bus load moderate; and (b) two-dimensional composition (chunking + sharding), which multiplies the text reads by $K$ shards and increases memory-bus pressure, reducing speedup.}
-\includegraphics[width=0.9\linewidth]{memory_traffic.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
-\label{fig:memory_traffic}
-\end{figure}
-
-% review: comment 061 -- this section does not pose a new experimental question;
-% it is reframed as a consistency check that confirms, rather than extends, the
-% separate construction and search analyses at the level of the whole pipeline.
+% review: issue #129, comment 061 -- this section does not pose a new experimental
+% question; it is reframed as a consistency check that confirms, rather than
+% extends, the separate construction and search analyses for the whole pipeline.
 \subsecao{End-to-End Consistency Check}
 
 The preceding sections measured construction and search in isolation. This final
