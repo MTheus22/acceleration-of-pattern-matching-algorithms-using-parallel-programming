@@ -1,53 +1,76 @@
-This chapter describes the experimental methodology adopted to design and
-evaluate the parallel scanning strategies introduced in the previous chapter.
-The central object of study is not a particular processor, but a
-\textit{computational regime}: the behaviour of multi-pattern matching when
-the automaton footprint greatly exceeds the last-level cache (LLC), which is
-the operating point of signature-based intrusion detection over large rule
-sets. The reference machine is therefore treated as a \textit{measurement
-platform} rather than as the subject of the investigation, and the conclusions
-are framed in terms of relative scalability behaviour (speedup, throughput, and
-efficiency) instead of absolute production capacity.
+% review: issue #142, comment 31 --- direct, non-marketing opening
+This chapter describes the experimental methodology used to evaluate the
+parallel Aho--Corasick scanning strategies introduced in the previous chapter.
+The evaluation targets three properties of each strategy --- search
+performance, scalability with the number of threads, and correctness with
+respect to the sequential baseline --- under a shared-memory multi-core
+environment and over pattern dictionaries and text corpora representative of
+signature-based intrusion detection. Because the workloads of interest produce
+automata whose footprint far exceeds the last-level cache, the reported figures
+are expressed as relative quantities (speedup, throughput, and parallel
+efficiency) rather than as absolute production capacity, so that the
+conclusions concern scaling behaviour instead of the peak rating of a single
+machine.
 
-The methodology is organized around four principles: (i) every parallel variant
-is validated for correctness against the sequential baseline before any
-performance claim is made; (ii) each optimization axis is isolated so that its
-individual contribution can be attributed unambiguously; (iii) the experimental
-design includes hypotheses that the experiments are intended to
-\textit{falsify}, not merely to confirm; and (iv) measurement noise inherent to
-the hardware is reported explicitly rather than hidden.
+% review: issue #143, comment 32 --- chapter roadmap instead of "principles"
+The chapter is organized in the order in which the reader needs the
+information. It first establishes the experimental environment and software
+stack; then characterizes the pattern dictionaries and text corpora and the
+role each one plays; states the three-phase execution model and the invariants
+that make the parallelization sound; enumerates the evaluated strategies and
+the axes along which they compose; separates the performance metrics from the
+supporting diagnostic instrumentation; defines the per-phase measurement
+protocol; describes how correctness was established before any performance was
+reported; and closes with the experimental design, stating each hypothesis, the
+experiment that tests it, and the section of the next chapter that reports the
+outcome.
 
 \subsecao{Experimental Environment}
 
-All measurements were performed on a single Intel Core i5-1235U processor, a
-hybrid (heterogeneous) design of the Alder Lake generation. The processor
+% review: issue #144, comment 33 --- separate the three platform roles
+The primary measurement platform, and the source of every headline number,
+table, and figure in this work, is a single Intel Core i5-1235U processor; the
+canonical data set is the formal sweep executed on it on 2026-05-29. The
+i5-1235U is a hybrid (heterogeneous) design of the Alder Lake generation: it
 integrates two Performance cores (P-cores) with simultaneous multithreading and
 eight Efficiency cores (E-cores) without it, exposing twelve logical hardware
 threads in total. The two core types differ in maximum clock frequency
 (approximately $4.4$~GHz for P-cores and $3.3$~GHz for E-cores), which is the
 source of the load-balancing problem addressed by the frequency-weighted
 partitioning strategy. The memory hierarchy comprises a private L1 data cache
-per core ($48$~KiB on P-cores, $32$~KiB on E-cores), $1.25$~MiB of L2 per P-core (and $2$~MiB per E-core
-cluster), and a single $12$~MiB L3 cache shared by all cores. Main memory is
-$31$~GiB of dual-channel DDR4; the memory bandwidth available to the cores ---
-on the order of a few tens of GB/s for this configuration --- is the shared
-resource for which the parallel scans ultimately contend.
-This $12$~MiB shared LLC is the architectural threshold that
-separates the cache-resident regime from the memory-bound regime studied in
-this work.
+per core ($48$~KiB on P-cores, $32$~KiB on E-cores), $1.25$~MiB of L2 per P-core
+(and $2$~MiB per E-core cluster), and a single $12$~MiB L3 cache shared by all
+cores. Main memory is $31$~GiB of dual-channel DDR4, and the aggregate memory
+bandwidth --- on the order of a few tens of GB/s for this configuration --- is
+the shared resource for which the parallel scans ultimately contend.
 
 The software stack is a purpose-built laboratory written in C11, compiled with
 GCC~13.3.0 using \texttt{-O3 -march=native} and an aggressive warning profile,
 and linked against the POSIX Threads library \cite{Nichols1996}. Experiments ran
 under Linux (kernel~6.17.0). To minimize scheduling and frequency-scaling
 artifacts, the CPU frequency governor was set to \texttt{performance} for the
-canonical measurement campaign; topology-aware searchers
+canonical measurement campaign; the topology-aware searchers
 (\texttt{pthread\_chunked\_v3} and \texttt{pthread\_chunked\_v3\_flat})
 additionally pin each worker thread to a dedicated logical CPU via
 \texttt{pthread\_setaffinity\_np}, while the remaining searchers rely on OS
 scheduling without explicit binding. The build was additionally validated under
 sanitizer instrumentation, namely the Address and Undefined Behavior sanitizers
 and the Thread Sanitizer, as discussed in Section~\ref{subsec:correctness}.
+
+Two further runs play strictly secondary roles and do not displace the
+canonical i5 sweep. The first is a portability run on an AMD Ryzen 9 9950X
+(Zen 5), a homogeneous design with sixteen identical cores and thirty-two
+threads (two-way simultaneous multithreading) and a non-unified $64$~MiB L3
+organized as two $32$~MiB slices, one per core complex, backed by DDR5; its
+sweep, dated 2026-06-25, is used only to assess the external validity of the i5
+findings and is reported as a compact portability comparison in the next
+chapter, never as a substitute for the canonical numbers. The second is a
+reproducibility re-run of the i5 sweep on 2026-06-28, executed headless on a
+cooler machine; it is used to characterize run-to-run variance and is likewise
+not a source of headline figures. The single-thread baseline reproduces to
+within about $3\%$ between the two i5 runs, but the saturated twelve-thread peak
+speedups vary substantially across separate invocations --- a limitation made
+explicit in the measurement protocol below.
 
 \subsecao{Pattern Dictionaries and Text Corpora}
 
@@ -57,19 +80,21 @@ domain. Table~\ref{tab:datasets} summarizes the pattern dictionaries, which were
 derived from publicly available Snort and Emerging Threats rule sets, and
 Table~\ref{tab:corpora} summarizes the text corpora.
 
+% review: issue #145, comment 34; issue #115, comment 35 --- replace the
+% platform-dependent "cache regime" column with a platform-independent role
 \begin{table}[H]
     \centering
-    \caption{Pattern dictionaries and the resulting automaton footprint.}
+    \caption{Pattern dictionaries, the resulting automaton footprint, and their experimental role.}
     \label{tab:datasets}
     \small
-    \begin{tabular}{@{} l r r r l @{}}
+    \begin{tabular}{@{} l r r r p{4.2cm} @{}}
         \toprule
-        \textbf{Dictionary} & \textbf{Patterns} & \textbf{States} & \textbf{Automaton} & \textbf{Cache regime} \\
+        \textbf{Dictionary} & \textbf{Patterns} & \textbf{States} & \textbf{Footprint} & \textbf{Experimental role} \\
         \midrule
-        Snort-100   & 100      & 1{,}939   & 1.93~MiB   & Well within L3 (cache-resident) \\ \addlinespace
-        Snort-1k    & $\sim$1{,}000 & 11{,}974 & 11.92~MiB & Near the L3 boundary \\ \addlinespace
-        Snort (full) & 4{,}188  & 55{,}479  & 55.23~MiB  & Exceeds L3 (moderate) \\ \addlinespace
-        Emerging Threats & 44{,}678 & 508{,}896 & 506.78~MiB & $42\times$ the L3 (memory-bound) \\
+        Snort-100   & 100      & 1{,}939   & 1.93~MiB   & Smallest automaton; lower-bound contrast regime. \\ \addlinespace
+        Snort-1k    & $\sim$1{,}000 & 11{,}974 & 11.92~MiB & Intermediate footprint; brackets the throughput cross-over. \\ \addlinespace
+        Snort (full) & 4{,}188  & 55{,}479  & 55.23~MiB  & Primary target dictionary (moderate footprint). \\ \addlinespace
+        Emerging Threats & 44{,}678 & 508{,}896 & 506.78~MiB & Largest footprint; most aggressive memory stressor. \\
         \bottomrule
     \end{tabular}
 
@@ -87,19 +112,25 @@ Table~\ref{tab:corpora} summarizes the text corpora.
         \midrule
         SimpleWiki & $\sim$1.19~GiB & Natural-language encyclopedic text with low match density; used as the contrast corpus in the cross-corpus experiment, which isolates the effect of the text content. \\ \addlinespace
         Enron      & $\sim$1.32~GiB & Real e-mail messages with medium match density; the canonical benchmark corpus. \\ \addlinespace
-        Enron ($8\times$) & $\sim$10.59~GiB & The Enron corpus replicated eightfold; amortizes the build phase and reduces scheduler and thermal noise in scaling curves. \\
+        Enron ($8\times$) & $\sim$10.59~GiB & The Enron corpus replicated eightfold; amortizes the build phase and reduces scheduler noise in the scaling curves. \\
         \bottomrule
     \end{tabular}
 
     {\footnotesize\raggedright \textbf{Source:} Prepared by the author. The Enron corpus derives from the public Enron Email Dataset.\par}
 \end{table}
 
+% review: issue #145, comment 34 --- footprints are platform-independent;
+% cache interpretation deferred to the results chapter and tied to a platform
 The two smaller dictionaries (Snort-100 and Snort-1k) serve as
-\textit{contrast regimes}: their automata fit in or near the cache and expose
-the cross-over point at which memory pressure begins to dominate. The full Snort
-dictionary and the Emerging Threats subset represent the actual target of the
-study, the latter being the most aggressive architectural stressor, with an
-automaton roughly forty-two times larger than the shared LLC.
+\textit{contrast regimes} that bracket the point at which the automaton stops
+fitting comfortably in cache; the full Snort dictionary and the Emerging Threats
+subset are the actual targets of the study, the latter being the most aggressive
+stressor, with an automaton far larger than the last-level cache of any platform
+used here. The footprints in Table~\ref{tab:datasets} are reported as absolute,
+platform-independent sizes; how each footprint relates to a particular cache
+level depends on the machine and is therefore interpreted in the next chapter
+against the cache hierarchy of each platform (for the reference i5, the
+$12$~MiB shared L3).
 
 \subsecao{Execution Model and Invariants}
 
@@ -108,9 +139,9 @@ separation is the foundation of the lock-free design.
 
 \begin{enumerate}
     \item \textbf{Construction.} The patterns are inserted into a trie, and a
-    breadth-first traversal computes the goto, failure, and dictionary-suffix
-    links, together with the precomputed output structures. The resulting
-    automaton is then declared immutable.
+    breadth-first (BFS) traversal computes the goto, failure, and
+    dictionary-suffix links, together with the precomputed output structures.
+    The resulting automaton is then declared immutable. % review: issue #148, comment 38
     \item \textbf{Search.} Each worker thread reads the shared, read-only
     automaton and its assigned portion of the input text, emitting matches into
     a private, thread-local list. No mutex or atomic operation is used on the
@@ -131,67 +162,103 @@ boundary-crossing match to a single segment according to its end position.
 
 \subsecao{Evaluated Strategies}
 
-To attribute each performance effect to a single cause, the strategies were
-organized as an additive grid over four orthogonal axes, all selectable at
-runtime within the same binary and all sharing the same automaton. Beyond
-the sequential baseline, the controlled set of variants is summarized in
+% review: issue #116, comment 40 --- show which axes are alternatives vs composable
+The strategies are organized as a set of orthogonal design axes so that each
+performance effect can be attributed to a single cause. Every variant is a
+combination of one choice per axis, all selectable at run time within the same
+binary and all sharing the same automaton. The axes, and which choices are
+mutually exclusive versus composable, are summarized in
 Table~\ref{tab:variants}.
 
 \begin{table}[H]
     \centering
-    \caption{Controlled set of evaluated strategies, grouped by optimization axis.}
+    \caption{Evaluated strategies as orthogonal design axes; the work-distribution
+    options are alternatives, while the emission and construction axes compose with any of them.}
     \label{tab:variants}
     \small
-    \begin{tabular}{@{} l p{8.8cm} @{}}
+    \begin{tabular}{@{} l p{9cm} @{}}
         \toprule
-        \textbf{Axis} & \textbf{Strategy} \\
+        \textbf{Axis} & \textbf{Options (one per run; mutually exclusive within the axis)} \\
         \midrule
-        Baseline & Single-threaded sequential scan (reference for correctness and speedup). \\ \addlinespace
-        Text parallelism & Static homogeneous text chunking with boundary overlap. \\
-            & Refined static chunking with cache padding and a split warm-up/owned loop. \\
-            & Topology-aware chunking that weights segment sizes by core frequency. \\
-            & Dynamic chunk dispatch through an atomic task counter (bag of tasks). \\ \addlinespace
-        Output layout & Flattened, contiguous output table that replaces pointer-chasing emission. \\ \addlinespace
-        Dictionary parallelism & Dictionary sharding by pattern prefix into $K$ independent sub-automata. \\ \addlinespace
-        Composition & Two-dimensional combination of dictionary sharding and text chunking. \\
+        Work distribution & Sequential baseline; static homogeneous chunking; topology-aware weighted chunking; dynamic chunk dispatch (bag of tasks); dictionary sharding by pattern prefix; two-dimensional sharding $\times$ chunking. \\ \addlinespace
+        Emission layout & Chained (pointer-chasing) \emph{or} flattened contiguous output table; composes with any work-distribution choice. \\ \addlinespace
+        Construction & Sequential build \emph{or} level-synchronous parallel build (BFS); composes with any work-distribution choice. \\
         \bottomrule
     \end{tabular}
 
     {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
 \end{table}
 
-The text-parallelism axis partitions the input across threads; the output-layout
-axis addresses the cost of emitting matches; the dictionary axis partitions the
-pattern set instead of the text; and the composition axis tests whether the
-text and dictionary strategies combine. The construction phase has a
-separate, optional level-synchronous parallel variant. Because the automaton
-produced by the parallel construction is bit-for-bit identical to the sequential
-one, any pairing of a construction mode with a search strategy is valid, which
-cleanly isolates the contribution of each axis. An exploratory software-prefetch
-variant of the chunked searcher also exists in the laboratory as a
-microarchitectural probe; it is excluded from the controlled grid above and from
-the reported results because it introduces no new optimization axis.
+Two of the three axes compose freely. The emission layout (chained
+pointer-chasing versus a flattened, contiguous output table) and the
+construction mode (sequential versus level-synchronous parallel build) can be
+paired with any work-distribution choice and with the sequential baseline,
+because the parallel build produces an automaton bit-for-bit identical to the
+sequential one and the emission layout does not change which matches are
+produced. The work-distribution axis, in contrast, is mutually exclusive: a run
+partitions the work in exactly one way. The named searchers in the laboratory
+are therefore compositions of these axes --- for example, static chunking with
+the flat layout, or topology-aware chunking with the flat layout --- which is
+precisely what allows one axis to be varied while the others are held fixed.
 
-\subsecao{Metrics}
+% review: issue #149, comment 39 --- topology-aware vs dynamic are distinct axes
+The work-distribution options differ in how they assign work to threads. Static
+homogeneous chunking splits the text into equal segments, one per thread, with
+the boundary overlap required for correctness. Topology-aware chunking and
+dynamic dispatch are two \textit{distinct} answers to the load imbalance that
+equal segments cause on a heterogeneous processor, and they are not the same
+mechanism. Topology-aware chunking sizes each segment \textit{statically}, in
+proportion to the maximum clock frequency of the core that will execute it ---
+read once from the operating system's per-core frequency information --- and
+pins the worker to that core, so that a faster P-core receives a proportionally
+larger segment before the scan begins. Dynamic dispatch instead splits the text
+into many small, uniform tasks that idle workers pull from a shared atomic
+counter \textit{at run time} (a bag-of-tasks scheme), correcting imbalance
+reactively rather than from a hardware model. The dictionary-parallelism options
+partition the pattern set instead of the text: prefix sharding builds $K$
+independent sub-automata, and the two-dimensional composition combines sharding
+with text chunking to test whether the two kinds of parallelism add. An
+exploratory software-prefetch variant of the chunked searcher also exists in the
+laboratory as a microarchitectural probe; it introduces no new axis and is
+excluded from the controlled grid and from the reported results.
 
-The primary metrics follow the standard definitions introduced in the
+\subsecao{Metrics and Instrumentation}
+
+% review: issue #117, comment 41 --- separate performance metrics from diagnostics
+The performance metrics follow the standard definitions introduced in the
 theoretical framework. Search throughput is reported in MB/s (and, where useful,
-in Gbps); speedup is the ratio of sequential to parallel search time as in
+in Gbps); speedup is the ratio of sequential to parallel search time, as in
 Eq.~\ref{eq:speedup}; and parallel efficiency is the speedup normalized by the
-thread count as in Eq.~\ref{eq:efficiency}. The construction time is measured and
-reported separately from the search time, so that the cost of rebuilding the
-automaton (relevant to rule reloading) is never conflated with scanning
-throughput. When a hypothesis concerns load balancing between heterogeneous
-cores, per-thread timings and the coefficient of variation across repetitions
-are reported as a direct measure of synchronization waste at the final barrier.
-Finally, the automaton footprint in bytes is recorded as the causal variable
-that explains throughput across regimes, rather than as a headline figure in its
-own right.
+thread count, as in Eq.~\ref{eq:efficiency}. Search time is the quantity these
+are derived from, and it is always measured separately from construction time,
+so that the cost of rebuilding the automaton --- relevant to rule reloading ---
+is never conflated with scanning throughput.
+
+A second group of quantities does not measure performance but supports its
+interpretation, and is reported as diagnostic instrumentation rather than as a
+result. Per-thread timings and the coefficient of variation across repetitions
+measure load balance and stability, respectively: the per-thread spread exposes
+synchronization waste at the final barrier, while the coefficient of variation
+quantifies how noisy a measurement is rather than how fast it is. Match counts
+are recorded for every run as a correctness check, not a performance figure (see
+Section~\ref{subsec:correctness}). Construction (build) time is recorded for the
+parallel-build experiment. Finally, the laboratory writes every run, together
+with a snapshot of its environment, to a structured log that is ingested into an
+SQLite database, which is the substrate for all aggregation and cross-checking;
+the automaton footprint in bytes is retained there too --- not as a headline
+figure, but as the causal variable used to explain throughput across regimes.
 
 \subsecao{Measurement Protocol}
 
-Each reported data point follows the exact per-phase repetition protocol
-summarized in Table~\ref{tab:protocol}. 
+% review: issue #118, comment 42 --- explain warm-up once, up front
+Each reported data point follows the per-phase repetition protocol summarized in
+Table~\ref{tab:protocol}. Every phase begins with a number of \textit{warm-up}
+iterations whose times are discarded: the warm-up pays the one-time costs of
+page faults and cache population so that the subsequent timed iterations measure
+steady-state behaviour. For each timed series both the mean and the best
+(minimum) time are kept; the mean is used for the reported throughput, and the
+dispersion between iterations is retained as the stability indicator described in
+the previous section.
 
 \begin{table}[H]
     \centering
@@ -213,74 +280,128 @@ summarized in Table~\ref{tab:protocol}.
     {\footnotesize\raggedright \textbf{Source:} Prepared by the author from \texttt{sweep.db} (sweep 2026-05-29).\par}
 \end{table}
 
-Phase~A (speedup curves) sweeps thread
-counts $T \in \{1,2,4,6,8,10,12\}$ for the canonical Enron corpus and
-$T \in \{1,4,8,12\}$ for the eight-fold replica, as recorded in
-\texttt{sweep.db}. Phases A--C (speedup curves, footprint, and cross-corpus)
-each execute two warm-up iterations followed by five timed iterations; phase D (per-thread diagnostic) executes one warm-up followed by
-three timed iterations; and phase E (parallel construction) executes a single
-timed build with no warm-up. The warm-up iterations pay for page faults and warm
-the caches so that the timed iterations measure steady-state behaviour. Both the
-mean and the best (minimum) times are recorded; the mean is used for the reported
-throughput, and the dispersion between iterations is retained as an indicator of
-stability.
+% review: issue #118, comment 42 --- one short paragraph per phase
+Phase~A measures the speedup curves, the headline scaling result. It sweeps
+thread counts $T \in \{1,2,4,6,8,10,12\}$ over the canonical Enron corpus and
+$T \in \{1,4,8,12\}$ over the eight-fold replica, running every parallel searcher
+against the two single-thread baselines, with two warm-ups and five timed
+iterations per point.
 
-A caveat specific to the measurement platform must be stated explicitly. The
-reference machine is a thermally constrained mobile processor.
-Under sustained all-core load lasting hours, the package throttles its
-frequency, and the measured multi-threaded throughput settles roughly $15$ to
-$35\%$ below what isolated bursts on a cold processor report. The values
-published in this work are deliberately the sustained, under-load figures, which
-are conservative and reproducible; cold-burst peaks are treated as the
-non-sustainable upper bound and are not used as headline results. This thermal
-sensitivity is itself a finding consistent with the central thesis: at the scale
-of interest, performance is governed by physical resource limits rather than by
-the number of threads.
+Phase~B measures the automaton footprint against throughput. Holding the corpus
+fixed at Enron, it varies the dictionary across the four footprints of
+Table~\ref{tab:datasets} to locate the throughput cross-over, again with two
+warm-ups and five timed iterations.
+
+Phase~C isolates the effect of the text content. Holding the dictionary fixed at
+the full Snort set, it compares the natural-language SimpleWiki corpus against
+Enron, with two warm-ups and five timed iterations, so that any throughput
+difference is attributable to the corpus rather than to the automaton.
+
+Phase~D is the per-thread diagnostic. At the full thread count it records
+per-thread timings for each parallel searcher --- one warm-up and three timed
+iterations --- to quantify barrier idle time and load balance.
+
+Phase~E measures parallel construction. It compares the sequential build against
+the level-synchronous parallel build across the four dictionaries; since only the
+build time is of interest, each build is timed once with no warm-up.
+
+% review: issue #119, comment 43; issue #120, comment 44 --- drop thermal as a
+% premise; keep a short measurement-variance limitation only
+The peak speedups reported at the saturated thread count must be read with one
+limitation in mind. On the reference i5, which exposes only twelve hardware
+threads, repeated full sweeps reproduce the single-thread baseline to within
+about $3\%$ but place the twelve-thread peak in visibly different regimes from
+one invocation to the next, an effect that the within-run coefficient of
+variation does not capture; the saturated peaks are therefore treated as
+run-dependent rather than exact. The reference platform is additionally a
+thermally constrained mobile part, whose sustained all-core clocks sit below its
+short-burst peaks, so the published values are the sustained, reproducible
+figures; the thermal behaviour itself is not used as a premise here and is
+revisited, where the data warrant, in the results and conclusion.
 
 \subsecao{Correctness Validation}
 \label{subsec:correctness}
 
-Performance is only meaningful once correctness is established, so every parallel
-variant was required to reproduce the output of the sequential baseline before
-being benchmarked. Correctness was checked at three complementary levels. First,
-the automated test suite requires every strategy to reproduce the exact match
-\emph{set} of the sequential baseline---each match identified by its end position
-and pattern identifier---across thread counts of $\{1,2,3,4,7,8\}$; the same suite
-also verifies that the level-synchronous parallel construction produces an
-automaton bit-for-bit identical to the sequentially built one, so that swapping in
-the parallel build can never alter the reported matches. Second, on the full-scale
-workloads, the MD5 digest of the canonicalized match stream---the full set of
-matches placed in a deterministic order by end position and pattern
-identifier---was computed for each parallel strategy and compared against the
-digest of the sequential baseline. An agreement certifies the exact \emph{multiset}
-of matches (their count, their end positions, and their pattern identifiers), a far
-stronger guarantee than match-count parity alone; it was confirmed for every
-strategy up to a thread count of $64$ (a $5.3\times$ oversubscription of the
-hardware), demonstrating that the partitioning logic is robust under heavy
-oversubscription. For the static-chunking strategies, whose thread-local results
-are merged in text order, the digest of the raw emission stream agrees as well; the
-dynamic-dispatch and dictionary-sharded strategies emit the identical multiset in a
-different order, so for them only the canonicalized digest coincides. Finally,
-ThreadSanitizer reported no data races during the parallel search, empirically
-confirming the read-only-automaton invariant and the absence of unsynchronized
-shared writes on the hot path.
+% review: issue #121, comment 45 --- intro on why correctness matters, then one
+% paragraph per validation level
+Correctness is a precondition for any performance claim: a faster scan is
+worthless if it does not return exactly the matches that the sequential algorithm
+returns. The goal of every optimization here is to reduce execution time while
+preserving the output of the sequential baseline, so each parallel variant was
+required to reproduce that output before it was benchmarked. Correctness was
+established at three complementary levels, described in turn below.
+
+First, at the level of the match \emph{set}, the automated test suite requires
+every strategy to reproduce the exact set of matches of the sequential baseline
+--- each match identified by its end position and pattern identifier --- across
+thread counts of $\{1,2,3,4,7,8\}$. The same suite verifies that the
+level-synchronous parallel construction yields an automaton bit-for-bit identical
+to the sequentially built one, so that swapping in the parallel build can never
+alter the reported matches.
+
+Second, at the level of the full-scale \emph{multiset}, the MD5 digest of the
+canonicalized match stream --- the complete set of matches placed in a
+deterministic order by end position and pattern identifier --- was computed for
+each parallel strategy on the production-scale workloads and compared against the
+digest of the sequential baseline. Agreement certifies the exact multiset of
+matches (their count, end positions, and pattern identifiers), a far stronger
+guarantee than match-count parity; it held for every strategy up to a thread
+count of $64$, a $5.3\times$ oversubscription of the hardware, demonstrating that
+the partitioning logic is robust well beyond the physical thread count.
+
+Third, at the level of segment boundaries and emission order, the strategies
+whose thread-local results are merged in text order (the static-chunking
+strategies) reproduce even the digest of the raw, un-canonicalized emission
+stream, confirming that every boundary-straddling match is assigned to exactly
+one segment. The dynamic-dispatch and dictionary-sharded strategies emit the
+identical multiset in a different order, so for them only the canonicalized digest
+coincides, which is the expected and correct behaviour.
+
+Finally, ThreadSanitizer reported no data races during the parallel search,
+empirically confirming the read-only-automaton invariant and the absence of
+unsynchronized shared writes on the hot path.
 
 \subsecao{Experimental Design and Hypotheses}
 
-The experiments were structured to test a set of explicit hypotheses, several of
-which anticipate negative or qualified outcomes. The main hypotheses are: that
-text chunking scales sublinearly on the hybrid processor but suffers from
-load imbalance when segments are sized uniformly; that the automaton footprint,
-rather than the corpus content, governs throughput once the working set escapes
-the cache; that the flattened output layout reduces emission cost in both the
-sequential and parallel cases; that a level-synchronous parallel construction
-reduces build time for large dictionaries; that prefix-based dictionary sharding
-can recover throughput in the memory-bound regime by shrinking the per-shard
-working set; and that a two-dimensional composition of sharding and chunking
-could combine cache locality with text parallelism. Each hypothesis maps to a
-controlled experiment that varies a single axis while holding the others fixed,
-always comparing against the sequential baseline for headline speedup and against
-the strongest text-parallel strategy when the question concerns composition.
-Reporting the strategies that fail to outperform their simpler counterparts is
-treated as a scientific result in its own right, since it delimits the boundary
-beyond which plausible optimizations stop paying off on this class of hardware.
+% review: issue #122, comment 46 --- tie hypotheses to the objective and map each
+% one to an experiment and to the section of the next chapter that reports it
+The objective of this work is to accelerate multi-pattern matching by
+parallelizing Aho--Corasick on shared-memory multi-core CPUs. That objective is
+decomposed into a set of explicit hypotheses, each phrased so that an experiment
+can falsify it and each isolating a single design axis while the others are held
+fixed. Table~\ref{tab:hypotheses} maps every hypothesis to the experiment that
+tests it and to the place in the next chapter where its outcome is reported;
+throughout, the comparison is against the sequential baseline for headline
+speedup and against the strongest text-parallel strategy when the question
+concerns composition.
+
+\begin{table}[H]
+    \centering
+    \caption{Hypotheses, the experiment that tests each one, and where the outcome is reported.}
+    \label{tab:hypotheses}
+    \small
+    \begin{tabular}{@{} p{6.8cm} l l @{}}
+        \toprule
+        \textbf{Hypothesis} & \textbf{Experiment} & \textbf{Reported in} \\
+        \midrule
+        Text chunking scales sublinearly on a multi-core CPU but suffers load imbalance when segments are sized uniformly. & Speedup curves (Phase~A) & Fig.~\ref{fig:speedup} \\ \addlinespace
+        The automaton footprint, not the corpus content, governs throughput once the working set escapes the cache. & Footprint and cross-corpus sweeps (Phases~B--C) & Table~\ref{tab:footprint} \\ \addlinespace
+        The flattened output layout reduces emission cost in both the sequential and the parallel case. & Layout comparison & Table~\ref{tab:flat} \\ \addlinespace
+        Topology-aware weighting reduces barrier idle time relative to uniform chunking on heterogeneous cores. & Per-thread diagnostic (Phase~D) & Table~\ref{tab:balance} \\ \addlinespace
+        A level-synchronous parallel construction reduces build time for large dictionaries. & Build sweep (Phase~E) & Table~\ref{tab:build} \\ \addlinespace
+        Prefix-based dictionary sharding recovers throughput in the memory-bound regime by shrinking the per-shard working set. & Sharding experiment & Table~\ref{tab:shard} \\ \addlinespace
+        A two-dimensional composition of sharding and chunking combines cache locality with text parallelism. & Composition experiment & Table~\ref{tab:twod} \\
+        \bottomrule
+    \end{tabular}
+
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\end{table}
+
+Each row answers a different question: how performance scales with threads, what
+governs throughput, whether the emission layout pays off, whether topology-aware
+balancing helps, whether construction parallelizes, and whether dictionary
+parallelism helps on its own or in composition. Several hypotheses anticipate
+negative or qualified outcomes, and reporting a strategy that fails to outperform
+a simpler counterpart is treated as a result in its own right, since it delimits
+where plausible optimizations stop paying off on this class of hardware. The next
+chapter presents the outcome of this plan, following the same order.
