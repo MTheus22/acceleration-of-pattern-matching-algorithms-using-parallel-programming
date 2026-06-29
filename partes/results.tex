@@ -504,15 +504,17 @@ correct axis on memory-bound workloads. This difference in memory traffic is ill
 \label{fig:memory_traffic}
 \end{figure}
 
-\subsecao{End-to-End Evaluation}
+% review: comment 061 -- this section does not pose a new experimental question;
+% it is reframed as a consistency check that confirms, rather than extends, the
+% separate construction and search analyses at the level of the whole pipeline.
+\subsecao{End-to-End Consistency Check}
 
-Finally, the complete pipeline---automaton construction followed by a single
-scan of the corpus (with the parallel strategies merging their partial results
-at the end)---is reported as end-to-end wall-clock time on the $\sim$10.6~GiB
-corpus. To keep these figures auditable and comparable with the search analysis,
-they are derived from the same measurement campaign: the end-to-end time is the
-measured construction time plus one full-corpus search pass, both taken directly
-from the canonical sweep (Table~\ref{tab:e2e}).
+The preceding sections measured construction and search in isolation. This final
+check verifies that those results hold for the complete pipeline---automaton
+construction followed by a single full scan of the $\sim$10.6~GiB corpus, reported
+as wall-clock time. It introduces no new experiment: to keep the figures
+auditable, each cell is reconstructed from the same canonical sweep as the
+measured build time plus one full-corpus search pass (Table~\ref{tab:e2e}).
 
 \begin{table}[H]
     \centering
@@ -536,36 +538,35 @@ from the canonical sweep (Table~\ref{tab:e2e}).
     build.\par}
 \end{table}
 
-For the moderate dictionary, the full parallel stack delivers a $4.50\times$
-end-to-end acceleration, reducing the wall-clock time from roughly forty-five
-seconds to ten. For the memory-bound dictionary, the best end-to-end figure is
-$2.76\times$ ($87.0$ to $31.5$~seconds), obtained with flat-output text chunking
-and a sequential build; the topology-aware variant is statistically tied with it
-in this regime ($2.75\times$), and the parallel build contributes less than one
-percent of the total time. This asymmetry is consistent with the rest of the study: in the
-memory-bound regime, the simplest strategy that respects the bandwidth ceiling is
-the most robust.
-
+The end-to-end speedups are $4.50\times$ for the moderate dictionary (roughly
+forty-five seconds down to ten) and $2.76\times$ for the memory-bound one ($87.0$
+to $31.5$~seconds, with flat-output text chunking and a sequential build).
 Because construction accounts for under one percent of the pipeline---$49$~ms of
-$45{,}174$~ms for Snort and $541$~ms of $86{,}998$~ms for Emerging Threats---the
-end-to-end speedups track the search-only speedups of Figure~\ref{fig:speedup}
-almost exactly ($4.50\times$ versus $4.52\times$; $2.76\times$ versus
-$2.79\times$). The pipeline is therefore dominated by the scanning phase, and the
-end-to-end figures add no scaling beyond what the search analysis already
-establishes; they confirm, rather than refine, it.
+$45{,}174$~ms for Snort and $541$~ms of $86{,}998$~ms for Emerging Threats---these
+figures track the search-only speedups of Figure~\ref{fig:speedup} almost exactly
+($4.50\times$ versus $4.52\times$; $2.76\times$ versus $2.79\times$). The pipeline
+is therefore dominated by the scanning phase, and the end-to-end measurement adds
+no scaling beyond what the search analysis already establishes; it serves only to
+confirm that the earlier speedups hold end to end.
 
 \subsecao{Discussion and Positioning}
 
-Overall, the results point to a single clear conclusion. The dominant
-obstacle to accelerating Aho-Corasick at intrusion-detection scale is
-microarchitectural: when the automaton greatly exceeds the last-level cache,
-performance is limited by the memory subsystem, and the most effective response
-is to parallelize the text while keeping the per-byte transition cost as low as
-possible. No single strategy is best across all regimes; the fastest strategy switches between
-dynamic dispatch (moderate dictionary on the canonical corpus) and the flattened
-variants, with and without topology awareness, in the remaining scenarios, which
-shows that, as the dictionary grows, the main
-bottleneck shifts from thread scheduling to DRAM bandwidth --- the situation in which a cache-friendly emission path helps the most.
+% review: comment 062 -- soften the over-confident framing; the i5 results give a
+% consistent reading, and the memory-bandwidth shift is stated as a consistent
+% inference rather than a measured cause.
+Taken together, the i5 results converge on a consistent reading. On this platform,
+the dominant obstacle to accelerating Aho-Corasick at intrusion-detection scale
+appears to be microarchitectural: once the automaton greatly exceeds the
+last-level cache, performance is bounded by the memory subsystem, and the most
+effective response is to parallelize the text while keeping the per-byte
+transition cost as low as possible. No single strategy is best across all regimes;
+the fastest strategy switches between dynamic dispatch (moderate dictionary on the
+canonical corpus) and the flattened variants, with and without topology awareness,
+in the remaining scenarios. This pattern is consistent with the main bottleneck
+shifting, as the dictionary grows, from thread scheduling toward memory
+bandwidth---the regime in which a cache-friendly emission path helps the most---an
+interpretation inferred from the measurements rather than confirmed by
+hardware-counter instrumentation.
 
 These findings can be positioned against the related literature. Compared to
 approaches that restructure the automaton to improve cache friendliness,
