@@ -101,11 +101,27 @@ flattening the scaling curve.}
 \end{figure}
 
 \subsecao{Scalability of Text Parallelism}
+\label{subsec:scalability}
 
-The primary parallelization strategy partitions the input text across worker
-threads. Figure~\ref{fig:speedup} shows the speedup as a function of thread
-count for the two representative regimes, measured on the largest corpus
-($\sim$10.6~GiB) to minimize scheduler and thermal noise.
+% review: comment 050 -- restate what is being evaluated before the data.
+This experiment evaluates the primary parallelization strategy---partitioning the
+input text across worker threads---by measuring how search speedup scales with the
+number of worker threads. It tests the hypothesis, stated in the methodology, that
+text chunking scales sublinearly on the hybrid processor, and it does so for the
+two footprint regimes identified above: a moderate dictionary only a few times
+larger than the cache (Snort, 55~MiB) and a memory-bound dictionary far larger
+than it (Emerging Threats, 507~MiB). The measurements use the largest corpus
+($\sim$10.6~GiB, \texttt{enron\_x8}) to minimize scheduler and thermal noise.
+
+% review: comment 051 -- explain why the sweep stops at twelve threads.
+The thread count is swept up to twelve. This is not an arbitrary cut-off: the
+i5-1235U exposes exactly twelve hardware threads (two Performance cores with
+simultaneous multithreading, plus eight Efficiency cores), so $T=12$ is the full
+hardware concurrency of the platform and larger values would merely oversubscribe
+the cores. The sweep therefore covers the platform's entire thread budget; it does
+not claim to have located a universal threading ceiling for the algorithm, whose
+behaviour on processors with higher core counts is a matter of external validity
+addressed later. Figure~\ref{fig:speedup} shows the resulting speedup curves.
 
 \begin{figure}[H]
 \centering
@@ -155,32 +171,54 @@ noise grow.}
 {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
 \end{figure}
 
-Both regimes scale sublinearly. With the moderate dictionary, the best
-text-parallel strategy reaches $4.52\times$ at twelve threads
-($1{,}087.1$~MB/s; CV~$10\%$); on the canonical corpus, the dynamic-dispatch
-strategy peaks slightly higher at $4.79\times$ ($1{,}148.1$~MB/s; CV~$2\%$), the highest
-search speedup observed on the intrusion-detection-scale dictionaries. With the memory-bound dictionary, the
-curve flattens far earlier: the best strategy reaches only $2.79\times$ at
-twelve threads (CV~$8\%$), and on the canonical corpus the peak occurs near six threads
-($2.85\times$; CV~$16\%$) and then \textit{regresses} as more threads are added. This early
-plateau is the most important observation of the scaling analysis. Once the
-automaton is forty-two times larger than the cache, the behaviour is consistent
-with saturation of the shared DRAM bus: adding more threads (especially the
-slower Efficiency cores past the two Performance cores) no longer increases
-throughput. The data indicate that the binding limit is memory bandwidth rather
-than the number of cores; this attribution is inferred from the scaling curves
-and the footprint--throughput correlation rather than from direct
-hardware-counter measurement, a limitation revisited in the discussion of
-threats to validity.
+% review: comment 052 -- describe the data first, then interpret it.
+The two regimes behave differently. With the moderate dictionary, the best
+text-parallel strategy rises steadily to $4.52\times$ at twelve threads
+($1{,}087.1$~MB/s; CV~$10\%$); on the canonical corpus the dynamic-dispatch
+strategy reaches $4.79\times$ ($1{,}148.1$~MB/s; CV~$2\%$), the highest search
+speedup observed on the intrusion-detection-scale dictionaries. With the
+memory-bound dictionary the curve flattens far earlier: the best strategy reaches
+only $2.79\times$ at twelve threads (CV~$8\%$), and on the canonical corpus the
+peak occurs near six threads ($2.85\times$; CV~$16\%$) before declining as more
+threads are added. Both regimes scale sublinearly.
 
-For the moderate-dictionary regime, where memory bandwidth is not the binding constraint, the $4.52\times$ ceiling at twelve threads is consistent with Amdahl's law~\cite{Grama2003}: the observed $37.7\%$ parallel efficiency implies an inherent serial fraction of approximately $15\%$---arising from merge coordination and work dispatch---compounded by the P/E asymmetry of the thread pool, in which the four Performance-core hardware threads carry disproportionately more per-thread weight than the eight Efficiency cores.
+% review: comment 053 -- present the DRAM/bandwidth attribution as inference, not
+% as a measured fact (no bandwidth or cache counters were instrumented).
+The early plateau of the memory-bound regime is the central observation of this
+experiment. Its most likely cause is contention for the shared memory bus: once
+the automaton is about forty-two times the cache, adding threads---particularly
+the slower Efficiency cores beyond the two Performance cores---no longer raises
+throughput, which is consistent with the memory bus, rather than the core count,
+being the binding resource. This remains an inference drawn from the shape of the
+scaling curves and their agreement with the footprint experiment, not a direct
+measurement: memory bandwidth and cache counters were not instrumented, a
+limitation revisited in the discussion of threats to validity.
 
-Parallel efficiency (Eq.~\ref{eq:efficiency}) quantifies this overhead directly: at
-twelve threads, the moderate-dictionary regime achieves $37.7\%$ efficiency ($4.52\times
-/ 12$), while the memory-bound regime achieves only $23.3\%$ ($2.79\times / 12$). The
-gap between the two is caused primarily by DRAM saturation rather than
-threading overhead, since it mirrors the cache-residency difference and not the
-per-thread synchronization cost.
+% review: comment 053; task step 7 -- the serial fraction is reported as an
+% effective, observed quantity on the i5, not as a pure algorithmic constant.
+In the moderate-dictionary regime, where bandwidth is not the binding constraint,
+the $4.52\times$ ceiling at twelve threads is consistent with Amdahl's
+law~\cite{Grama2003}: the observed $37.7\%$ parallel efficiency corresponds to an
+effective serial fraction of roughly $15\%$. On this hybrid platform that fraction
+is best read as an effective, observed quantity rather than a fixed algorithmic
+constant, because it conflates genuine serialization (merge coordination and work
+dispatch), the P/E asymmetry of the pool---in which the four Performance-core
+hardware threads carry more per-thread weight than the eight Efficiency
+cores---and residual memory contention. Parallel efficiency
+(Eq.~\ref{eq:efficiency}) makes the contrast explicit: at twelve threads the
+moderate regime achieves $37.7\%$ efficiency ($4.52\times / 12$) against $23.3\%$
+($2.79\times / 12$) for the memory-bound regime. That this gap mirrors the
+cache-residency difference far more than the per-thread synchronization cost is
+why it is attributed here primarily to memory behaviour rather than to threading
+overhead---again as an inference consistent with the footprint result, not a
+counter-level measurement.
+
+The local conclusion is that text parallelism delivers a sublinear but substantial
+speedup whose ceiling is set by the footprint regime: useful and robust where the
+working set is moderate, and bounded by memory behaviour once the automaton is much
+larger than the cache. This confirms the sublinear-scaling hypothesis and sharpens
+it, by tying the ceiling to the automaton footprint rather than to the number of
+cores.
 
 A separate experiment fixed the dictionary and strategy while changing the
 corpus, to confirm that the text content is not the main factor.
