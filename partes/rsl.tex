@@ -11,6 +11,9 @@ The following Research Questions (RQs) were formulated to guide the literature s
     \item \textbf{RQ2:} What specific optimizations for the Aho-Corasick algorithm are employed in application scenarios involving extensive pattern sets, particularly within domains of information security?
 \end{enumerate}
 
+% review: comment 018 (issue #108) — connect the RQs back to the objectives of the work
+These research questions were formulated based on the objectives of this work and aim to identify both parallelization strategies and optimization techniques applicable to the proposed implementation.
+
 \subsecao{Search Strategy and Study Selection Protocol}
 
 The search and selection protocol for identifying primary studies encompassed the definition of data sources, construction of search queries, and establishment of inclusion and exclusion criteria.
@@ -196,6 +199,10 @@ In sum, the paper provides the present thesis with two contributions that no oth
 
 \subsecao{Synthesis and Identified Gap}
 
+% review: comment 020 (issue #109) — open the synthesis by stating the RQs were answered
+The systematic review answered both research questions by identifying the
+predominant parallelization strategies for Aho--Corasick on multi-core CPUs and
+the optimization techniques most frequently employed in practical applications.
 Read together, the ten primary studies cover a broad design space but leave a
 specific combination unaddressed. The reviewed parallelizations either target
 non-CPU substrates (GPUs in Thambawita et al.\ \cite{Vajira2018}, FPGA fabric in
@@ -221,7 +228,8 @@ commodity shared-memory multi-core CPUs, based on input-text partitioning with a
 $\texttt{max\_pattern\_len}-1$ overlap and a strictly read-only transition table,
 evaluated specifically in the regime where the automaton greatly exceeds the
 last-level cache and with exact-match equivalence to the sequential baseline. No
-reviewed study delivers this combination, which motivates the design and the
-experimental questions of the chapters that follow.
+reviewed study delivers this combination. % review: comment 022 (issue #138) — cleaner transition into the proposal chapter
+Based on these findings, the next chapter presents the design and implementation
+of the proposed shared-memory parallel version of the Aho--Corasick algorithm.
 
 % Fim do conteúdo da seção de Revisão Sistemática.
