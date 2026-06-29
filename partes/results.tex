@@ -1,62 +1,92 @@
-This chapter presents and discusses the empirical results, following the
-protocol described in the previous chapter. All search and construction figures
-reported here come from the same sustained measurement campaign; the end-to-end
-pipeline times evaluated later in this chapter were collected in a dedicated
-benchmark on the same platform and under the same correctness constraints. Every parallel strategy was first verified
-to reproduce the exact match set of the sequential baseline. The
-analysis proceeds in a deliberate order: it first characterizes the bottleneck
-that motivates the entire study (the relationship between automaton footprint
-and throughput); it then isolates the contribution of each optimization axis;
-and it finally reports the cumulative behaviour at scale, including the
-strategies that did not pay off. Throughout, speedup is measured against the
-single-threaded sequential baseline, and the reported values are the sustained,
-under-load figures, which are conservative relative to cold-burst peaks.
+% review: comment 047 -- give the reader the chapter's organization instead of
+% concluding in the opening paragraph.
+This chapter presents the experimental evaluation of the proposed parallel
+Aho-Corasick implementation. Following the methodology described in the previous
+chapter, each experiment is reported in a fixed order---experimental question,
+configuration, the measured data, an objective description of the observed
+pattern, the interpretation that the data permit, and a local conclusion tied to
+the corresponding hypothesis---so that what was measured stays separate from what
+is inferred.
 
-\subsecao{Characterizing the Bottleneck: Footprint versus Throughput}
+The chapter is organized as follows. It first characterizes how the execution
+platform responds to a growing automaton footprint, establishing the experimental
+context for the analyses that follow. The subsequent sections then evaluate the
+individual optimization axes introduced earlier---text partitioning and its
+scalability, the flattened output layout, load balancing on heterogeneous cores,
+parallel construction, dictionary sharding, and the two-dimensional composition of
+sharding with chunking---each as a controlled experiment that varies a single
+axis. The final section consolidates the findings and positions them against the
+related literature.
 
-The defining characteristic of the problem is that throughput is governed by the
-size of the automaton, not by the content of the text. Table~\ref{tab:footprint}
-sweeps the dictionary from one hundred patterns to roughly forty-five thousand,
-keeping the corpus fixed, and reports the single-threaded scanning throughput.
-Isolating the effect with a single thread removes any threading confound, so the
-degradation can be attributed entirely to the memory hierarchy.
+All search and construction figures reported here come from the same sustained
+measurement campaign on the i5-1235U platform; the end-to-end pipeline times are
+reconstructed from that same campaign. Every parallel strategy was first verified
+to reproduce the exact match set of the sequential baseline. Throughout, speedup
+is measured against the single-threaded sequential baseline, and the reported
+values are the sustained, under-load figures, which are conservative relative to
+cold-burst peaks.
+
+% review: comments 048, 049 -- the section now measures the impact of automaton
+% size on throughput; L3/cache is reserved for the interpretation as a platform-
+% specific inference, not as the experiment's premise (the cache-regime column
+% was removed because it is architecture-dependent).
+\subsecao{Impact of the Automaton Footprint on Throughput}
+\label{subsec:footprint}
+
+Before evaluating the proposed optimizations, this experiment characterizes how
+the execution platform responds to increasing automaton footprints. The question
+it answers is whether single-threaded scanning throughput is governed by the size
+of the automaton or by the content of the text. To isolate the footprint, the
+dictionary is swept from one hundred patterns to roughly forty-five thousand while
+the corpus is held fixed and a single thread is used, which removes any threading
+confound from the measurement. Table~\ref{tab:footprint} reports the resulting
+throughput.
 
 \begin{table}[H]
     \centering
-    \caption{Single-threaded throughput as the automaton footprint grows.}
+    \caption{Single-threaded scanning throughput as the automaton footprint grows
+    (corpus fixed, single thread).}
     \label{tab:footprint}
     \small
-    \begin{tabular}{@{} l r r l r @{}}
+    \begin{tabular}{@{} l r r r @{}}
         \toprule
-        \textbf{Dictionary} & \textbf{Patterns} & \textbf{Automaton} & \textbf{Cache regime} & \textbf{Throughput} \\
-         & & & & \textbf{(MB/s)} \\
+        \textbf{Dictionary} & \textbf{Patterns} & \textbf{Automaton} & \textbf{Throughput} \\
+         & & & \textbf{(MB/s)} \\
         \midrule
-        Snort-100        & 100      & 1.93~MiB   & Well within L3       & 483.1 \\ \addlinespace
-        Snort-1k         & $\sim$1{,}000 & 11.92~MiB & Near L3           & 337.3 \\ \addlinespace
-        Snort (full)     & 4{,}188  & 55.23~MiB  & Exceeds L3           & 240.7 \\ \addlinespace
-        Emerging Threats & 44{,}678 & 506.78~MiB & $42\times$ the L3    & 125.6 \\
+        Snort-100        & 100      & 1.93~MiB   & 483.1 \\ \addlinespace
+        Snort-1k         & $\sim$1{,}000 & 11.92~MiB & 337.3 \\ \addlinespace
+        Snort (full)     & 4{,}188  & 55.23~MiB  & 240.7 \\ \addlinespace
+        Emerging Threats & 44{,}678 & 506.78~MiB & 125.6 \\
         \bottomrule
     \end{tabular}
 
     {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Corpus fixed; single thread.\par}
 \end{table}
 
-Throughput falls monotonically by $74.0\%$, from $483.1$~MB/s when the automaton
-fits comfortably within the shared L3 to $125.6$~MB/s when it is forty-two times
-larger than that same cache.
-The cause is structural: each input byte triggers a lookup in the
-state-transition table, and once that table no longer fits in cache, every
-transition risks a main-memory access. The degradation persists in parallel execution: in the same footprint sweep, the
-twelve-thread speedup of the topology-aware chunked strategy (measured against the
-sequential baseline) drops from $6.68\times$ in the cache-resident regime
-(Snort-100) to $2.63\times$ in the memory-bound regime (Emerging Threats),
-confirming that the limit is the memory subsystem rather than a threading artifact. This is
-the central obstacle to scaling Aho-Corasick at intrusion-detection scale, and
-it frames the interpretation of every subsequent result.
-Figure~\ref{fig:cache_hierarchy} contrasts the two regimes schematically: when
-the automaton fits in the shared L3, transitions resolve from cache and the
-memory bus stays idle; when it greatly exceeds the L3, every transition risks a
-miss and the bus becomes the shared bottleneck.
+Throughput falls monotonically as the automaton grows, from $483.1$~MB/s at
+$1.93$~MiB (Snort-100) to $125.6$~MB/s at $506.78$~MiB (Emerging Threats)---a
+$74.0\%$ reduction across an automaton roughly $260\times$ larger. Since the
+corpus is identical in every row, the degradation tracks the automaton size
+alone, and not the text content.
+
+A plausible explanation for this behaviour is the memory hierarchy of the test
+platform. Each input byte triggers a lookup in the state-transition table; on the
+i5-1235U the largest dictionary produces an automaton about forty-two times the
+$12$~MB shared last-level cache, so an increasing share of transitions is likely
+to miss cache and reach main memory as the automaton grows. This attribution is
+an inference: memory bandwidth, cache-hit and cache-miss counters were not
+instrumented, and the magnitude of the effect is specific to this platform's cache
+size rather than a property of the algorithm itself. Figure~\ref{fig:cache_hierarchy}
+illustrates the two regimes schematically.
+
+The local conclusion is that, on this platform, the automaton footprint---not the
+text content---is the dominant factor in single-threaded throughput. The same
+degradation also persists under parallel execution: across the footprint sweep at
+twelve threads, the speedup of the topology-aware chunked strategy (against the
+sequential baseline) falls from $6.68\times$ for Snort-100 to $2.63\times$ for
+Emerging Threats, consistent with the memory subsystem rather than the thread
+count being the binding factor. This is revisited in the scaling analysis below,
+and it frames the interpretation of every subsequent result.
 
 \begin{figure}[H]
 \centering
