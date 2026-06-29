@@ -6,7 +6,9 @@ a particular machine: the behaviour of multi-pattern matching when the automaton
 greatly exceeds the last-level cache, which is typical for
 signature-based intrusion detection with realistic rule sets.
 
-The experiments confirmed the main hypotheses while also
+% review: comment 062 (issue #158) -- keep the conclusion consistent with the
+% workstation portability evidence added to the results chapter.
+The canonical i5 experiments confirmed the main hypotheses while also
 defining their limits. Text-level partitioning with a boundary overlap of
 $L_{\max}-1$ bytes scales sublinearly, reaching $4.52\times$ at twelve threads
 on the multi-gigabyte corpus and a canonical-corpus peak of $4.79\times$ via
@@ -15,22 +17,27 @@ The size of the automaton, not the corpus content, proved to
 be the main factor for throughput: as the dictionary grows from a
 cache-resident set to one forty-two times larger than the last-level cache,
 single-threaded throughput falls by $74.0\%$, and the parallel speedup drops
-accordingly. In the memory-bound regime, the speedup peaks at $2.85\times$ near
-six threads (canonical corpus) and then regresses as additional threads
-are added: the shared DRAM bus saturates before all threads are
-used, making more threads counterproductive.
-The corresponding parallel efficiency at twelve threads is $37.7\%$ for the moderate-dictionary regime and $23.3\%$ for the memory-bound one, reflecting DRAM saturation as the dominant overhead rather than thread coordination.
+accordingly. On the reference i5, in the memory-bound regime, the speedup peaks
+at $2.85\times$ near six threads (canonical corpus) and then regresses as
+additional threads are added; the timing data indicate that the shared memory
+subsystem becomes limiting before all hardware threads are useful. The
+workstation portability run delimits this claim: on the homogeneous
+Ryzen~9~9950X, the same workloads continue scaling to thirty-two threads, so
+the early regression is a property of the hybrid mobile platform rather than an
+inherent behaviour of the algorithm.
+The corresponding i5 parallel efficiency at twelve threads is $37.7\%$ for the moderate-dictionary regime and $23.3\%$ for the memory-bound one, consistent with the memory subsystem dominating that regime rather than thread coordination alone.
 On the heterogeneous processor, frequency-weighted partitioning and
 dynamic dispatch removed the load imbalance of uniform segments,
 reducing run-to-run variation from up to $53\%$ to under $5\%$. This improves
 predictability rather than peak throughput, since memory remains the bottleneck.
 The proposed flat output layout, which replaces pointer-chasing with contiguous
-reads, proved to be the simplest effective optimization. Its benefit grows with memory
-pressure, reaching $+13.0\%$ on a single thread exactly in the memory-bound
-regime where it matters most. Parallelizing the construction of the automaton
-accelerated the build of the largest dictionary by up to $1.55\times$, a useful
-operational gain for rule reloading, though negligible in the total time of a
-multi-gigabyte scan.
+reads, proved to be the simplest effective optimization. On the i5, its benefit
+grows with memory pressure, reaching $+13.0\%$ on a single thread in the
+memory-bound regime; on the workstation, the direction remains positive but the
+gain settles near $+4\%$. Parallelizing the construction of the automaton
+accelerated the build of the largest dictionary by up to $1.55\times$ on the i5
+and $1.57\times$ on the workstation, a useful operational gain for rule
+reloading, though negligible in the total time of a multi-gigabyte scan.
 
 Equally important are the strategies that were falsified. Partitioning the
 dictionary instead of the text yields only a small, locality-driven gain that
@@ -39,8 +46,8 @@ Combining sharding and chunking is consistently slower than
 flat-output text chunking, because scanning the text once per shard multiplies the memory
 traffic that is already the bottleneck. These negative results are a
 key part of the contribution: they rule out plausible approaches and
-reinforce the central thesis that, on this hardware, DRAM bandwidth is the main
-constraint rather than the matching logic. Therefore, text parallelism combined
+reinforce the central thesis that, in the measured memory-bound regime, memory
+traffic rather than matching logic dominates scalability. Therefore, text parallelism combined
 with a cache-friendly layout is the correct approach. End-to-end, the full pipeline achieves $4.50\times$ on
 the moderate dictionary and $2.76\times$ on the memory-bound one---figures that
 track the search-only speedups, since construction is under one percent of the
@@ -61,24 +68,23 @@ respectively.
 The third --- to analyze scalability under different workloads, pattern sets, and
 thread counts --- was met through a systematic test across seven thread
 counts, three corpora, and automata covering a forty-two-fold range of cache
-capacity. This identified and quantified the memory bandwidth saturation point
-and the subsequent performance drop.
+capacity. This identified and quantified the saturation point and subsequent
+performance drop on the reference hybrid processor, while the workstation
+portability run showed that this point moves on homogeneous hardware.
 
 \subsecao{Threats to Validity}
 
-The main threat to external validity is using a single mobile
-processor with a limited thermal envelope. This caused thermal throttling
+The main threat to external validity is that the main tables and figures use a
+single mobile processor with a limited thermal envelope. This caused thermal throttling
 during long tests and introduced significant variance.
 The reported numbers are conservative under-load values, and the variability is
 documented instead of hidden.
-Crucially, the central conclusion does not depend on this machine's small cache.
-The largest automaton ($\sim$507~MiB) exceeds the last-level cache of almost all
-current server processors. Even on CPUs with enough total L3 cache, like AMD's
-V-Cache models, that capacity is split across core complexes rather than available
-to a single thread. Thus, the memory bandwidth bottleneck is not just an artifact
-of a small cache, but a property that applies to server hardware too.
-Testing on a smaller chip makes the issue clearer. A larger machine with uniform
-cores and more memory channels would delay the bottleneck, but not eliminate it.
+The workstation portability run mitigates, but does not eliminate, this threat:
+it confirms the footprint--throughput cliff, the superiority of text
+partitioning over dictionary partitioning, and the low ceiling of parallel
+construction on a homogeneous processor. It also shows that the early i5
+saturation point, topology-aware load balancing, and some strategy rankings are
+platform-dependent effects.
 Another limitation is that the hardware-level explanations, while
 consistent with the timing data, were not confirmed with direct hardware
 telemetry.
@@ -89,8 +95,8 @@ Two directions emerge from these limitations. The first is to
 use hardware performance counters in the benchmarks. This would
 measure cache misses and pipeline stalls directly, confirming the memory
 bottleneck with hard data instead of inferring it from execution times.
-The second is to repeat the tests, especially the failed
-sharding-chunking combination, on server processors with much larger caches and
+The second is to extend the portability study, especially the failed
+sharding-chunking combination, to server processors with much larger caches and
 higher memory bandwidth. This could reveal when dictionary sharding actually
 becomes beneficial. Other options include sharding based on the actual memory
 footprint of the sub-automata instead of pattern prefixes, and a stricter

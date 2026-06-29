@@ -515,11 +515,105 @@ is therefore dominated by the scanning phase, and the end-to-end measurement add
 no scaling beyond what the search analysis already establishes; it serves only to
 confirm that the earlier speedups hold end to end.
 
+% review: comment 062 (issue #158) — the discussion (and conclusion) could not
+% rest on the i5-only data; this portability subsection supplies the
+% cross-platform evidence the reviewer asked for before the discussion is read.
+\subsecao{Portability on a Homogeneous Workstation}
+
+All the figures reported so far were obtained on a single hybrid mobile
+processor. To test whether the conclusions hold beyond that platform, the full
+sweep was replayed on a homogeneous desktop processor: an AMD Ryzen~9~9950X with
+sixteen identical cores (thirty-two hardware threads), DDR5 memory, and a
+last-level cache organized as two $32$~MiB slices, one per core complex. This
+portability run does not replace the canonical study; the i5-1235U sweep remains
+the source of truth for the tables and figures of this chapter. Its purpose is
+narrower: to separate the findings that follow from the algorithm and the
+memory-bound regime from those that follow from the specific hybrid silicon of
+the reference machine. Table~\ref{tab:portability} summarizes the comparison.
+
+\begin{table}[H]
+    \centering
+    \caption{Portability comparison between the hybrid reference laptop and the
+    homogeneous workstation. The i5-1235U remains the canonical platform; the
+    Ryzen~9~9950X run probes external validity.}
+    \label{tab:portability}
+    \small
+    \begin{tabular}{@{} >{\raggedright\arraybackslash}p{4.0cm} >{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}p{3.3cm} @{}}
+        \toprule
+        \textbf{Quantity} & \textbf{i5-1235U (12T)} & \textbf{Ryzen 9 9950X (32T)} \\
+        \midrule
+        Peak speedup, Snort (55~MiB)             & $4.52\times$ (T{=}12) & $22.72\times$ (T{=}32) \\ \addlinespace
+        Peak speedup, Emerging Threats (507~MiB) & $2.79\times$ (T{=}12) & $19.79\times$ (T{=}32) \\ \addlinespace
+        Peak throughput, Snort                   & $1{,}087$~MB/s        & $7{,}468$~MB/s \\ \addlinespace
+        Peak throughput, Emerging Threats        & $350$~MB/s            & $4{,}186$~MB/s \\ \addlinespace
+        Single-thread cache cliff                & $-74.0\%$             & $-67\%$ \\ \addlinespace
+        Parallel build ceiling (ET, eight threads) & $1.55\times$        & $1.57\times$ \\ \addlinespace
+        Chained-chunking run-to-run CV           & $39.9$--$52.9\%$      & $0.10\%$ \\ \addlinespace
+        Winning search strategy                  & Snort: topology-aware flat; ET: flat & dynamic flat \\
+        \bottomrule
+    \end{tabular}
+
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author, from the
+    canonical i5 sweep (2026) and the Ryzen~9~9950X portability run. The i5
+    figures are those reported earlier in this chapter; the workstation figures
+    come from a sweep on the same corpora and dictionaries.\par}
+\end{table}
+
+The workstation \textbf{confirms} the central findings of the study. The
+footprint--throughput coupling persists: single-threaded throughput still
+collapses as the automaton outgrows the cache --- by $67\%$ on the workstation
+against $74.0\%$ on the i5 --- so the cache cliff is a property of the workload
+rather than of one particular cache size. Partitioning the text again dominates
+partitioning the dictionary, the flattened emission layout again helps, and
+parallel construction again saturates at an algorithmic ceiling rather than a
+hardware one: $1.57\times$ at eight threads for the largest dictionary, almost
+identical to the $1.55\times$ measured on the i5 despite the wider
+homogeneous core pool. The bottleneck, the winning axis, and the cheap layout
+optimization therefore carry across microarchitectures.
+
+The workstation \textbf{contests} readings that the single-machine data made
+tempting. The early plateau is not universal: where the i5 saturates at twelve
+threads on the multi-gigabyte corpus and, on the canonical corpus, the
+memory-bound curve even regresses past six, the workstation
+scales monotonically to $22.72\times$ at thirty-two threads for the moderate
+dictionary ($7{,}468$~MB/s) and to $19.79\times$ for the memory-bound one
+($4{,}186$~MB/s). The earlier observation that more threads become
+counterproductive is thus specific to the constrained laptop platform and is not a
+general property of the algorithm. By the same token, the inherent serial
+fraction inferred from the i5 (around $15\%$) overstates the algorithm's
+coordination cost: with uniform cores, parallel efficiency stays high well
+beyond the i5's saturation point, which indicates that much of the apparent
+serial fraction was the Performance/Efficiency asymmetry of the hybrid pool
+rather than serial code. The flattened layout, finally, does not keep growing
+without bound; its single-thread gain settles near $+4\%$ on the workstation
+instead of reaching the $+13.0\%$ peak observed under the i5's weaker memory
+subsystem.
+
+The workstation also \textbf{reveals} which contributions are intrinsically tied
+to hybrid hardware. The load-balancing machinery --- frequency-weighted,
+topology-aware chunking --- exists to tame the stragglers that heterogeneous
+cores produce: on the i5, static chained chunking varies by $39.9$ to $52.9\%$
+from run to run, whereas on the uniform workstation the same strategy is
+essentially deterministic ($0.10\%$). With identical cores there are no
+stragglers to correct, and the design space collapses onto a single winner,
+dynamic dispatch with the flattened layout
+(\texttt{pthread\_\allowbreak dynamic\_\allowbreak flat}), which leads in both
+regimes. The finding that no single strategy is best across regimes is therefore
+a consequence of heterogeneity, not a permanent feature of the problem.
+
+In summary, the workstation does not overturn the study; it widens its external
+validity. The memory-bound regime, the primacy of text partitioning, and the
+value of a cache-friendly layout hold on both machines, while the saturation
+point, the topology-aware balancing, and the strategy ranking are recognized as
+platform-dependent effects of the hybrid reference machine. The i5-1235U sweep remains the
+canonical basis of this chapter; the workstation establishes how far its
+conclusions can be carried.
+
 \subsecao{Discussion and Positioning}
 
-% review: comment 062 -- soften the over-confident framing; the i5 results give a
-% consistent reading, and the memory-bandwidth shift is stated as a consistent
-% inference rather than a measured cause.
+% review: issue #158, comment 062 -- soften the over-confident framing; the i5
+% results give a consistent reading, and the memory-bandwidth shift is stated as a
+% consistent inference rather than a measured cause.
 Taken together, the i5 results converge on a consistent reading. On this platform,
 the dominant obstacle to accelerating Aho-Corasick at intrusion-detection scale
 appears to be microarchitectural: once the automaton greatly exceeds the
@@ -533,6 +627,12 @@ shifting, as the dictionary grows, from thread scheduling toward memory
 bandwidth---the regime in which a cache-friendly emission path helps the most---an
 interpretation inferred from the measurements rather than confirmed by
 hardware-counter instrumentation.
+% review: issue #158, comment 062 -- anchor the discussion to the cross-platform evidence.
+This conclusion is not an artifact of the reference laptop: as the portability
+subsection above shows, the memory-bound bottleneck, the primacy of text
+partitioning, and the value of the flattened layout reappear on a homogeneous
+sixteen-core workstation, even though that machine scales far further before
+saturating.
 
 These findings can be positioned against the related literature. Compared to
 approaches that restructure the automaton to improve cache friendliness,
