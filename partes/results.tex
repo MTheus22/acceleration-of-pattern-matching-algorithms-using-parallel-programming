@@ -237,8 +237,10 @@ behaviour far more than the characteristics of the corpus.
 The proposed output-layout optimization replaces the pointer-chasing emission of
 matches with a sequential read of a contiguous array. Because it changes only
 the memory layout, its effect can be measured in isolation on a single thread.
-Table~\ref{tab:flat} shows that the gain is regime-dependent and, importantly,
-grows precisely as memory pressure increases.
+% review: task step 8 -- report the regime dependence as observed on the i5, not
+% as a universal growth law.
+Table~\ref{tab:flat} shows that, on the i5, the gain is regime-dependent and
+increases with memory pressure.
 
 \begin{table}[H]
     \centering
@@ -271,7 +273,10 @@ parallelism in the moderate regime: there, the DRAM stalls of the transition
 table already partially mask the emission cost, so the layout provides a smaller
 improvement than its single-threaded figure would suggest. The optimization
 is therefore best described as a cheap, broadly applicable improvement whose
-payoff is largest exactly where the problem is hardest.
+payoff is largest exactly where the problem is hardest. On the i5 this payoff
+increases with the automaton footprint; the precise progression of the gain is
+platform-dependent, so the qualitative pattern---a larger benefit under heavier
+memory pressure---is more robust than the specific per-regime percentages.
 
 \subsecao{Load Balancing on Heterogeneous Cores}
 
@@ -329,10 +334,18 @@ solutions proposed in the design reduce this variation: frequency-weighted
 partitioning reduces it to $1.7\%$ and dynamic dispatch to $3.3\%$, while the
 flattened chunking strategy is the most stable of all (down to $0.4\%$) --- indicating that uniform partitioning makes the run-to-run timing sensitive to how the scheduler places the slow-core segments, rather than imposing a fixed penalty. This shows that topology awareness does not make the transition function faster;
 it removes idle time at the barrier, trading a small change in
-mean throughput for a large gain in predictability. This is valuable for
-reproducibility and worst-case latency, but it does not by itself change the
-ranking of strategies, because the underlying ceiling remains the memory
-subsystem.
+mean throughput for a large gain in predictability. The improvement is in
+predictability and worst-case latency, not in mean throughput, and it does not by
+itself change the ranking of strategies, because the underlying ceiling remains
+the memory subsystem.
+% review: task step 9 -- mark topology-aware balancing as specific to hybrid
+% hardware; separate predictability from mean throughput.
+Because the stragglers arise from the Performance/Efficiency split of this
+processor, this is a result specific to hybrid CPUs such as the i5: on a
+homogeneous machine, uniformly sized segments would not produce the same
+imbalance, and topology-aware sizing would have little to correct. The value
+demonstrated here is therefore the decoupling of timing predictability from mean
+throughput on heterogeneous cores, rather than a universal throughput gain.
 
 \subsecao{Parallel Construction of the Automaton}
 
