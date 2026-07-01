@@ -16,9 +16,9 @@ scalability, the flattened output layout, load balance on uniform cores, task
 granularity, parallel construction, dictionary sharding, and the two-dimensional
 composition of sharding with chunking---each as a controlled experiment that
 varies a single axis. A short, clearly delimited comparison then isolates the one
-effect that identical cores cannot exhibit---load imbalance across heterogeneous
-cores---by contrasting the workstation with a hybrid processor. The final section
-consolidates the findings and positions them against the related literature.
+effect that identical cores cannot exhibit---load imbalance across cores with
+different performance classes. The final section consolidates the findings and
+positions them against the related literature.
 
 % epic-03: single measurement campaign on the Ryzen 9 9950X workstation; the one
 % exception is the closing heterogeneous-core comparison (task 06).
@@ -26,8 +26,8 @@ All search and construction figures reported here come from the same sustained
 measurement campaign on the AMD Ryzen~9~9950X workstation, and the end-to-end
 pipeline times are reconstructed from that same campaign; the sole exception is the
 closing comparison of load imbalance across heterogeneous cores, explicitly
-identified where it appears, which is the one place a second, hybrid processor is
-used. Every parallel strategy was first
+identified where it appears, which is the one place a second processor is used.
+Every parallel strategy was first
 verified to reproduce the exact match set of the sequential baseline. Throughout,
 speedup is measured against the single-threaded sequential baseline, and the
 reported values are the sustained, under-load figures obtained at the
@@ -195,9 +195,9 @@ reaches $18.96\times$ ($3{,}979$~MB/s); the eight-fold replica confirms the Snor
 result ($22.64\times$) and produces only a technical tie in the memory-bound case:
 \texttt{pthread\_\allowbreak chunked\_\allowbreak flat} reaches $19.83\times$,
 while \texttt{pthread\_\allowbreak dynamic\_\allowbreak flat} reaches
-$19.79\times$. Neither curve plateaus or regresses before the hardware thread
-budget is exhausted: the peak is at $T=32$ in the canonical scenarios. Both regimes
-scale sublinearly, the moderate one more steeply than the memory-bound one.
+$19.79\times$. Both curves continue increasing through the final measured point:
+the peak is at $T=32$ in the canonical scenarios. Both regimes scale sublinearly,
+the moderate one more steeply than the memory-bound one.
 
 % review: comment 053 -- present the DRAM/bandwidth attribution as inference, not
 % as a measured fact (no bandwidth or cache counters were instrumented).
@@ -223,7 +223,7 @@ lowers efficiency to $71.6\%$ and $59.3\%$ at thirty-two threads. That drop is
 consistent with SMT sharing, which can hide memory latency without doubling
 compute, and with residual memory contention in the wider regime. It is therefore
 treated as an inference from the curve and the footprint result, not as a measured
-serial fraction or a counter-level measurement.
+sequential bottleneck or a counter-level measurement.
 
 The local conclusion is that text parallelism delivers a sublinear but substantial
 speedup whose ceiling is set by the footprint regime: it reaches $22.91\times$
@@ -629,8 +629,8 @@ per-worker timings point to the cause: under static chunking the slowest worker
 takes about $1.70\times$ as long as the fastest, consistent with equal-size
 segments landing on Efficiency cores that run well below the Performance cores and
 finishing late at the barrier while the faster threads idle. Because the operating
-system is free to place the threads on either core type and does so differently
-across iterations, the barrier time swings --- an interpretation that fits the large
+system is free to place the threads on either core type, changing placement across
+iterations would make the barrier time swing; this interpretation fits the large
 variation, though no scheduler-placement trace was recorded to confirm it directly.
 The two policies designed for this case remove most of the imbalance: the
 topology-aware, frequency-weighted strategy, which pins each worker and sizes its
@@ -642,10 +642,11 @@ a few percent indicates that the instability is a load-imbalance effect rather t
 measurement noise.
 
 On the homogeneous workstation the same strategies show almost no differentiation.
-Static chunking already runs at a coefficient of variation of $4.1\%$ --- and
-$0.9\%$ once cache padding removes the boundary jitter --- with a worker spread of
-only $1.13\times$, and the balancing policies land at $0.6\%$ (topology-aware) and
-$0.7\%$ (dynamic) with no meaningful gain over static chunking. With identical
+Static chunking already runs at a coefficient of variation of $4.1\%$, while the
+cache-padded static variant is at $0.9\%$, with a worker spread of only
+$1.13\times$ for the plain static partition. The balancing policies land at
+$0.6\%$ (topology-aware) and $0.7\%$ (dynamic), which is no meaningful gain over
+the cache-padded static variant. With identical
 cores there are no stragglers to correct, so the frequency weights the
 topology-aware policy computes are all equal and it reduces to plain static
 chunking. This mirrors the earlier finding on uniform cores
