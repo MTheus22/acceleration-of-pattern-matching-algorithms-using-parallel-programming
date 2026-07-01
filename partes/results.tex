@@ -15,13 +15,19 @@ individual optimization axes introduced earlier---text partitioning and its
 scalability, the flattened output layout, load balance on uniform cores, task
 granularity, parallel construction, dictionary sharding, and the two-dimensional
 composition of sharding with chunking---each as a controlled experiment that
-varies a single axis. The final section consolidates the findings and positions
-them against the related literature.
+varies a single axis. A short, clearly delimited comparison then isolates the one
+effect that identical cores cannot exhibit---load imbalance across heterogeneous
+cores---by contrasting the workstation with a hybrid processor. The final section
+consolidates the findings and positions them against the related literature.
 
-% epic-03: single measurement campaign on the Ryzen 9 9950X workstation.
+% epic-03: single measurement campaign on the Ryzen 9 9950X workstation; the one
+% exception is the closing heterogeneous-core comparison (task 06).
 All search and construction figures reported here come from the same sustained
-measurement campaign on the AMD Ryzen~9~9950X workstation; the end-to-end pipeline
-times are reconstructed from that same campaign. Every parallel strategy was first
+measurement campaign on the AMD Ryzen~9~9950X workstation, and the end-to-end
+pipeline times are reconstructed from that same campaign; the sole exception is the
+closing comparison of load imbalance across heterogeneous cores, explicitly
+identified where it appears, which is the one place a second, hybrid processor is
+used. Every parallel strategy was first
 verified to reproduce the exact match set of the sequential baseline. Throughout,
 speedup is measured against the single-threaded sequential baseline, and the
 reported values are the sustained, under-load figures obtained at the
@@ -338,8 +344,8 @@ spread attributable to memory-system jitter rather than to a structural imbalanc
 % epic-03: 1-sentence hook reserving the heterogeneous-core (P/E) comparison for task 06.
 Whether the topology-aware machinery ever pays off is a question only a
 heterogeneous processor can answer; that comparison --- the single place the Intel
-Core i5-1235U enters this work --- is presented separately in the section on
-load imbalance across heterogeneous cores.
+Core i5-1235U enters this work --- is presented separately in
+Section~\ref{subsec:heterogeneous} on load imbalance across heterogeneous cores.
 
 \subsecao{Task Granularity of the Dynamic Scheduler}
 
@@ -568,6 +574,92 @@ build while the sequential column barely notices it. The pipeline is still
 dominated by scanning, so the end-to-end measurement adds no scaling beyond what
 the search analysis already establishes; it confirms that the earlier speedups hold
 end to end, with construction a small and bounded overhead.
+
+% epic-03: seção P/E (revisor: mostrar desbalanceamento dos dois)
+% review: issue #155, comment 055 -- the load-balancing material is retained,
+% recast as the single i5-vs-workstation comparison that justifies the
+% topology-aware policy once the tests moved to the workstation.
+\subsecao{Load Imbalance on Heterogeneous Cores}
+\label{subsec:heterogeneous}
+
+Every experiment so far ran on the homogeneous workstation, where identical cores
+make a uniform text partition balanced by construction. The topology-aware,
+frequency-weighted policy introduced in the proposal
+(Figure~\ref{fig:load_balancing}) was designed for a different situation: a
+processor whose cores are not equally fast. This section isolates that effect on
+the only such processor available in this work --- an Intel Core i5-1235U, a hybrid
+design that pairs Performance cores with slower Efficiency cores --- and contrasts
+it with the homogeneous workstation. Its sole purpose is to establish where
+topology-aware balancing earns its complexity; the i5 is not a performance platform
+and none of the headline figures reported earlier depend on it.
+
+The experiment asks whether the balancing policies actually reduce load imbalance,
+and on which machine. It uses the canonical Snort workload with per-thread
+instrumentation, runs each processor at its full logical thread count --- twelve on
+the i5, thirty-two on the workstation --- and reports, for each work-distribution
+strategy, the coefficient of variation across the timed iterations of the run.
+Table~\ref{tab:pe_balance} places the two machines side by side.
+
+\begin{table}[H]
+    \centering
+    \caption{Iteration-to-iteration coefficient of variation of the
+    work-distribution strategies on a heterogeneous versus a homogeneous processor
+    (per-thread instrumentation, Snort workload, each machine at its full logical
+    thread count).}
+    \label{tab:pe_balance}
+    \small
+    \begin{tabular}{@{} l r r @{}}
+        \toprule
+        \textbf{Work-distribution strategy} & \textbf{i5-1235U (12T)} & \textbf{Ryzen 9 9950X (32T)} \\
+        \midrule
+        Static homogeneous chunking          & $39.9\%$ & $4.1\%$ \\ \addlinespace
+        Static chunking, cache-padded        & $52.9\%$ & $0.9\%$ \\ \addlinespace
+        Topology-aware (frequency-weighted)  & $1.7\%$  & $0.6\%$ \\ \addlinespace
+        Dynamic dispatch                     & $3.3\%$  & $0.7\%$ \\
+        \bottomrule
+    \end{tabular}
+
+    {\footnotesize\raggedright \textbf{Source:} Prepared by the author, from the per-thread instrumentation of each processor. The i5-1235U is heterogeneous (two Performance cores plus eight Efficiency cores) and the Ryzen~9~9950X is homogeneous; the coefficient of variation is measured across the timed iterations of the run, at each machine's full logical thread count.\par}
+\end{table}
+
+The two machines behave in opposite ways. On the hybrid i5, static chunking is
+highly unstable from one timed iteration to the next: the coefficient of variation
+is $39.9\%$ for the plain variant and $52.9\%$ for the cache-padded one. The
+per-worker timings point to the cause: under static chunking the slowest worker
+takes about $1.70\times$ as long as the fastest, consistent with equal-size
+segments landing on Efficiency cores that run well below the Performance cores and
+finishing late at the barrier while the faster threads idle. Because the operating
+system is free to place the threads on either core type and does so differently
+across iterations, the barrier time swings --- an interpretation that fits the large
+variation, though no scheduler-placement trace was recorded to confirm it directly.
+The two policies designed for this case remove most of the imbalance: the
+topology-aware, frequency-weighted strategy, which pins each worker and sizes its
+segment to the measured core speed, cuts the variation to $1.7\%$ and tightens the
+worker spread to $1.17\times$; dynamic dispatch, which lets faster cores claim more
+tasks from a shared counter, reaches $3.3\%$ without any knowledge of the topology.
+That two independent mechanisms both collapse a forty-to-fifty-percent variation to
+a few percent indicates that the instability is a load-imbalance effect rather than
+measurement noise.
+
+On the homogeneous workstation the same strategies show almost no differentiation.
+Static chunking already runs at a coefficient of variation of $4.1\%$ --- and
+$0.9\%$ once cache padding removes the boundary jitter --- with a worker spread of
+only $1.13\times$, and the balancing policies land at $0.6\%$ (topology-aware) and
+$0.7\%$ (dynamic) with no meaningful gain over static chunking. With identical
+cores there are no stragglers to correct, so the frequency weights the
+topology-aware policy computes are all equal and it reduces to plain static
+chunking. This mirrors the earlier finding on uniform cores
+(Table~\ref{tab:balance}), where the strategy ranking was decided by raw throughput
+rather than by balance.
+
+The local conclusion is that topology-aware, frequency-weighted partitioning is a
+contribution specific to heterogeneous, hybrid-core hardware: it is decisive on the
+i5, where it converts a wildly variable static partition into a stable one, and
+inert on the homogeneous workstation, where the winning strategy is instead dynamic
+dispatch with the flattened output layout. The thesis strategy therefore holds
+without promoting the i5 to a measurement platform --- the workstation supplies every
+performance figure, while the hybrid processor serves only to show that the
+load-balancing machinery addresses a real effect where that effect exists.
 
 \subsecao{Discussion and Positioning}
 
