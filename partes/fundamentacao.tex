@@ -47,40 +47,28 @@ A workload is \textit{compute-bound} when its execution time is dominated by ari
 
 Parallelism can intensify memory pressure. When multiple threads simultaneously traverse different regions of a large, read-only automaton, the combined working set exceeds the LLC, raising the aggregate cache-miss rate for all threads. Two additional hazards arise when threads share writable data. \textit{Cache coherence} protocols (such as MESI) ensure that modifications made by one core become visible to all others; they introduce inter-core invalidation traffic whenever a shared cache line is written \cite{Pacheco2011}. \textit{False sharing} occurs when two threads write to logically independent variables that happen to reside on the same cache line, causing coherence invalidations despite the absence of a true data dependency. False sharing can be avoided by aligning per-thread accumulators to cache-line boundaries.
 
-Non-Uniform Memory Access (NUMA) architectures differentiate memory latency based on which socket owns the physical memory being accessed. Although the experimental platform used in this work—the Intel i5-1235U—employs a single-socket Uniform Memory Access (UMA) topology, NUMA is an important consideration in multi-socket server deployments where memory-bound workloads exhibit significant latency asymmetry \cite{Grama2003}.
+Non-Uniform Memory Access (NUMA) architectures differentiate memory latency based on which socket owns the physical memory being accessed. The experimental platform used for the main measurements in this work is a single-socket Uniform Memory Access (UMA) machine; nevertheless, NUMA is an important consideration in multi-socket server deployments where memory-bound workloads exhibit significant latency asymmetry \cite{Grama2003}.
 
 \subsubsecao{Hybrid P/E-Core Architectures}
 
 Modern consumer and mobile processors have introduced a \textit{hybrid}
-microarchitecture that integrates two distinct core types on a single die.
-Intel's Alder Lake platform---which includes the Intel Core i5-1235U used as
-the experimental platform in this work---pairs two high-performance cores
-(P-cores), each supporting Hyper-Threading (two logical hardware threads per
-core), with eight energy-efficient cores (E-cores), each providing a single
-hardware thread, for a total of twelve logical hardware threads
-\cite{IntelI51235U}.
+microarchitecture that integrates two distinct core types on a single die. A
+typical Alder Lake mobile processor pairs high-performance cores (P-cores), often
+with simultaneous multithreading, with energy-efficient cores (E-cores) that
+prioritize throughput per watt.
 
 P-cores feature wider out-of-order execution pipelines and higher operating
 frequencies, delivering greater per-thread throughput at higher power
 consumption. E-cores are physically smaller and optimized for
 throughput-per-watt rather than single-thread latency; they operate at lower
-frequencies. A memory-bound workload therefore achieves significantly higher
-per-thread throughput on a P-core than on an E-core.
-
-Because the experimental platform of this work happens to be such a hybrid
-design, this heterogeneity is a property of the measurement environment rather
-than an object of study, but it does have a predictable effect on the observed
-scaling curves. At low thread counts, threads are preferentially dispatched to
-P-core hardware threads; speedup rises steeply because each additional thread
-contributes high-throughput capacity. Once all P-core hardware threads are
-occupied---four on the i5-1235U---additional threads are scheduled onto E-cores,
-which contribute lower per-thread throughput. The cumulative scaling curve
-therefore exhibits a \textit{knee} near the P-core saturation point, beyond which
-the marginal speedup per additional thread declines. This is noted here only so
-that the scaling curves reported in the Results and Discussion chapter can be
-read in context; it also motivates the load-balancing strategy introduced in the
-proposed solution, whose purpose is to keep the heterogeneous cores from idling
-at the synchronization barrier.
+frequencies. When equal-size work units are assigned across both core types, the
+faster cores can finish early and wait at a synchronization barrier while slower
+cores complete their share. This is the architectural reason for the
+frequency-weighted and dynamic load-balancing strategies introduced later: they
+are mechanisms for reducing stragglers on heterogeneous processors, not a change
+to the Aho--Corasick matching semantics. The main experimental campaign of this
+thesis is conducted on homogeneous cores; the hybrid-core discussion appears only
+as a diagnostic comparison in the results chapter.
 % Fim da subseção "Fundamentos do Paralelismo".
 
 % A subseção "Parallel Performance Evaluation Metrics" começa aqui.

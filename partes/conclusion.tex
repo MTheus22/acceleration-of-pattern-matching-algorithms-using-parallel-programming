@@ -1,164 +1,101 @@
-This thesis investigated data-parallel scanning strategies and
-microarchitectural optimizations to accelerate the Aho-Corasick multi-pattern
-matching algorithm on shared-memory multi-core CPUs, using the POSIX Threads
-programming model. The work targeted a specific computational regime rather than
-a particular machine: the behaviour of multi-pattern matching when the automaton
-greatly exceeds the last-level cache, which is typical for signature-based
-intrusion detection with realistic rule sets.
+This thesis investigated how far Aho--Corasick multi-pattern matching can be
+accelerated on a shared-memory multi-core CPU when the input is large and the
+automaton footprint approaches or exceeds the last-level cache. The empirical
+campaign was centered on a homogeneous AMD Ryzen~9~9950X workstation, and the
+results support a direct conclusion: for intrusion-detection-scale pattern sets,
+the dominant barrier is not the state-transition logic itself, but the memory
+system that must feed many threads traversing the same large automaton.
 
-% review: issue #158, comment 062 --- the central thesis is stated as a
-% regime-level finding, with magnitudes deferred to the per-platform sections,
-% so the conclusion no longer reads as a single universal verdict drawn from one
-% machine.
-At the level of computational regime, three findings are supported by the
-platforms tested and form the core contribution. First, once the automaton no
-longer fits in the last-level cache, the dominant constraint is the memory
-subsystem, not the matching logic: automaton footprint governs throughput in the
-large-corpus workloads. The broader i5 sweep also indicates that corpus content
-is secondary in this regime, but that cross-corpus axis was not repeated on the
-workstation. Second, the axis with the most leverage is text-level partitioning
-with a read-only shared automaton; partitioning the dictionary instead of the
-text yields only a small, locality-driven gain that saturates early and never
-approaches text parallelism. Third, a flat output layout that replaces
-pointer-chasing with contiguous reads is the simplest effective optimization and
-remains useful under memory pressure. Two strategies were falsified on every
-platform: dictionary sharding alone never approaches text parallelism, and
-combining sharding with chunking is consistently slower than flat-output text
-chunking, because scanning the text once per shard multiplies the memory traffic
-that is already the bottleneck. These negative results are part of the
-contribution: they rule out plausible approaches and reinforce that, whenever the
-working set is memory-bound, DRAM bandwidth---not the matching code---is the
-binding constraint, so text parallelism combined with a cache-friendly layout is
-the correct approach. What does \emph{not} generalize is the absolute magnitude
-of the gains and the shape of the scaling curve: those depend on the memory
-subsystem and core topology of the machine, as the two platforms below make
-explicit.
+% review: issue #158, comment 062 --- conclusion recentered on the workstation
+% as the single measurement environment; the old platform-comparison framing was
+% removed.
+% epic-03: headline figures below come from runs/workstation_2026-06-30/sweep.db.
+Three findings summarize the contribution. First, the automaton footprint is the
+main regime switch. With the dynamic flat strategy at thirty-two threads,
+throughput falls from about $16.2$~GB/s on the smallest Snort-derived automaton
+to about $4.0$~GB/s on the Emerging Threats automaton, whose footprint is roughly
+$507$~MiB. The drop persists even on a desktop processor with sixteen identical
+cores and a much larger cache hierarchy, which indicates that the memory-bound
+regime is structural to the workload. Second, the most effective parallelization
+axis is text partitioning over a shared, read-only automaton. Dictionary sharding
+and the two-dimensional composition remain useful negative results: they are
+correct, but they do not approach the throughput of scanning the input once with
+multiple workers. Third, output layout matters precisely because the search loop
+is memory-sensitive. Replacing per-state chained emission with a flat contiguous
+layout reduces pointer chasing and lets the winning configuration combine dynamic
+task dispatch with flat emission.
 
-\subsecao{Findings on the Reference Platform}
+The best searcher in the canonical scenarios is therefore
+\texttt{pthread\_dynamic\_flat}. On the full Snort dictionary and Enron corpus,
+it reaches $22.91\times$ speedup and $7{,}542$~MB/s at $T=32$; on the
+memory-bound Emerging Threats dictionary it still reaches $18.96\times$ and
+$3{,}979$~MB/s. The eight-fold Enron replica confirms the same ordering for the
+moderate dictionary ($22.64\times$), while the largest dictionary is a technical
+tie among flat-emission strategies ($19.79\times$ for dynamic flat and
+$19.83\times$ for static flat chunking). The cross-corpus experiment further
+shows that, once the automaton is fixed, text content is secondary: the dynamic
+flat strategy reaches $7{,}976$~MB/s on SimpleWiki and $7{,}595$~MB/s on Enron.
+The task-granularity experiment refines the same result, with the coarsest tested
+dynamic tasks reaching $7{,}804$~MB/s. Parallel construction improves rule
+loading only modestly, peaking at $1.59\times$ on the largest dictionary, so the
+end-to-end pipeline is still governed by search: $22.23\times$ on Snort and
+$17.71\times$ on Emerging Threats over the eight-fold corpus.
 
-The complete experimental study was conducted on the Intel i5-1235U, a mobile
-hybrid processor with two performance cores, eight efficiency cores, and a
-12~MiB last-level cache; it remains the source of truth for the headline numbers,
-tables, and figures of this thesis. Text-level partitioning with a boundary
-overlap of $L_{\max}-1$ bytes scales sublinearly, reaching $4.52\times$ at twelve
-threads on the multi-gigabyte corpus and a canonical-corpus peak of $4.79\times$
-via dynamic dispatch. As the dictionary grows from a cache-resident set to one
-forty-two times larger than the last-level cache, single-threaded throughput
-falls by $74.0\%$, and the parallel speedup drops accordingly: in the
-memory-bound regime the speedup peaks at $2.85\times$ near six threads on the
-canonical corpus and then regresses as further threads are added. This regression
-is a property of this constrained platform, not of the algorithm: the i5's narrow
-memory subsystem and its two performance cores saturate before all twelve
-hardware threads are used, an effect that the homogeneous workstation in the next
-section does not reproduce. The corresponding parallel efficiency at
-twelve threads is $37.7\%$ for the moderate-dictionary regime and $23.3\%$ for the
-memory-bound one, reflecting DRAM saturation as the dominant overhead rather than
-an inherent serial fraction of the algorithm.
+The specific objectives stated in the introduction were met. The systematic
+literature review identified the gap addressed by this work: a controlled
+shared-memory Pthreads evaluation of Aho--Corasick under large automata and
+realistic corpora. The implementation objective was met by a family of C
+searchers that combine overlap-correct text partitioning, optional
+load-balancing policies, flat match emission, and level-synchronous construction,
+while preserving the exact match set of the sequential baseline. The performance
+objective was met through speedup, throughput, efficiency, end-to-end, and build
+measurements against the same sequential implementation. Finally, the scalability
+objective was met by sweeping thread counts up to the workstation's thirty-two
+logical hardware threads, automaton footprints from $1.93$ to $506.78$~MiB,
+multiple corpora, and the main strategy combinations.
 
-On this heterogeneous processor, frequency-weighted partitioning and dynamic
-dispatch removed the load imbalance of uniform segments, reducing the per-thread
-coefficient of variation from up to $53\%$ to under $5\%$. This improves
-predictability rather than peak throughput, since memory remains the bottleneck.
-The proposed flat output layout reached $+13.0\%$ on a single thread exactly in
-the memory-bound regime where it matters most. Parallelizing the construction of
-the automaton accelerated the build of the largest dictionary by up to
-$1.55\times$, a useful operational gain for rule reloading, though negligible in
-the total time of a multi-gigabyte scan. End-to-end, the full pipeline achieves
-$4.50\times$ on the moderate dictionary and $2.76\times$ on the memory-bound
-one---figures that track the search-only speedups, since construction is under
-one percent of the runtime.
-
-The three specific objectives from the introduction were fully met on this
-platform. The first---to design and implement a parallel Aho-Corasick algorithm
-in C using the POSIX Threads API, exploiting intra-input parallelism on
-shared-memory multi-core CPUs---was met through a family of text-partitioning,
-load-balancing, and output-layout strategies whose correctness was validated
-exhaustively across all tested workloads. The second---to quantify performance
-gains in terms of speedup, throughput, and parallel efficiency against a
-sequential baseline---was met by reporting search speedups of $4.79\times$
-(canonical corpus, dynamic dispatch) and $4.52\times$ (multi-gigabyte corpus,
-flat-output chunking), alongside parallel efficiencies of $37.7\%$ and $23.3\%$
-for the moderate-dictionary and memory-bound regimes, respectively. The
-third---to analyze scalability under different workloads, pattern sets, and thread
-counts---was met through a systematic test across seven thread counts, three
-corpora, and automata covering a forty-two-fold range of cache capacity, which
-identified and quantified the memory bandwidth saturation point and the subsequent
-performance drop.
-
-\subsecao{Portability to a Homogeneous Many-Core CPU}
-
-% review: issue #158, comment 062 --- the portability run is reported as
-% confirmation and delimitation of the i5 study, not as a replacement source of
-% truth, so the thesis no longer over-generalizes a single hybrid machine.
-A portability run on a homogeneous AMD Ryzen 9 9950X (sixteen identical cores,
-thirty-two hardware threads, a 64~MiB last-level cache split across two core
-complexes), executed on the same corpora and dictionaries, separates the general
-findings above from the artifacts of the hybrid mobile chip. It confirms the
-core thesis. The cache cliff persists: single-threaded throughput still falls
-by about $67\%$ from the smallest to the largest automaton, so the memory-bound
-regime is structural rather than an artifact of the i5's small cache. The
-strategy hierarchy is unchanged---text partitioning beats pattern sharding, the
-flat layout beats the chained one, and parallel construction tops out at
-$1.57\times$, essentially the $1.55\times$ algorithmic ceiling measured on the i5
-despite eight times as many cores.
-
-At the same time, the workstation shows that several phenomena reported for the
-i5 are specific to constrained or heterogeneous hardware, not universal laws.
-Where the i5 regresses past six threads, the Ryzen scales monotonically to
-$22.72\times$ on the moderate dictionary and $19.79\times$ on the memory-bound one
-at thirty-two threads, sustaining about $89\%$ parallel efficiency at sixteen
-threads. The low i5 efficiency therefore reflects a narrow memory subsystem
-compounded by performance/efficiency-core asymmetry, not a large serial fraction
-intrinsic to the algorithm. The elaborate topology-aware load balancing that was
-central on the i5 becomes unnecessary on identical cores, where simple static
-distribution already drives the per-thread coefficient of variation to about
-$0.1\%$; and the finding that no single strategy dominates across regimes is an
-i5 effect---on the uniform machine a single flat dynamic variant wins in both
-regimes. A larger machine with uniform cores and more memory channels thus delays
-the bottleneck and scales much further, but it does not eliminate the bottleneck:
-the memory-bound regime survives the change of hardware.
+The heterogeneous-core experiment has a narrower role in this conclusion. The
+diagnostic comparison in Section~\ref{subsec:heterogeneous} is not a second
+performance platform; it explains when the frequency-weighted partitioner is
+useful. On heterogeneous cores, topology-aware or dynamic scheduling collapses
+the large imbalance created by equal-size chunks. On the homogeneous
+workstation, the same mechanism is largely inert, and the throughput winner is
+selected by memory behavior rather than by core-type placement. This supports
+the design without changing the central empirical platform.
 
 \subsecao{Threats to Validity}
 
-The principal study rests on a single mobile, hybrid processor with a limited
-sustained-load envelope, which made long tests sensitive to scheduler, affinity,
-and operating-condition variance; the reported numbers are conservative
-under-load values, and the variability is documented rather than hidden. The
-Ryzen 9 9950X run reduces, but does not eliminate, the external-validity threat:
-it confirms the memory-bound thesis on a second microarchitecture, yet both
-machines share a single-socket, single-NUMA-node design, and neither was
-instrumented with hardware performance counters. The microarchitectural
-explanations are therefore consistent with the timing data but were not confirmed
-by direct telemetry of cache misses, memory bandwidth, or pipeline stalls. A
-controlled re-run of the i5 sweep on a colder, headless machine reproduced the
-sequential baseline within about $3\%$ and the overall shape of the scaling
-curves, which supports reproducibility; however, the saturated twelve-thread
-peaks varied by tens of percent between separate invocations of the same
-configuration, an inter-invocation variance that the intra-run coefficient of
-variation does not capture. The single-run maxima at the saturation point should
-thus be read as indicative rather than exact.
+The principal limitation is that the canonical data set is a single end-to-end
+sweep: each configuration was measured once, with multiple timed iterations
+inside that run, but without independent repetitions from which medians and
+interquartile ranges could be reported. The low within-run coefficients of
+variation in the headline curves indicate stable individual measurements, but
+they do not replace between-run replication. A second limitation is architectural
+coverage. The workstation is a reliable desktop platform, but it is still a
+single-socket, single-NUMA-node machine; the results therefore do not describe
+multi-socket NUMA behavior or processors with substantially different memory
+systems. Third, the interpretation of cache pressure and DRAM bandwidth is an
+inference from timings, automaton footprint, and scaling curves. No PMU counter
+instrumentation was collected, so statements about cache misses, bandwidth, or
+pipeline stalls should be read as explanations consistent with the data rather
+than as directly measured causes. Finally, the corpora used here are large and
+realistic, but they are not deliberately skewed to create severe spatial load
+imbalance; the dynamic scheduler's advantage on uneven inputs remains to be
+measured separately.
 
 \subsecao{Future Work}
 
-% review: issue #130, comment 063 --- the future-work list no longer promises
-% "run on a desktop/server" as an abstract item, since the Ryzen 9 9950X
-% portability run already delivers that evidence; the open directions are the
-% ones still genuinely unmeasured (PMU telemetry, medians over the saturated i5
-% points, repeated dynamic-granularity sampling, and wider architecture/corpus
-% coverage).
+% review: issue #130, comment 063 --- future work keeps only work not already
+% delivered by the workstation migration.
 Four directions follow from these limitations. The first is to add hardware
-performance counters to the benchmarks, measuring cache misses, memory bandwidth,
-and pipeline stalls directly, so that the memory bottleneck is confirmed with
-direct measurements instead of inferred from execution times. The second,
-motivated by the re-run above, is to report the saturated i5 operating points as
-medians over several independent invocations rather than as the maximum of a
-single sweep, so
-that the inter-invocation variance is averaged out rather than amplified. The
-third is to settle the dynamic-granularity question---the trade-off between task
-size and scheduling overhead---with several repetitions per granularity setting,
-ideally over an unevenly loaded corpus, since a single invocation per setting is
-dominated by the same operating-regime variance. The fourth is to widen the
-evaluation across more architectures and corpora---additional microarchitectures,
-larger NUMA topologies, and document collections with different content
-statistics---building on the two-platform evidence already gathered to map where
-strategies such as dictionary sharding might finally become beneficial.
+performance counters to the benchmark harness, so that cache misses, memory
+bandwidth, and pipeline behavior can be measured directly rather than inferred
+from timing. The second is to repeat the canonical configurations across
+independent invocations and report medians with dispersion, especially for the
+dynamic scheduler and the high-thread-count operating points. The third is to
+extend the granularity study with repeated samples and intentionally skewed
+corpora, testing whether dynamic dispatch becomes more valuable when the input
+contains uneven match or transition density. The fourth is to widen the hardware
+surface to additional homogeneous CPUs, hybrid CPUs, and larger NUMA systems,
+mapping which parts of the strategy ranking are stable and which ones depend on
+memory hierarchy or core topology.

@@ -1,30 +1,27 @@
 The Aho-Corasick algorithm is a cornerstone of signature-based network
-intrusion detection systems and malware analysis tools, because of its linear-time
-complexity in the size of the input. Its state-transition dependency, however,
-ties the canonical implementation to sequential execution, leaving modern
-multi-core processors underused. This work designs, implements, and evaluates
-data-parallel scanning strategies built on POSIX Threads for shared-memory
-multi-core CPUs. The input text is partitioned into overlapping segments that
-worker threads scan concurrently over a shared, strictly read-only automaton,
-keeping the hot path free of locks; a flattened, contiguous output layout is
-also proposed to eliminate the pointer-chasing cost of emitting matches. The
-study deliberately targets the memory-bound regime where the automaton greatly
-exceeds the last-level cache, using realistic Snort and Emerging Threats rule
-sets (up to roughly $507$~MiB of automaton) over multi-gigabyte corpora on a
-hybrid Intel Core i5-1235U processor. The results show that text-level data
-parallelism outperforms pattern-set partitioning: search speedups reach up
-to $4.79\times$ on the canonical corpus and $4.52\times$ on the multi-gigabyte
-corpus --- both at twelve threads for the same moderate dictionary --- while the
-flattened layout adds a regime-dependent gain
-that grows with memory pressure, up to $+13.0\%$ on a single thread. When the
-automaton is forty-two times larger than the cache, however, throughput drops by
-$74.0\%$ and parallel scaling collapses: on the canonical corpus the speedup
-peaks near $2.85\times$ at six threads and then regresses, while on the
-multi-gigabyte corpus it saturates at only $2.79\times$ at twelve threads,
-exposing memory bandwidth as the physical ceiling. Whole-pipeline (build,
-search, and merge) accelerations reach $4.50\times$ on the moderate dictionary
-and $2.76\times$ on the memory-bound one; since construction is under one percent
-of the runtime, these track the search-only speedups almost exactly. The central finding is that, once the automaton exceeds the
-last-level cache, the dominant barrier to scaling Aho-Corasick is
-microarchitectural --- namely cache overflow and DRAM bandwidth --- rather than
-the matching logic itself.
+intrusion detection systems and malware analysis tools because it scans an input
+in linear time while matching many patterns simultaneously. Its canonical
+automaton traversal is sequential, however, leaving modern multi-core processors
+underused when a single large input must be inspected. This work designs,
+implements, and evaluates data-parallel Aho-Corasick scanning strategies built on
+POSIX Threads for shared-memory multi-core CPUs. The input text is partitioned
+into overlapping segments that worker threads scan concurrently over a shared,
+strictly read-only automaton, keeping the search path free of locks; a flattened,
+contiguous output layout is also proposed to reduce the pointer-chasing cost of
+emitting matches. The evaluation targets the memory-bound regime in which
+realistic Snort and Emerging Threats rule sets produce automata up to roughly
+$507$~MiB, far beyond the effective last-level cache capacity. On a homogeneous
+AMD Ryzen~9~9950X workstation (Zen~5, sixteen cores and thirty-two hardware
+threads), the dynamic flat strategy reaches $22.91\times$ speedup and
+$7{,}542$~MB/s on the full Snort dictionary, and $18.96\times$ speedup and
+$3{,}979$~MB/s on the larger Emerging Threats dictionary. The same strategy
+remains insensitive to corpus content for the Snort workload, reaching
+$7{,}976$~MB/s on SimpleWiki and $7{,}595$~MB/s on Enron, while the coarsest
+tested dynamic-task granularity reaches $7{,}804$~MB/s. End-to-end accelerations
+over the eight-fold Enron corpus reach $22.23\times$ for Snort and
+$17.71\times$ for Emerging Threats, showing that construction remains a bounded
+overhead and that search dominates the pipeline. The central finding is that,
+once the automaton exceeds the effective cache capacity, Aho-Corasick scaling is
+limited primarily by the memory subsystem rather than by the matching logic; text
+parallelism over a shared automaton, combined with flat match emission, is the
+most effective response in this regime.
