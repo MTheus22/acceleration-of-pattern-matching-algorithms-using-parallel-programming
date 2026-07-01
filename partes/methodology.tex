@@ -29,7 +29,7 @@ outcome.
 
 % review: issue #144, comment 33 --- state the single measurement platform directly
 % epic-03: workstation (Ryzen 9 9950X, Zen 5) is now the sole canonical platform;
-% the i5 is reduced to a one-sentence hook for the P/E comparison (task 06).
+% the heterogeneous processor is reserved for the P/E comparison (task 06).
 The measurement platform, and the source of every headline number, table, and
 figure in this work, is an AMD Ryzen~9~9950X processor. It is a homogeneous
 design of the Zen~5 generation: sixteen identical cores, each with two-way
@@ -60,7 +60,7 @@ scheduling without explicit binding. The build was additionally validated under
 sanitizer instrumentation, namely the Address and Undefined Behavior sanitizers
 and the Thread Sanitizer, as discussed in Section~\ref{subsec:correctness}.
 
-% epic-03: single-sentence hook reserving the i5 for the P/E section (task 06).
+% epic-03: single-sentence hook reserving the heterogeneous processor for the P/E section (task 06).
 A second, heterogeneous processor --- an Intel Core i5-1235U, which combines
 Performance and Efficiency cores --- appears only once, later in this work, and
 solely to isolate the load-imbalance effect that heterogeneous cores exhibit; it
@@ -311,11 +311,11 @@ scheme trades against load balance.
 
 % review: issue #119, comment 43; issue #120, comment 44 --- drop thermal as a
 % premise; keep a short measurement limitation only
-% epic-03: workstation is a stable desktop under the performance governor; the i5
-% run-to-run/thermal caveat is removed and replaced by the single-run limitation.
+% epic-03: workstation is a stable desktop under the performance governor; the old
+% run-to-run/thermal caveat is replaced by the single-run limitation.
 The reported figures must be read with one limitation in mind. Each configuration
-was measured in a single end-to-end sweep rather than as several independent
-replications, so the results are single-run per configuration. The within-run
+was measured in a single end-to-end sweep and was not independently replicated, so
+the results are single-run per configuration. The within-run
 coefficient of variation, retained for every timed series, is small on this
 platform --- typically well below one percent on the headline speedup curves and
 never above roughly two percent --- which indicates that individual data points
