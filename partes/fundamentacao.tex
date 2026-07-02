@@ -49,6 +49,7 @@ Parallelism can intensify memory pressure. When multiple threads simultaneously 
 
 Non-Uniform Memory Access (NUMA) architectures differentiate memory latency based on which socket owns the physical memory being accessed. The experimental platform used for the main measurements in this work is a single-socket Uniform Memory Access (UMA) machine; nevertheless, NUMA is an important consideration in multi-socket server deployments where memory-bound workloads exhibit significant latency asymmetry \cite{Grama2003}.
 
+\newpage
 \subsubsecao{Hybrid P/E-Core Architectures}
 
 Modern consumer and mobile processors have introduced a \textit{hybrid}
@@ -144,6 +145,7 @@ A parallel system is considered scalable if its efficiency remains above an acce
 
 This section explains the Trie data structure, detailing its defining properties, core operational mechanics, performance aspects, and its significance as a foundational element in advanced string processing algorithms, particularly the Aho-Corasick algorithm.
 
+\newpage
 \subsubsecao{Definition and Basic Structure}
 
 A Trie---also known as a prefix tree---is a specialized tree-like data structure optimized for the efficient storage and retrieval of a dynamic set of strings. Edward Fredkin introduced the term ``trie'' in 1960, highlighting its primary application in information retrieval \cite{Fredkin1960}, \cite{Knuth1998}. Figure~\ref{fig:trie-example} illustrates an example of a trie storing a set of words.
@@ -254,6 +256,7 @@ Its efficiency primarily stems from two rules (or heuristics):
 \end{itemize}
 These two rules combined enable the Boyer-Moore algorithm to skip larger portions of the text, significantly reducing the total number of comparisons.
 
+\newpage
 \subsubsecao{The Need for Specialized Multi-Pattern Algorithms}
 
 When the task involves searching for multiple patterns simultaneously from a set $K = \{P_1, P_2, \dots, P_k\}$ within a text $T$, simply applying a single-pattern matching algorithm for each $P_i$ independently proves highly inefficient. This ``iterative'' approach requires scanning the text multiple times, resulting in a total time complexity that can be approximately $O(k \cdot (N+M_{\text{avg}}))$ or worse, where $M_{\text{avg}}$ is the average pattern length \cite{AhoCorasick1975}.
@@ -316,6 +319,7 @@ Figure~\ref{fig:ac-matching-flow} illustrates this control flow in detail, which
 
 Each input character advances the automaton by at most one $\operatorname{goto}$ transition, which increases the current depth by one, whereas every failure-link traversal strictly decreases that depth. Since the depth is non-negative, the total number of failure transitions over the scan cannot exceed the number of goto transitions, which bounds the total number of transitions (goto plus failure) by $< 2n$ \cite{AhoCorasick1975}.
 
+\newpage
 \subsubsecao{Time and Space Complexity}
 
 The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for multi-pattern matching \cite{AhoCorasick1975}, \cite{Gusfield1997}. The complexities for the construction and search phases and storing the automaton are as follows:
