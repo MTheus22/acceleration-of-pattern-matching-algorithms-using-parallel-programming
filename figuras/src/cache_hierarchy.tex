@@ -48,7 +48,7 @@
     \draw[arrow] (c2) -- (l2_2);
     
     % Shared L3 Cache
-    \node[l3] (l3_a) at (2.5, 0.7) {\textbf{Shared L3 Cache (12 MiB)}\\Automaton fits inside L3 (1.93 MiB)};
+    \node[l3] (l3_a) at (2.5, 0.7) {\textbf{Shared Last-Level Cache}\\Automaton (1.93 MiB) fits inside};
     
     \draw[hitarrow] (l2_0) -- (0, 1.1);
     \draw[hitarrow] (l2_1) -- (2.5, 1.1);
@@ -62,7 +62,7 @@
     \draw[arrow, dotted] (l3_a.south) -- (2.5, -0.5);
     \draw[arrow, dotted] (2.5, -0.5) -- (dram_a.north);
     
-    \node[note, anchor=north] at (2.5, -2.2) {Throughput: \textbf{High} ($\sim$480 MB/s per thread)\\Scales well with core count.};
+    \node[note, anchor=north] at (2.5, -2.2) {Throughput: \textbf{high}\\Scales with core count.};
 
     % =====================================================================
     % (b) MEMORY-BOUND REGIME (Large Automaton)
@@ -85,13 +85,13 @@
         \draw[arrow] (c2_b) -- (l2_2_b);
         
         % Shared L3 Cache
-        \node[l3, draw=warm, fill=warm!5] (l3_b) at (2.5, 0.7) {\textbf{Shared L3 Cache (12 MiB)}\\Automaton footprint: 506.78 MiB};
+        \node[l3, draw=warm, fill=warm!5] (l3_b) at (2.5, 0.7) {\textbf{Shared Last-Level Cache}\\Automaton (506.78 MiB) exceeds capacity};
         
         % Cache Misses
         \draw[missarrow] (l2_0_b) -- (0, 1.1);
         \draw[missarrow] (l2_1_b) -- (2.5, 1.1);
         \draw[missarrow] (l2_2_b) -- (5.0, 1.1);
-        \node[warm, font=\scriptsize\bfseries, fill=white, inner sep=2pt] at (2.5, 1.4) {Cache Misses ($\gg$L3)};
+        \node[warm, font=\scriptsize\bfseries, fill=white, inner sep=2pt] at (2.5, 1.4) {Cache Misses};
         
         % Bus & DRAM (Saturated)
         \draw[bus, draw=warm] (-0.5, -0.5) -- (5.5, -0.5) node[pos=0.85, below, font=\scriptsize\bfseries, text=warm] {Bus saturated};
@@ -100,7 +100,7 @@
         \draw[missarrow] (l3_b.south) -- (2.5, -0.5);
         \draw[missarrow] (2.5, -0.5) -- (dram_b.north);
         
-        \node[note, anchor=north] at (2.5, -2.2) {Throughput: \textbf{Low} ($\sim$125 MB/s total)\\Flat scaling curve due to bandwidth bottleneck.};
+        \node[note, anchor=north] at (2.5, -2.2) {Throughput: \textbf{low}\\Scaling limited by memory bandwidth.};
     \end{scope}
     
     % Divider

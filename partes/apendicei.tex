@@ -1,13 +1,16 @@
 This appendix documents the protocol used to query the raw measurement
 database from which every result reported in this thesis is derived, including
-the end-to-end wall-clock times of Table~\ref{tab:e2e}. Those end-to-end figures
-are not a separate campaign: each is the sum of two quantities that the canonical
-sweep already records for the corresponding execution---the construction time
-(\texttt{build\_ms}) and a single full-corpus search pass (\texttt{mean\_ms}).
-They can therefore be reproduced and audited from the same database as every
-other figure.
+% review: issue #181, comment 15
+the end-to-end wall-clock consistency check discussed in the Results chapter.
+Those end-to-end figures are not a separate campaign: each is the sum of two
+quantities that the canonical sweep already records for the corresponding
+execution---the construction time (\texttt{build\_ms}) and a single full-corpus
+search pass (\texttt{mean\_ms}). They can therefore be reproduced and audited
+from the same database as every other figure.
+% epic-03: canonical measurement database moved to the Ryzen 9 9950X workstation sweep.
 The benchmark campaign stores its measurements in a single typed SQLite
-database located at \texttt{parallel-aho-corasick/runs/i5/sweep.db},
+database located at
+\path{parallel-aho-corasick/runs/workstation_2026-06-30/sweep.db},
 containing one \texttt{runs} table (one row per timed execution) and a
 set of aggregating views. The headline figures are retrieved from these views
 instead of the raw execution logs.
@@ -54,14 +57,13 @@ figure requires ad hoc post-processing of the raw rows.
         \midrule
         \texttt{v\_speedup}       & Speedup of each searcher against the single-threaded sequential baseline. \\ \addlinespace
         \texttt{v\_self\_speedup} & Self-relative scalability: throughput at $T$ threads over throughput at one thread. \\ \addlinespace
-        \texttt{v\_footprint}     & Throughput as a function of the automaton footprint, at one and twelve threads. \\ \addlinespace
+        \texttt{v\_footprint}     & Throughput as a function of the automaton footprint, at one and thirty-two threads. \\ \addlinespace
         \texttt{v\_build}         & Speedup of the parallel automaton construction over the sequential build. \\ \addlinespace
         \texttt{v\_best}          & Best-performing searcher for each dictionary, corpus and thread count. \\ \addlinespace
         \texttt{v\_correctness}   & Number of distinct match counts per dictionary and corpus (a value of one indicates agreement). \\
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. \par}
 \end{table}
 
 \subsecao{Canonical Queries}
@@ -73,7 +75,7 @@ against the database using the standard \texttt{sqlite3} client.
 -- Speedup curve of a searcher (Snort dictionary, canonical corpus)
 SELECT thr, speedup_vs_seq FROM v_speedup
 WHERE patterns='patterns_snort' AND corpus='enron_corpus'
-  AND searcher='pthread_dynamic' ORDER BY thr;
+  AND searcher='pthread_dynamic_flat' ORDER BY thr;
 
 -- Peak speedup per scenario (winning searcher and thread count)
 SELECT patterns, corpus, searcher, thr, speedup_vs_seq FROM v_speedup w
@@ -81,9 +83,9 @@ WHERE speedup_vs_seq = (SELECT MAX(speedup_vs_seq) FROM v_speedup x
   WHERE x.patterns = w.patterns AND x.corpus = w.corpus)
 ORDER BY patterns, corpus;
 
--- Footprint versus throughput at twelve threads (cache blowout)
+-- Footprint versus throughput at thirty-two threads (cache blowout)
 SELECT patterns, automaton_mib, searcher, mbps FROM v_footprint
-WHERE thr = 12 ORDER BY automaton_mib;
+WHERE thr = 32 ORDER BY automaton_mib;
 
 -- Speedup of the parallel automaton construction
 SELECT patterns, build_threads, build_speedup FROM v_build
@@ -93,8 +95,8 @@ ORDER BY patterns, build_threads;
 SELECT patterns, searcher, thr, build_ms, mean_ms,
        build_ms + mean_ms AS e2e_ms
 FROM runs
-WHERE corpus='enron_x8' AND thr IN (0, 12)
-  AND searcher IN ('sequential','pthread_chunked_flat','pthread_chunked_v3_flat')
+WHERE corpus='enron_x8' AND thr IN (1, 32)
+  AND searcher IN ('sequential','pthread_dynamic_flat')
 ORDER BY patterns, searcher, thr;
 \end{verbatim}
 
