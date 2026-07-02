@@ -41,6 +41,8 @@ reported values are the sustained, under-load figures obtained at the
 % size on throughput; L3/cache is reserved for the interpretation as a platform-
 % specific inference, not as the experiment's premise (the cache-regime column
 % was removed because it is architecture-dependent).
+
+\newpage
 \subsecao{Impact of the Automaton Footprint on Throughput}
 \label{subsec:footprint}
 
@@ -133,6 +135,16 @@ of a small corpus.
 % Data from ../parallel-aho-corasick/runs/workstation_2026-06-30/sweep.db (phase B_footprint):
 %   T=1  sequential:           1.93->629.0, 11.92->452.3, 55.23->328.9, 506.78->210.2
 %   T=32 pthread_dynamic_flat: 1.93->16230, 11.92->10074, 55.23->7594, 506.78->4046
+% review: comment 051 -- explain why the sweep stops at the hardware thread budget.
+% epic-03: 32 hardware threads (16 physical cores x 2-way SMT).
+The thread count is swept up to thirty-two. This is not an arbitrary cut-off: the
+workstation has sixteen physical cores with two-way simultaneous multithreading
+(SMT), so $T=32$ is the full hardware concurrency of the platform and larger
+values would merely oversubscribe the cores. The sweep therefore covers the
+platform's entire thread budget, separating the sixteen-thread point (one worker
+per physical core) from the thirty-two-thread point (both SMT siblings active).
+Figure~\ref{fig:speedup} shows the resulting speedup curves.
+
 \begin{figure}[H]
 \centering
 \definecolor{ccblue}{HTML}{005DAA}
@@ -203,15 +215,20 @@ memory. Both axes are logarithmic.}
 \label{fig:cache_cliff}
 \end{figure}
 
-% review: comment 051 -- explain why the sweep stops at the hardware thread budget.
-% epic-03: 32 hardware threads (16 physical cores x 2-way SMT).
-The thread count is swept up to thirty-two. This is not an arbitrary cut-off: the
-workstation has sixteen physical cores with two-way simultaneous multithreading
-(SMT), so $T=32$ is the full hardware concurrency of the platform and larger
-values would merely oversubscribe the cores. The sweep therefore covers the
-platform's entire thread budget, separating the sixteen-thread point (one worker
-per physical core) from the thirty-two-thread point (both SMT siblings active).
-Figure~\ref{fig:speedup} shows the resulting speedup curves.
+% review: comment 052 -- describe the data first, then interpret it.
+% epic-03: workstation champion pthread_dynamic_flat; monotonic scaling to T=32.
+The two regimes behave differently, but both scale monotonically to the full
+thread count. With the moderate dictionary, the winning strategy
+(\texttt{pthread\_dynamic\_flat}) rises steadily to $22.91\times$ at thirty-two
+threads ($7{,}542$~MB/s; CV~$0.2\%$), the headline scaling result for the moderate
+intrusion-detection workload. With the memory-bound dictionary the same strategy
+reaches $18.96\times$ ($3{,}979$~MB/s); the eight-fold replica confirms the Snort
+result ($22.64\times$) and produces only a technical tie in the memory-bound case:
+\texttt{pthread\_\allowbreak chunked\_\allowbreak flat} reaches $19.83\times$,
+while \texttt{pthread\_\allowbreak dynamic\_\allowbreak flat} reaches
+$19.79\times$. Both curves continue increasing through the final measured point:
+the peak is at $T=32$ in the canonical scenarios. Both regimes scale sublinearly,
+the moderate one more steeply than the memory-bound one.
 
 % epic-03: workstation champion pthread_dynamic_flat on the canonical Enron
 % corpus, full thread sweep to T=32; coordinates from sweep.db (v_speedup).
@@ -259,21 +276,6 @@ siblings. The per-point coefficient of variation stays below about $2\%$, so err
 bars would fall within the markers and are omitted.}
 \label{fig:speedup}
 \end{figure}
-
-% review: comment 052 -- describe the data first, then interpret it.
-% epic-03: workstation champion pthread_dynamic_flat; monotonic scaling to T=32.
-The two regimes behave differently, but both scale monotonically to the full
-thread count. With the moderate dictionary, the winning strategy
-(\texttt{pthread\_dynamic\_flat}) rises steadily to $22.91\times$ at thirty-two
-threads ($7{,}542$~MB/s; CV~$0.2\%$), the headline scaling result for the moderate
-intrusion-detection workload. With the memory-bound dictionary the same strategy
-reaches $18.96\times$ ($3{,}979$~MB/s); the eight-fold replica confirms the Snort
-result ($22.64\times$) and produces only a technical tie in the memory-bound case:
-\texttt{pthread\_\allowbreak chunked\_\allowbreak flat} reaches $19.83\times$,
-while \texttt{pthread\_\allowbreak dynamic\_\allowbreak flat} reaches
-$19.79\times$. Both curves continue increasing through the final measured point:
-the peak is at $T=32$ in the canonical scenarios. Both regimes scale sublinearly,
-the moderate one more steeply than the memory-bound one.
 
 % review: comment 053 -- present the DRAM/bandwidth attribution as inference, not
 % as a measured fact (no bandwidth or cache counters were instrumented).
@@ -492,6 +494,18 @@ structure are defined in the proposal chapter (Figure~\ref{fig:parallel_bfs}).
 Table~\ref{tab:build} reports the build speedup across thread counts, rather than
 a single peak, so that the full thread-count behaviour is visible.
 
+The thread-count breakdown shows that parallel construction only pays off for the
+large dictionary, where it peaks at $1.59\times$ at sixteen threads (reducing the
+build from $324$ to roughly $203$~milliseconds) before easing to $1.47\times$ at
+thirty-two. The moderate dictionary barely benefits, peaking at $1.17\times$ at
+four threads and regressing to $0.57\times$ at thirty-two, while the smallest
+dictionary is slower than sequential at every thread count, because the per-level
+spawn-and-join overhead exceeds the work. This optimization should therefore be
+understood as an operational benefit---a reduction in rule-reloading latency for
+systems that frequently update their signatures---rather than as a contribution to
+scanning throughput; its share of the end-to-end pipeline is quantified in the
+brief consistency check below.
+
 % review: comment 057 -- show the build speedup at each thread count instead of
 % only the per-dictionary peak.
 \begin{table}[H]
@@ -516,18 +530,6 @@ a single peak, so that the full thread-count behaviour is visible.
     than the sequential one.\par}
 \end{table}
 
-The thread-count breakdown shows that parallel construction only pays off for the
-large dictionary, where it peaks at $1.59\times$ at sixteen threads (reducing the
-build from $324$ to roughly $203$~milliseconds) before easing to $1.47\times$ at
-thirty-two. The moderate dictionary barely benefits, peaking at $1.17\times$ at
-four threads and regressing to $0.57\times$ at thirty-two, while the smallest
-dictionary is slower than sequential at every thread count, because the per-level
-spawn-and-join overhead exceeds the work. This optimization should therefore be
-understood as an operational benefit---a reduction in rule-reloading latency for
-systems that frequently update their signatures---rather than as a contribution to
-scanning throughput; its share of the end-to-end pipeline is quantified in the
-brief consistency check below.
-
 \subsecao{Partitioning the Dictionary: A Qualified Negative Result}
 
 Partitioning the dictionary, rather than the text, was evaluated as an alternative,
@@ -535,6 +537,18 @@ assigning patterns to shards by their first byte (prefix sharding). The searcher
 scales the number of shards with the thread count, so Table~\ref{tab:shard} reports
 throughput across shard counts and compares the result against plain text
 parallelism on the canonical workload.
+
+% review: issue #126, comment 057; issue #127, comment 058 -- table expanded with the discussed shard counts
+Prefix sharding peaks at only $1.89\times$ over the baseline at eight shards and
+then declines as more shards are added, ending at $1.78\times$ at thirty-two. That
+it peaks and reverses so far below the thread budget---rather than continuing to
+scale like text chunking---indicates that the benefit comes from improved cache
+locality within each smaller sub-automaton rather than from added parallelism; past
+the peak, coordination and duplicated text traffic dominate. Even at its best it
+attains only about $8\%$ of the throughput of plain text parallelism
+($620.9$ against $7{,}542.3$~MB/s). The conclusion is that, on this class of
+hardware, partitioning the text dominates partitioning the dictionary: a real but
+small effect, not a competitive strategy.
 
 % review: comment 058 -- the data points discussed in the text (the peak and the
 % decline past it) are now in the table itself.
@@ -560,18 +574,6 @@ parallelism on the canonical workload.
 
     {\footnotesize\raggedright Speedup is relative to the single-threaded sequential baseline ($329.2$~MB/s); text chunking is shown at thirty-two threads for reference.\par}
 \end{table}
-
-% review: issue #126, comment 057; issue #127, comment 058 -- table expanded with the discussed shard counts
-Prefix sharding peaks at only $1.89\times$ over the baseline at eight shards and
-then declines as more shards are added, ending at $1.78\times$ at thirty-two. That
-it peaks and reverses so far below the thread budget---rather than continuing to
-scale like text chunking---indicates that the benefit comes from improved cache
-locality within each smaller sub-automaton rather than from added parallelism; past
-the peak, coordination and duplicated text traffic dominate. Even at its best it
-attains only about $8\%$ of the throughput of plain text parallelism
-($620.9$ against $7{,}542.3$~MB/s). The conclusion is that, on this class of
-hardware, partitioning the text dominates partitioning the dictionary: a real but
-small effect, not a competitive strategy.
 
 % review: issue #157, comment 059 -- more descriptive section title.
 \subsecao{Combined Strategy Evaluation}
@@ -743,6 +745,20 @@ tables: the machine differs, and the synthetic pair carries a higher match
 density than the canonical Enron corpus. Table~\ref{tab:skew} reports the
 median search throughput of each work-distribution strategy on the two corpora.
 
+The pattern in Table~\ref{tab:skew} is symmetric. Moving from the uniform to the
+clustered corpus, the static strategies lose between $16\%$ and $30\%$ of their
+median throughput, while the dynamic strategies gain between $16\%$ and $31\%$
+and overtake every static variant: on the clustered corpus the dynamic flat
+strategy reaches $456.8$~MB/s against $333.2$~MB/s for the best static one with
+the Snort dictionary, and $320.8$ against $241.0$~MB/s with Emerging Threats.
+The per-worker instrumentation explains the reversal. Table~\ref{tab:skew_balance}
+reports, for the Snort dictionary, two quantities derived from the per-worker
+scan times of each invocation: the worker spread, defined as the difference
+between the slowest and the fastest worker divided by the mean worker time, and
+the barrier idle fraction, defined as one minus the ratio of the mean to the
+maximum worker time --- the share of the parallel window in which the average
+worker has finished and is waiting at the barrier.
+
 \begin{table}[H]
     \centering
     \caption{Median search throughput on the content-skew corpus pair
@@ -767,19 +783,16 @@ median search throughput of each work-distribution strategy on the two corpora.
     only the spatial placement of the match-dense blocks differs.\par}
 \end{table}
 
-The pattern in Table~\ref{tab:skew} is symmetric. Moving from the uniform to the
-clustered corpus, the static strategies lose between $16\%$ and $30\%$ of their
-median throughput, while the dynamic strategies gain between $16\%$ and $31\%$
-and overtake every static variant: on the clustered corpus the dynamic flat
-strategy reaches $456.8$~MB/s against $333.2$~MB/s for the best static one with
-the Snort dictionary, and $320.8$ against $241.0$~MB/s with Emerging Threats.
-The per-worker instrumentation explains the reversal. Table~\ref{tab:skew_balance}
-reports, for the Snort dictionary, two quantities derived from the per-worker
-scan times of each invocation: the worker spread, defined as the difference
-between the slowest and the fastest worker divided by the mean worker time, and
-the barrier idle fraction, defined as one minus the ratio of the mean to the
-maximum worker time --- the share of the parallel window in which the average
-worker has finished and is waiting at the barrier.
+A representative invocation makes the numbers concrete. Under flattened static
+chunking on the clustered corpus, the three workers that own the first quarter
+of the text emit about $19.2$ million matches each and take $12.3$ to $13.3$
+seconds, while the remaining nine emit about $4.1$ million each and finish in
+$2.7$ to $3.8$ seconds --- the run then waits at the barrier for the three
+loaded workers. Under flattened dynamic dispatch on the same corpus, all twelve
+workers finish within $10.95$ to $11.31$ seconds even though their match counts still
+range from roughly $6.8$ to $9.9$ million: the imbalance moves from the workers'
+finishing times, where it wastes wall-clock time at the barrier, into their task
+counts, where it is harmless.
 
 \begin{table}[H]
     \centering
@@ -804,17 +817,6 @@ worker has finished and is waiting at the barrier.
     {\footnotesize\raggedright Worker spread: (slowest $-$ fastest) worker time
     over the mean worker time. Barrier idle: $1 -$ mean/maximum worker time.\par}
 \end{table}
-
-A representative invocation makes the numbers concrete. Under flattened static
-chunking on the clustered corpus, the three workers that own the first quarter
-of the text emit about $19.2$ million matches each and take $12.3$ to $13.3$
-seconds, while the remaining nine emit about $4.1$ million each and finish in
-$2.7$ to $3.8$ seconds --- the run then waits at the barrier for the three
-loaded workers. Under flattened dynamic dispatch on the same corpus, all twelve
-workers finish within $10.95$ to $11.31$ seconds even though their match counts still
-range from roughly $6.8$ to $9.9$ million: the imbalance moves from the workers'
-finishing times, where it wastes wall-clock time at the barrier, into their task
-counts, where it is harmless.
 
 Two further observations qualify the result. First, the topology-aware policy
 does not correct content-induced imbalance: its worker spread on the clustered
