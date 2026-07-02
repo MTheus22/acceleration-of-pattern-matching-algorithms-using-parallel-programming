@@ -54,14 +54,22 @@ objective was met by sweeping thread counts up to the workstation's thirty-two
 logical hardware threads, automaton footprints from $1.93$ to $506.78$~MiB,
 multiple corpora, and the main strategy combinations.
 
-The heterogeneous-core experiment has a narrower role in this conclusion. The
-diagnostic comparison in Section~\ref{subsec:heterogeneous} is not a second
-performance platform; it explains when the frequency-weighted partitioner is
-useful. On heterogeneous cores, topology-aware or dynamic scheduling collapses
-the large imbalance created by equal-size chunks. On the homogeneous
-workstation, the same mechanism is largely inert, and the throughput winner is
-selected by memory behavior rather than by core-type placement. This supports
-the design without changing the central empirical platform.
+The two diagnostic experiments have a narrower role in this conclusion. The
+comparisons in Sections~\ref{subsec:heterogeneous} and~\ref{subsec:skew} do not
+constitute a second performance platform; they explain when the load-balancing
+machinery is useful. On heterogeneous cores, topology-aware or dynamic
+scheduling collapses the large imbalance created by equal-size chunks. When the
+matches concentrate in one region of the text, only dynamic dispatch keeps the
+workers balanced: static partitions --- including the frequency-weighted one,
+whose hardware model cannot anticipate where the matches are --- lose throughput
+to barrier idle, while dynamic dispatch redistributes the work and overtakes
+them. On the homogeneous workstation with near-uniform corpora, the same
+mechanisms are largely inert, and the throughput winner is selected by memory
+behavior rather than by placement or balance. Together the diagnostics show that
+the recommended strategy owes its position to robustness against both sources of
+load imbalance --- hardware and content --- in addition to its leading canonical
+throughput. This supports the design without changing the central empirical
+platform.
 
 \subsecao{Threats to Validity}
 
@@ -78,10 +86,14 @@ systems. Third, the interpretation of cache pressure and DRAM bandwidth is an
 inference from timings, automaton footprint, and scaling curves. No PMU counter
 instrumentation was collected, so statements about cache misses, bandwidth, or
 pipeline stalls should be read as explanations consistent with the data rather
-than as directly measured causes. Finally, the corpora used here are large and
-realistic, but they are not deliberately skewed to create severe spatial load
-imbalance; the dynamic scheduler's advantage on uneven inputs remains to be
-measured separately.
+than as directly measured causes. Finally, the canonical corpora are large and
+realistic but close to uniform, so the headline figures do not quantify the
+dynamic scheduler's advantage on uneven inputs. The content-skew diagnostic
+measures that advantage in a controlled way --- holding bytes and total matches
+fixed while concentrating them spatially --- but it ran on the hybrid processor,
+where core heterogeneity is present in both arms of the contrast: the direction
+of the effect is therefore well supported, while its magnitude on a homogeneous
+machine remains unmeasured.
 
 \subsecao{Future Work}
 
@@ -90,12 +102,14 @@ measured separately.
 Four directions follow from these limitations. The first is to add hardware
 performance counters to the benchmark harness, so that cache misses, memory
 bandwidth, and pipeline behavior can be measured directly rather than inferred
-from timing. The second is to repeat the canonical configurations across
-independent invocations and report medians with dispersion, especially for the
-dynamic scheduler and the high-thread-count operating points. The third is to
-extend the granularity study with repeated samples and intentionally skewed
-corpora, testing whether dynamic dispatch becomes more valuable when the input
-contains uneven match or transition density. The fourth is to widen the hardware
+from timing. The second is to repeat the canonical workstation configurations
+across independent invocations and report medians with dispersion --- the
+replication pilot on the secondary processor already indicates that saturated
+operating points are the ones that need this most. The third is to repeat the
+content-skew diagnostic on the homogeneous workstation, where core heterogeneity
+cannot contribute to the contrast, and to extend it with a granularity re-sweep,
+testing whether finer dynamic tasks pay off when the matches are spatially
+concentrated. The fourth is to widen the hardware
 surface to additional homogeneous CPUs, hybrid CPUs, and larger NUMA systems,
 mapping which parts of the strategy ranking are stable and which ones depend on
 memory hierarchy or core topology.
