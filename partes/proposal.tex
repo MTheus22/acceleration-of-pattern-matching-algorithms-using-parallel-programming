@@ -75,7 +75,8 @@ redundant work. This boundary-crossing detection and overlap logic is illustrate
 \subsecao{Load Balancing on Heterogeneous Cores}
 
 % review: issue #170, comment 4
-Uniform segments are optimal only when all cores are equally fast. On a hybrid
+Uniform segments are optimal only when all cores are equally fast and the work
+is evenly distributed along the text. On a hybrid
 processor, where Performance and Efficiency cores run at different clock
 frequencies, equal-sized segments cause the threads on slower cores to finish
 late, leaving the faster threads idle at the final synchronization barrier. The
@@ -107,7 +108,11 @@ figures, which come from the homogeneous workstation.
 As an alternative that requires no knowledge of the topology, the framework also
 supports dynamic dispatch, in which the text is divided into many small tasks
 that idle workers claim through a single atomic counter, so that faster cores
-naturally process more tasks. Figure~\ref{fig:load_balancing}
+naturally process more tasks. Because idle workers simply claim the next
+available task, the same mechanism also compensates workers slowed by the
+content itself --- for example, by a match-dense region of the text --- and not
+only workers placed on slower cores; the two causes of imbalance are evaluated
+separately in the results chapter. Figure~\ref{fig:load_balancing}
 contrasts the three partitioning policies and the idle time each leaves at the
 barrier.
 
@@ -192,6 +197,18 @@ needed in the merge. This partition is not free, however. The implementation pay
 the build and memory cost of $K$ sub-automata, including duplicated roots and
 shared-prefix structure that a monolithic automaton would store only once.
 
+% review: issue #128, comment 060 - explanatory memory-traffic figure moved here from results
+% review: issue #140, comment 029
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\linewidth]{memory_traffic.pdf}
+\caption{Text-reading traffic in the two partitioning designs: (a) pure text
+chunking reads each input byte once while workers share the full automaton; (b)
+dictionary sharding builds $K$ independent sub-automata and scans the input once
+per shard, reducing each automaton footprint while multiplying text traffic.}
+\label{fig:memory_traffic}
+\end{figure}
+
 The larger structural cost appears during scanning: each shard must scan the
 entire input text. Standalone dictionary sharding has no boundary overlap because
 every worker sees every byte, but it multiplies text traffic by $K$. The
@@ -206,15 +223,3 @@ number of shards while reducing the automaton footprint seen by each shard.
 Whether the locality gained by smaller sub-automata compensates for this repeated
 input traffic is an empirical question, answered in the results chapter.
 Figure~\ref{fig:memory_traffic} summarizes this cost trade-off.
-
-% review: issue #128, comment 060 - explanatory memory-traffic figure moved here from results
-% review: issue #140, comment 029
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.9\linewidth]{memory_traffic.pdf}
-\caption{Text-reading traffic in the two partitioning designs: (a) pure text
-chunking reads each input byte once while workers share the full automaton; (b)
-dictionary sharding builds $K$ independent sub-automata and scans the input once
-per shard, reducing each automaton footprint while multiplying text traffic.}
-\label{fig:memory_traffic}
-\end{figure}
