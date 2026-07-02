@@ -158,16 +158,6 @@ Tries store strings by organizing nodes so that each path from the root to a nod
 \end{itemize}
 To signify that such a prefix also constitutes a complete key present in the trie, the node reached at the end of this path is typically marked by storing an associated non-null value or a boolean flag. The characters themselves are implicitly encoded by the trie's structure rather than being explicitly stored within each node \cite{SedgewickWayne2011}.
 
-% Figura da Trie
-% review: comments 009 (issue #104) caption below figure, 010 (issue #105) no source line for author-made figures
-\begin{figure}[H]
-  \centering % Centraliza a figura
-    \includegraphics[width=0.4\textwidth]{trie.pdf}
-  \caption{Example trie storing \{``car'', ``cat'', ``cart'', ``dog''\}. Nodes marking the end of a complete word are shown with a double circle.} % Legenda da figura
-  \label{fig:trie-example} % Rótulo para referenciar a figura
-\end{figure}
-% Fim da Figura da Trie
-
 \subsubsecao{Core Operations}
 
 Tries support several primary operations, including search, insertion, and deletion \cite{SedgewickWayne2011}. These operations are explained below:
@@ -177,6 +167,16 @@ Tries support several primary operations, including search, insertion, and delet
     \item \textbf{Insertion}: the insertion process begins similarly to a search, by traversing the trie according to the characters of the key to be added. If the path for the key does not extend to its full length (i.e., a null link is encountered), new nodes are created and linked to form the remainder of the path. The node corresponding to the final character of the inserted key is then marked to indicate that it is a complete key in the set;
     \item \textbf{Deletion}: deleting a key first involves locating the node corresponding to the key's final character and removing its end-of-word marker. If there are no child links (meaning it is not a prefix for any other key), it can be deleted. This deletion may proceed recursively: when a child node is removed, if its parent has no other children and the parent node is not marking a key, the parent node becomes redundant and can be deleted. This process continues up to the root as long as parent nodes become redundant.
 \end{itemize}
+
+% Figura da Trie
+% review: comments 009 (issue #104) caption below figure, 010 (issue #105) no source line for author-made figures
+\begin{figure}[H]
+  \centering % Centraliza a figura
+    \includegraphics[width=0.4\textwidth]{trie.pdf}
+  \caption{Example trie storing \{``car'', ``cat'', ``cart'', ``dog''\}. Nodes marking the end of a complete word are shown with a double circle.} % Legenda da figura
+  \label{fig:trie-example} % Rótulo para referenciar a figura
+\end{figure}
+% Fim da Figura da Trie
 
 \subsubsecao{Advantages and Performance Characteristics}
 
