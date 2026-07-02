@@ -9,17 +9,20 @@ FIGURAS = $(wildcard figuras/*)
 all: main.pdf
 	$(MAKE) clean
 
-main.pdf: main.tex referencias.bib $(PARTES) $(FIGURAS)
+main.pdf: main.tex referencias.bib $(PARTES) $(FIGURAS) figuras/memory_traffic.pdf
 	$(LATEX) main.tex
 	$(BIB) main.aux
 	$(LATEX) main.tex
 	$(LATEX) main.tex
 
+figuras/memory_traffic.pdf: figuras/src/memory_traffic.tex
+	cd figuras/src && $(LATEX) -interaction=nonstopmode -halt-on-error -output-directory=.. memory_traffic.tex
+
 clean:
 	rm -f *.aux *.bbl *.blg *.bcf *.run.xml *.log *.toc *.out *.lof *.lot *.fls
+	rm -f figuras/*.aux figuras/*.log figuras/*.out
 
 cleanall: clean
 	rm -f main.pdf main.xdv main.synctex.gz main.fdb_latexmk
 
 .PHONY: all clean cleanall
-

@@ -215,6 +215,25 @@ Algorithms that address the string matching problem are generally categorized ba
 
 The naive or brute-force algorithm represents the most straightforward method for exact pattern matching. Its operation involves iteratively aligning the pattern $P$ with the text $T$ at every possible starting position $i$ (from 0 to $N-M$). For each alignment, $P$ is compared character by character, from left to right, against the corresponding substring. If all characters match, an occurrence is reported \cite{Gusfield1997}.
 
+% review: issue #132, comment 012
+\begin{algorithm}[H]
+\caption{Naive exact string matching}
+\label{alg:naive-matching}
+\begin{algorithmic}[1]
+\Require text $T[0 \dots N-1]$, pattern $P[0 \dots M-1]$
+\Ensure all starting positions where $P$ occurs in $T$
+\For{$i \gets 0$ \textbf{to} $N - M$}
+    \State $j \gets 0$
+    \While{$j < M$ \textbf{and} $T[i+j] = P[j]$}
+        \State $j \gets j + 1$
+    \EndWhile
+    \If{$j = M$}
+        \State report occurrence at position $i$
+    \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
 Following this comparison (whether a match or a mismatch), the algorithm shifts $P$ one position to the right relative to $T$ and proceeds to the next alignment. Despite its simplicity, Knuth, Morris, and Pratt (1977) state that this method can be highly inefficient \cite{KnuthMorrisPratt1977}. Its worst-case time complexity is $O(M \cdot N)$ character comparisons. This occurs, for example, when searching for a pattern like $P = a^n b$ within a text $T = a^{2n} b$, where many partial matches occur. To address these limitations, more advanced pattern matching algorithms include a preprocessing phase for the pattern $P$. This phase extracts structural information about $P$ that is then utilized during the search, enabling larger shifts of the pattern relative to the text and thus reducing the total number of character comparisons.
 
 \vspace{1em}

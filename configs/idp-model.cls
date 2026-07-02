@@ -164,7 +164,8 @@ headheight=1.8cm]{geometry}
 
         \vspace*{3cm}
  
-        \noindent{Qualification Exam document submitted as a partial requirement for the Bachelor’s Degree in Software Engineering at the Instituto Brasileiro de Ensino, Desenvolvimento e Pesquisa (IDP).}
+        % review: issue #96, comment 001
+        \noindent{Undergraduate Thesis submitted in partial fulfillment of the requirements for the degree of Bachelor in Software Engineering at the Brazilian Institute of Education, Development and Research (IDP).}
 
 
         \vspace*{3cm}
@@ -192,7 +193,8 @@ headheight=1.8cm]{geometry}
     \end{flushleft}
         \vspace*{2cm}
 
-       \noindent{Qualification Exam document submitted as a partial requirement for the Bachelor’s Degree in Software Engineering at the Instituto Brasileiro de Ensino, Desenvolvimento e Pesquisa (IDP).}
+       % review: issue #96, comment 001
+       \noindent{Undergraduate Thesis submitted in partial fulfillment of the requirements for the degree of Bachelor in Software Engineering at the Brazilian Institute of Education, Development and Research (IDP).}
 
 
     \begin{flushleft}
@@ -561,5 +563,4 @@ headheight=1.8cm]{geometry}
         
         \input{#2}
 }
-
 

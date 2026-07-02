@@ -1,7 +1,14 @@
 This chapter presents the proposed solution: a modular parallel framework for
 the Aho-Corasick multi-pattern matching algorithm, targeting shared-memory
 multi-core CPUs. The design is guided by a single structural decision from which
-every other property follows. The default execution is split into separate
+every other property follows. % review: issue #110, comment 023
+The design choices presented in this chapter are directly motivated by the
+findings of the systematic literature review discussed in Chapter 3: prior work
+shows that input partitioning with boundary handling is the natural axis for
+matching-phase parallelism \cite{Qu2016MPI}, while the memory traffic of large
+AC-DFA tables motivates both a read-only flattened automaton and explicit
+cache-aware experiments \cite{LeeYang2017FHBM}, \cite{Sitaridi2016SIMD}. The
+default execution is split into separate
 phases: the master thread builds the automaton, after which its state-transition
 tables are declared strictly read-only. An optional construction variant
 parallelizes the failure-link traversal, but in every case the completed
@@ -20,12 +27,12 @@ parallel cases, and a build-phase optimization is evaluated separately. The
 remainder of this chapter describes each component. The overall phased execution
 flow of the proposed parallel framework is illustrated in Figure~\ref{fig:pipeline}.
 
-\begin{figure}[H]
+% review: issue #112, comment 025
+% review: issue #111, comment 024
+\begin{figure}[htbp]
 \centering
-\caption{Parallel execution pipeline of the proposed framework, divided into three phases: sequential construction of the read-only automaton (Phase 1), concurrent parallel search across text segments (Phase 2), and sequential deterministic merge of match lists (Phase 3).}
 \includegraphics[width=1.0\linewidth]{pipeline.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\caption{Parallel execution pipeline of the proposed framework, divided into three phases: sequential construction of the read-only automaton (Phase 1), concurrent parallel search across text segments (Phase 2), and sequential deterministic merge of match lists (Phase 3).}
 \label{fig:pipeline}
 \end{figure}
 
@@ -56,12 +63,11 @@ detections. An overlap of $L_{\max}-1$ is the minimum that achieves
 this property; any smaller value loses matches, and any larger value only adds
 redundant work. This boundary-crossing detection and overlap logic is illustrated in Figure~\ref{fig:boundary_overlap}.
 
+% review: issue #104/#105, comments 009/010 - rule propagated document-wide
 \begin{figure}[H]
 \centering
-\caption{Data partitioning and boundary overlap scanning layout, showing matching ownership and warm-up margins across Thread 0 and Thread 1.}
 \includegraphics[width=1.0\linewidth]{boundary_overlap.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\caption{Data partitioning and boundary overlap scanning layout, showing matching ownership and warm-up margins across Thread 0 and Thread 1.}
 \label{fig:boundary_overlap}
 \end{figure}
 
@@ -76,25 +82,42 @@ proposed framework therefore includes a topology-aware partitioning strategy
 that detects the heterogeneous layout and scales each segment in proportion to
 the relative speed of the core processing it. The goal is to equalize the
 finishing times of all workers, reducing the idle time wasted at the
-barrier. As an alternative that requires no knowledge of the topology, the
-framework also supports dynamic dispatch, in which the text is divided into many
-small tasks that idle workers claim through a single atomic counter, so that
-faster cores naturally process more tasks. Figure~\ref{fig:load_balancing}
+barrier.
+
+% review: issue #114, comment 027
+This proportional partitioning is computed once during initialization. The
+implementation reads the online CPU topology from the operating system, including
+the sibling list of each logical CPU and the maximum frequency exposed in
+\texttt{/sys/devices/system/cpu/cpu*/cpufreq/cpuinfo\_max\_freq}. Workers are
+assigned first to physical-core leaders ordered by descending maximum frequency
+and then to SMT siblings; each worker is pinned to its assigned CPU with
+\texttt{pthread\_setaffinity\_np}. If worker $i$ is assigned to a CPU with
+maximum frequency $f_i$, its owned text segment is sized as
+$|s_i| = N \cdot f_i / \sum_j f_j$, rounded to cache-line boundaries, while the
+same $L_{\max}-1$ overlap described above is preserved at segment borders. On a
+homogeneous processor all $f_i$ values are equal, so the scheme degenerates to
+ordinary static chunking with explicit affinity. If the required sysfs data are
+unavailable, the implementation falls back to equal chunks and identity affinity,
+preserving correctness without relying on topology information.
+
+As an alternative that requires no knowledge of the topology, the framework also
+supports dynamic dispatch, in which the text is divided into many small tasks
+that idle workers claim through a single atomic counter, so that faster cores
+naturally process more tasks. Figure~\ref{fig:load_balancing}
 contrasts the three partitioning policies and the idle time each leaves at the
 barrier.
 
 % review: issue #155, comment 055 - explanatory figure moved here from results
+% review: issue #113, comment 026
 \begin{figure}[H]
 \centering
+\includegraphics[width=0.78\linewidth]{load_balancing.pdf}
 \caption{Partitioning policies on heterogeneous cores. Bar length represents
 elapsed execution time, while labels indicate assigned text size or task
 identity: (a) static homogeneous chunking leaves the faster Performance core
 idle at the barrier (stragglers); (b) topology-aware, frequency-weighted
 chunking sizes each segment to its core's speed; (c) dynamic dispatch hands out
 small tasks on demand. Both (b) and (c) equalize finishing times.}
-\includegraphics[width=0.78\linewidth]{load_balancing.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
 \label{fig:load_balancing}
 \end{figure}
 
@@ -117,12 +140,12 @@ This optimization is purely a memory-layout change: it preserves the exact set
 of reported matches and is inherited by every scanning variant, whether
 sequential or parallel. Figure~\ref{fig:flattened_output} contrasts this contiguous layout with the canonical linked list structure.
 
-\begin{figure}[H]
+% review: issue #104/#105, comments 009/010 - rule propagated document-wide
+% review: issue #139, comment 028
+\begin{figure}[htbp]
 \centering
-\caption{Comparison of match-emission layouts: (a) canonical linked outputs using pointer-chasing across scattered memory nodes, and (b) proposed flattened output layout storing contiguous pattern indices.}
 \includegraphics[width=0.88\linewidth]{flattened_output.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\caption{Comparison of match-emission layouts: (a) canonical linked outputs using pointer-chasing across scattered memory nodes, and (b) proposed flattened output layout storing contiguous pattern indices.}
 \label{fig:flattened_output}
 \end{figure}
 
@@ -140,15 +163,14 @@ construction while exposing the independent work inside each level.
 Figure~\ref{fig:parallel_bfs} illustrates this level-synchronous structure.
 
 % review: issue #156, comment 056 - explanatory build figure moved here from results
+% review: issue #104/#105, comments 009/010 - rule propagated document-wide
 \begin{figure}[H]
 \centering
+\includegraphics[width=1.0\linewidth]{parallel_bfs.pdf}
 \caption{Level-synchronous parallel construction of the failure function. Threads
 compute the failure links of all states at one breadth-first level in parallel,
 reading only already-finalized links from shallower levels (green), and meet at a
 barrier before advancing to the next level.}
-\includegraphics[width=1.0\linewidth]{parallel_bfs.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
 \label{fig:parallel_bfs}
 \end{figure}
 
@@ -157,30 +179,38 @@ barrier before advancing to the next level.}
 
 All the strategies above partition the text while keeping the dictionary intact.
 A complementary approach, evaluated for contrast, partitions the dictionary
-instead. In this approach, the pattern set is divided into $K$ groups based on the first
-byte of each pattern, and a smaller sub-automaton is built for each group. Every
-sub-automaton is then scanned over the input. The motivation is that each
-sub-automaton has a smaller working set, which might fit better in the cache and
-reduce the memory pressure of a single monolithic automaton. The framework
-also supports a two-dimensional composition that combines dictionary sharding
-with text chunking. In that composition, each shard is scanned in parallel over
-chunks of the input, but every byte of the text must still be processed once per
-shard. Pure text chunking therefore reads each byte once, whereas sharding with
-chunking multiplies text traffic by the number of shards while reducing the
-automaton footprint seen by each shard. Whether the locality gained by smaller
-sub-automata compensates for this repeated input traffic is an empirical
-question, answered in the results chapter. Figure~\ref{fig:memory_traffic}
-summarizes this traffic difference.
+instead. % review: issue #141, comment 030
+In this approach, the pattern set is divided into $K$ disjoint groups by prefix
+bucket, and an independent sub-automaton is built for each group. Each shard
+therefore owns a disjoint set of global pattern identifiers, so the local match
+lists can be concatenated after the workers finish; no duplicate-removal step is
+needed in the merge. This partition is not free, however. The implementation pays
+the build and memory cost of $K$ sub-automata, including duplicated roots and
+shared-prefix structure that a monolithic automaton would store only once.
+
+The larger structural cost appears during scanning: each shard must scan the
+entire input text. Standalone dictionary sharding has no boundary overlap because
+every worker sees every byte, but it multiplies text traffic by $K$. The
+motivation is locality, not additional text parallelism: a smaller sub-automaton
+may fit better in cache and reduce transition-table pressure, but this benefit
+must compensate for the repeated reads of the same input. The framework also
+supports a two-dimensional composition with text chunking, in which each
+pair $(k,n)$ scans shard $k$ over text chunk $n$ with shard-local overlap. Even
+there, every byte is processed once per shard. Pure text chunking therefore reads
+each byte once, whereas sharding with chunking multiplies text traffic by the
+number of shards while reducing the automaton footprint seen by each shard.
+Whether the locality gained by smaller sub-automata compensates for this repeated
+input traffic is an empirical question, answered in the results chapter.
+Figure~\ref{fig:memory_traffic} summarizes this cost trade-off.
 
 % review: issue #128, comment 060 - explanatory memory-traffic figure moved here from results
+% review: issue #140, comment 029
 \begin{figure}[H]
 \centering
+\includegraphics[width=0.9\linewidth]{memory_traffic.pdf}
 \caption{Text-reading traffic in the two partitioning designs: (a) pure text
 chunking reads each input byte once while workers share the full automaton; (b)
-two-dimensional composition scans chunks against all $K$ dictionary shards,
-repeating the input reads while reducing each sub-automaton.}
-\includegraphics[width=0.9\linewidth]{memory_traffic.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+dictionary sharding builds $K$ independent sub-automata and scans the input once
+per shard, reducing each automaton footprint while multiplying text traffic.}
 \label{fig:memory_traffic}
 \end{figure}

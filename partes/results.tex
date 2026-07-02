@@ -67,7 +67,7 @@ throughput.
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Corpus fixed; single thread.\par}
+    {\footnotesize\raggedright Corpus fixed; single thread.\par}
 \end{table}
 
 Throughput falls monotonically as the automaton grows, from $629.0$~MB/s at
@@ -92,21 +92,20 @@ The local conclusion is that the automaton footprint---not the text content---is
 the dominant factor in single-threaded throughput. The same degradation also
 persists under parallel execution: at the full thread count, the speedup of the
 best strategy (against the sequential baseline) falls from roughly $25.8\times$
-for Snort-100 to $19.3\times$ for Emerging Threats, and the absolute throughput
+for Snort-100 to $19.2\times$ for Emerging Threats, and the absolute throughput
 collapses from $16{,}230$~MB/s to about $4{,}046$~MB/s---consistent with the
 memory subsystem rather than the thread count being the binding factor. This is
 revisited in the scaling analysis below, and it frames the interpretation of every
 subsequent result.
 
+% review: issue #104/#105, comments 009/010 - rule propagated document-wide
 \begin{figure}[H]
 \centering
+\includegraphics[width=0.95\linewidth]{cache_hierarchy.pdf}
 \caption{Cache-residency regimes governing throughput: (a) a small automaton
 fits within the shared L3, so transitions are likely to be served from cache;
 (b) a memory-bound automaton ($\gg$L3) is likely to produce more cache misses and
 place sustained pressure on the memory bus, flattening the scaling curve.}
-\includegraphics[width=0.95\linewidth]{cache_hierarchy.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
 \label{fig:cache_hierarchy}
 \end{figure}
 
@@ -139,13 +138,6 @@ Figure~\ref{fig:speedup} shows the resulting speedup curves.
 % corpus, full thread sweep to T=32; coordinates from sweep.db (v_speedup).
 \begin{figure}[H]
 \centering
-\caption{Speedup of text parallelism versus thread count for the winning strategy
-(\texttt{pthread\_\allowbreak dynamic\_\allowbreak flat}) on the canonical Enron
-corpus, for a moderate dictionary (Snort, 55~MiB) and a memory-bound dictionary
-(Emerging Threats, 507~MiB). Scaling is monotonic to the full thirty-two hardware
-threads; the sixteen-thread mark separates the physical cores from the SMT
-siblings. The per-point coefficient of variation stays below about $2\%$, so error
-bars would fall within the markers and are omitted.}
 \begin{tikzpicture}
 \begin{axis}[
     width=0.82\textwidth,
@@ -179,9 +171,14 @@ bars would fall within the markers and are omitted.}
 \addlegendentry{$y=x$ (linear ideal)}
 \end{axis}
 \end{tikzpicture}
+\caption{Speedup of text parallelism versus thread count for the winning strategy
+(\texttt{pthread\_\allowbreak dynamic\_\allowbreak flat}) on the canonical Enron
+corpus, for a moderate dictionary (Snort, 55~MiB) and a memory-bound dictionary
+(Emerging Threats, 507~MiB). Scaling is monotonic to the full thirty-two hardware
+threads; the sixteen-thread mark separates the physical cores from the SMT
+siblings. The per-point coefficient of variation stays below about $2\%$, so error
+bars would fall within the markers and are omitted.}
 \label{fig:speedup}
-
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
 \end{figure}
 
 % review: comment 052 -- describe the data first, then interpret it.
@@ -269,7 +266,7 @@ memory pressure.
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Single thread.\par}
+    {\footnotesize\raggedright Single thread.\par}
 \end{table}
 
 When the automaton fits in cache, the optimization provides only a small
@@ -324,7 +321,7 @@ Table~\ref{tab:balance} reports both quantities.
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author, from the headline sweep. Canonical workload, thirty-two threads; the coefficient of variation is measured across the five timed iterations of the same run.\par}
+    {\footnotesize\raggedright Canonical workload, thirty-two threads; the coefficient of variation is measured across the five timed iterations of the same run.\par}
 \end{table}
 
 On these uniform cores every strategy is already well balanced: the coefficient of
@@ -374,7 +371,7 @@ corpus fixed. Table~\ref{tab:granularity} reports the result.
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author, from the headline sweep.\par}
+    {\footnotesize\raggedright Headline sweep, canonical workload, thirty-two threads.\par}
 \end{table}
 
 Throughput increases monotonically with task size, from $7{,}414$~MB/s at one
@@ -419,7 +416,7 @@ a single peak, so that the full thread-count behaviour is visible.
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Build
+    {\footnotesize\raggedright Build
     speedup is the sequential build time divided by the parallel build time at
     each thread count; values below $1.0\times$ mean the parallel build is slower
     than the sequential one.\par}
@@ -467,7 +464,7 @@ parallelism on the canonical workload.
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Speedup is relative to the single-threaded sequential baseline ($329.2$~MB/s); text chunking is shown at thirty-two threads for reference.\par}
+    {\footnotesize\raggedright Speedup is relative to the single-threaded sequential baseline ($329.2$~MB/s); text chunking is shown at thirty-two threads for reference.\par}
 \end{table}
 
 % review: issue #126, comment 057; issue #127, comment 058 -- table expanded with the discussed shard counts
@@ -509,7 +506,7 @@ canonical dynamic-flat text-chunking strategy and disproves the hypothesis.
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author. Thirty-two threads in both columns; the comparator is the \texttt{pthread\_dynamic\_flat} text chunking of Table~\ref{tab:shard}.\par}
+    {\footnotesize\raggedright Thirty-two threads in both columns; the comparator is the \texttt{pthread\_dynamic\_flat} text chunking of Table~\ref{tab:shard}.\par}
 \end{table}
 
 The composition is slower than text chunking in every measured scenario, by
@@ -553,8 +550,7 @@ measured build time plus one full-corpus search pass (Table~\ref{tab:e2e}).
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author, derived
-    from the canonical sweep. Each cell is the measured build time plus one
+    {\footnotesize\raggedright Derived from the canonical sweep. Each cell is the measured build time plus one
     full-corpus search pass ($\textit{build\_ms} + \textit{mean\_ms}$); the
     parallel column uses the canonical thirty-two-thread strategy
     (\texttt{pthread\_dynamic\_flat}) with a sequential build.\par}
@@ -619,7 +615,7 @@ Table~\ref{tab:pe_balance} places the two machines side by side.
         \bottomrule
     \end{tabular}
 
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author, from the per-thread instrumentation of each processor. The i5-1235U is heterogeneous (two Performance cores plus eight Efficiency cores) and the Ryzen~9~9950X is homogeneous; the coefficient of variation is measured across the timed iterations of the run, at each machine's full logical thread count.\par}
+    {\footnotesize\raggedright Derived from the per-thread instrumentation of each processor. The i5-1235U is heterogeneous (two Performance cores plus eight Efficiency cores) and the Ryzen~9~9950X is homogeneous; the coefficient of variation is measured across the timed iterations of the run, at each machine's full logical thread count.\par}
 \end{table}
 
 The two machines behave in opposite ways. On the hybrid i5, static chunking is

@@ -127,6 +127,8 @@ The evaluation is conducted on a NVIDIA Tesla C2075 (Fermi architecture), using 
 
 This study reinforces two principles that are directly transferable to the present Pthreads-based design even though the target hardware differs: first, that the read-only nature of the AC automaton after construction enables fully lock-free, thread-local matching, irrespective of whether parallelism is realized on a GPU or on a multi-core CPU; second, that the placement of the automaton and the input within the cache hierarchy often matters more than raw thread-count scaling. Two limitations, however, restrict the direct applicability of these findings to the current work. The PFAC decomposition launches one thread per input byte, which is well suited to GPU SIMT execution but mismatched with the much coarser granularity of multi-core CPUs, where the Pthreads model favours chunk-based data partitioning with overlap regions of $\texttt{max\_pattern\_len}-1$ bytes. Moreover, the alphabet-specific reduction to a $4 \times N$ transition table relies on the small DNA alphabet and cannot be reused for the full 256-symbol byte alphabet of IDS/YARA workloads targeted by the present implementation. The Thambawita et al.\ study thus serves as a complementary point of comparison, framing PFAC-style fine-grained parallelism as the GPU counterpart of the coarse-grained, chunked Pthreads strategy adopted in this thesis.
 
+% review: issue #136, comment 019
+\newpage
 \subsubsecao{The Diversification and Enhancement of an IDS Scheme for the Cybersecurity Needs of Modern Supply Chains}
 
 Deyannis et al.\ \cite{Deyannis2022Diversification} examine the performance and energy cost of software Aho-Corasick matching when an industrial supply chain node must concurrently execute its primary business workload and inspect real-time network traffic. The authors observe that the canonical Snort IDS, although well-tuned, saturates the CPUs of low-power supply chain assets and therefore introduces a deployment gap: edge nodes either drop packets under load or shift inspection costs upstream, which conflicts with the distributed perimeter defence recommended by recent supply chain cybersecurity frameworks. The bottleneck is clearly in the multi-pattern matching kernel, which Snort implements with Aho-Corasick.
@@ -203,24 +205,41 @@ In sum, the paper provides the present thesis with two contributions that no oth
 The systematic review answered both research questions by identifying the
 predominant parallelization strategies for Aho--Corasick on multi-core CPUs and
 the optimization techniques most frequently employed in practical applications.
-Read together, the ten primary studies cover a broad design space but leave a
-specific combination unaddressed. The reviewed parallelizations either target
-non-CPU substrates (GPUs in Thambawita et al.\ \cite{Vajira2018}, FPGA fabric in
-Deyannis et al.\ \cite{Deyannis2022Diversification}, and programmable switch
-ASICs in Jepsen et al.\ \cite{Jepsen2019PISA}); rely on a coordination model that
-is not native shared-memory threading (MPI in Qu et al.\ \cite{Qu2016MPI}, Erlang
-OTP processes over a non-Aho--Corasick automaton in Tovar{\v{n}}ák
-\cite{Tovarnak2016REtrie}); restructure or replace the classical automaton rather
-than parallelize it unchanged (the head--body decomposition of Lee and Yang
-\cite{LeeYang2017FHBM}, the SIMD literal engines of Sitaridi et al.\
-\cite{Sitaridi2016SIMD} and Xu et al.\ \cite{Xu2023Harry}); or optimize the
-construction phase while leaving matching sequential (Reg{\'e}ciov{\'a} et al.\
-\cite{Regeciova2021MYARA}). Aldwairi et al.\ \cite{Aldwairi2018Characterizing}
-contributes benchmark methodology rather than a parallel technique. Recurrently,
-the studies that do measure shared-memory scaling report that throughput
-saturates once the automaton's transition table escapes the last-level cache,
-yet none isolates and characterizes that memory-bound regime as the primary
-object of study.
+
+% review: issue #137, comment 021
+\textbf{Parallelization strategies.} Read together, the ten primary studies
+cover a broad execution space. Some approaches target non-CPU substrates: the
+GPU implementation of Thambawita et al.\ \cite{Vajira2018}, the FPGA fabric used
+by Deyannis et al.\ \cite{Deyannis2022Diversification}, and the programmable
+switch ASIC design of Jepsen et al.\ \cite{Jepsen2019PISA}. Others remain on
+general-purpose processors but adopt coordination models other than native
+shared-memory threading, such as MPI in Qu et al.\ \cite{Qu2016MPI} or Erlang OTP
+processes over a non-Aho--Corasick automaton in Tovar{\v{n}}ák
+\cite{Tovarnak2016REtrie}. These studies confirm that Aho--Corasick matching can
+be parallelized, but they do not directly characterize a portable POSIX Threads
+implementation over the unmodified automaton.
+
+\textbf{Memory and automaton optimizations.} A second group of contributions
+attacks the memory cost of the automaton itself. Lee and Yang
+\cite{LeeYang2017FHBM} split the automaton into head and body regions to fit the
+hot portion into cache, while Sitaridi et al.\ \cite{Sitaridi2016SIMD} and Xu et
+al.\ \cite{Xu2023Harry} use SIMD-oriented literal matching to reduce the cost of
+state transitions. Reg{\'e}ciov{\'a} et al.\ \cite{Regeciova2021MYARA} focus on
+parallel construction while leaving matching sequential. Across these papers, the
+recurring observation is that throughput saturates once the transition table
+escapes the last-level cache; however, none isolates and characterizes that
+memory-bound regime as the primary object of study.
+
+\textbf{Applications and benchmarking.} The application studies anchor the
+problem in realistic security and inspection workloads. Deyannis et al.\
+\cite{Deyannis2022Diversification} and Jepsen et al.\ \cite{Jepsen2019PISA}
+motivate line-rate intrusion detection on constrained or specialized platforms,
+while Reg{\'e}ciov{\'a} et al.\ \cite{Regeciova2021MYARA} connects the automaton
+to YARA-style malware scanning. Aldwairi et al.\
+\cite{Aldwairi2018Characterizing} contributes benchmark methodology and
+redistributable traces rather than a parallel technique. These application
+papers justify the use of realistic dictionaries and corpora, but they do not
+close the shared-memory CPU gap identified above.
 
 The gap addressed by the present work is therefore the following: a portable,
 POSIX Threads parallelization of the \emph{unmodified} Aho--Corasick automaton on
