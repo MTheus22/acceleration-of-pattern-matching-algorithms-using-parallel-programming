@@ -210,12 +210,12 @@ headheight=1.8cm]{geometry}
         \vspace*{2cm}
         \rule{\linewidth}{0.4pt}
         \vspace{1em}
-        {Patrícia Oliveira}
+        {Thálisson de Oliveira Lopes}
 
         \vspace*{2cm}
         \rule{\linewidth}{0.4pt}
         \vspace{1em}
-        {Lucas Maurício}
+        {Caio César Rodrigues Garcez}
         
         \vspace*{2cm}
         \rule{\linewidth}{0.4pt}
