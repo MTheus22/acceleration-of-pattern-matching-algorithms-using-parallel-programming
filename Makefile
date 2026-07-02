@@ -1,6 +1,8 @@
 #!/usr/bin/makefile
 
-LATEX=xelatex
+# TEXINPUTS: configs/ vendoriza algorithm/algorithmicx (ausentes no texlive
+# do sistema, que não inclui texlive-science); o ":" final preserva a árvore padrão.
+LATEX=TEXINPUTS=./configs: xelatex
 BIB=bibtex
 
 PARTES = $(wildcard partes/*.tex)

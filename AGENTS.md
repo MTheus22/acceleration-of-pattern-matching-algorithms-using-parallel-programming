@@ -201,14 +201,14 @@ this versioned LaTeX source.
 
 - `../parallel-aho-corasick` — C implementation, datasets, benchmarks.
   Its own `AGENTS.md` is the source of truth for the empirical side.
-  **The canonical machine is now the Ryzen 9 9950X workstation** (homogeneous
-  16C/32T); the first real collection is `runs/workstation_2026-06-29/`
-  (analysis in its `RESULTS.md`). ⚠️ That run is **not yet headline-final** (old
-  commit without `pthread_dynamic_flat` in phase A, no phase G, phase C failed),
-  so the **current thesis body still cites the i5-1235U** sweep
-  (`runs/i5/sweep.db`, 2026-05-29). Migrate body numbers to the workstation only
-  after a clean re-run exists; keep the **i5 for the P/E (hybrid-core)
-  discussion**.
+  **The canonical machine is the Ryzen 9 9950X workstation** (homogeneous
+  16C/32T); the canonical collection is `runs/workstation_2026-06-30/`
+  (analysis in its `RESULTS.md`; champion `pthread_dynamic_flat`, snort 22.91× /
+  et_32 18.96× @ T=32). The **thesis body already cites these workstation
+  numbers** (migration completed 2026-07-02 via epic-03); the **i5-1235U sweep**
+  (`runs/i5/sweep.db`, 2026-05-29) is used **only** in the P/E (hybrid-core)
+  section. Any headline number must match the canonical `sweep.db`; interim runs
+  were removed (see `runs/MANIFEST.md`).
 - `../tcc_notes` — Obsidian vault with the systematic-review notes
   and related-work summaries. Use `sections/notes/` for consolidated
   raw material and `sections/text/` for prose drafts before touching
