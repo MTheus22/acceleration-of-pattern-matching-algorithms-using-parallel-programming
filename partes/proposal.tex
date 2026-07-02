@@ -197,6 +197,18 @@ needed in the merge. This partition is not free, however. The implementation pay
 the build and memory cost of $K$ sub-automata, including duplicated roots and
 shared-prefix structure that a monolithic automaton would store only once.
 
+% review: issue #128, comment 060 - explanatory memory-traffic figure moved here from results
+% review: issue #140, comment 029
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\linewidth]{memory_traffic.pdf}
+\caption{Text-reading traffic in the two partitioning designs: (a) pure text
+chunking reads each input byte once while workers share the full automaton; (b)
+dictionary sharding builds $K$ independent sub-automata and scans the input once
+per shard, reducing each automaton footprint while multiplying text traffic.}
+\label{fig:memory_traffic}
+\end{figure}
+
 The larger structural cost appears during scanning: each shard must scan the
 entire input text. Standalone dictionary sharding has no boundary overlap because
 every worker sees every byte, but it multiplies text traffic by $K$. The
@@ -211,15 +223,3 @@ number of shards while reducing the automaton footprint seen by each shard.
 Whether the locality gained by smaller sub-automata compensates for this repeated
 input traffic is an empirical question, answered in the results chapter.
 Figure~\ref{fig:memory_traffic} summarizes this cost trade-off.
-
-% review: issue #128, comment 060 - explanatory memory-traffic figure moved here from results
-% review: issue #140, comment 029
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.9\linewidth]{memory_traffic.pdf}
-\caption{Text-reading traffic in the two partitioning designs: (a) pure text
-chunking reads each input byte once while workers share the full automaton; (b)
-dictionary sharding builds $K$ independent sub-automata and scans the input once
-per shard, reducing each automaton footprint while multiplying text traffic.}
-\label{fig:memory_traffic}
-\end{figure}
