@@ -1,15 +1,16 @@
 This appendix documents the protocol used to query the raw measurement
 database from which every result reported in this thesis is derived, including
-the end-to-end wall-clock times of Table~\ref{tab:e2e}. Those end-to-end figures
-are not a separate campaign: each is the sum of two quantities that the canonical
-sweep already records for the corresponding execution---the construction time
-(\texttt{build\_ms}) and a single full-corpus search pass (\texttt{mean\_ms}).
-They can therefore be reproduced and audited from the same database as every
-other figure.
+% review: issue #181, comment 15
+the end-to-end wall-clock consistency check discussed in the Results chapter.
+Those end-to-end figures are not a separate campaign: each is the sum of two
+quantities that the canonical sweep already records for the corresponding
+execution---the construction time (\texttt{build\_ms}) and a single full-corpus
+search pass (\texttt{mean\_ms}). They can therefore be reproduced and audited
+from the same database as every other figure.
 % epic-03: canonical measurement database moved to the Ryzen 9 9950X workstation sweep.
 The benchmark campaign stores its measurements in a single typed SQLite
 database located at
-\texttt{parallel-aho-corasick/runs/workstation\_2026-06-30/sweep.db},
+\path{parallel-aho-corasick/runs/workstation_2026-06-30/sweep.db},
 containing one \texttt{runs} table (one row per timed execution) and a
 set of aggregating views. The headline figures are retrieved from these views
 instead of the raw execution logs.

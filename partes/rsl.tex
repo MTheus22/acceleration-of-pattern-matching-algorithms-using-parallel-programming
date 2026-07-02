@@ -207,39 +207,42 @@ predominant parallelization strategies for Aho--Corasick on multi-core CPUs and
 the optimization techniques most frequently employed in practical applications.
 
 % review: issue #137, comment 021
-\textbf{Parallelization strategies.} Read together, the ten primary studies
-cover a broad execution space. Some approaches target non-CPU substrates: the
-GPU implementation of Thambawita et al.\ \cite{Vajira2018}, the FPGA fabric used
-by Deyannis et al.\ \cite{Deyannis2022Diversification}, and the programmable
-switch ASIC design of Jepsen et al.\ \cite{Jepsen2019PISA}. Others remain on
-general-purpose processors but adopt coordination models other than native
-shared-memory threading, such as MPI in Qu et al.\ \cite{Qu2016MPI} or Erlang OTP
-processes over a non-Aho--Corasick automaton in Tovar{\v{n}}ák
-\cite{Tovarnak2016REtrie}. These studies confirm that Aho--Corasick matching can
-be parallelized, but they do not directly characterize a portable POSIX Threads
-implementation over the unmodified automaton.
+% review: issue #169, comment 3
+\begin{itemize}
+    \item \textbf{Parallelization strategies:} read together, the ten primary studies
+    cover a broad execution space. Some approaches target non-CPU substrates: the
+    GPU implementation of Thambawita et al.\ \cite{Vajira2018}, the FPGA fabric used
+    by Deyannis et al.\ \cite{Deyannis2022Diversification}, and the programmable
+    switch ASIC design of Jepsen et al.\ \cite{Jepsen2019PISA}. Others remain on
+    general-purpose processors but adopt coordination models other than native
+    shared-memory threading, such as MPI in Qu et al.\ \cite{Qu2016MPI} or Erlang OTP
+    processes over a non-Aho--Corasick automaton in Tovar{\v{n}}ák
+    \cite{Tovarnak2016REtrie}. These studies confirm that Aho--Corasick matching can
+    be parallelized, but they do not directly characterize a portable POSIX Threads
+    implementation over the unmodified automaton.
 
-\textbf{Memory and automaton optimizations.} A second group of contributions
-attacks the memory cost of the automaton itself. Lee and Yang
-\cite{LeeYang2017FHBM} split the automaton into head and body regions to fit the
-hot portion into cache, while Sitaridi et al.\ \cite{Sitaridi2016SIMD} and Xu et
-al.\ \cite{Xu2023Harry} use SIMD-oriented literal matching to reduce the cost of
-state transitions. Reg{\'e}ciov{\'a} et al.\ \cite{Regeciova2021MYARA} focus on
-parallel construction while leaving matching sequential. Across these papers, the
-recurring observation is that throughput saturates once the transition table
-escapes the last-level cache; however, none isolates and characterizes that
-memory-bound regime as the primary object of study.
+    \item \textbf{Memory and automaton optimizations:} a second group of contributions
+    attacks the memory cost of the automaton itself. Lee and Yang
+    \cite{LeeYang2017FHBM} split the automaton into head and body regions to fit the
+    hot portion into cache, while Sitaridi et al.\ \cite{Sitaridi2016SIMD} and Xu et
+    al.\ \cite{Xu2023Harry} use SIMD-oriented literal matching to reduce the cost of
+    state transitions. Reg{\'e}ciov{\'a} et al.\ \cite{Regeciova2021MYARA} focus on
+    parallel construction while leaving matching sequential. Across these papers, the
+    recurring observation is that throughput saturates once the transition table
+    escapes the last-level cache; however, none isolates and characterizes that
+    memory-bound regime as the primary object of study.
 
-\textbf{Applications and benchmarking.} The application studies anchor the
-problem in realistic security and inspection workloads. Deyannis et al.\
-\cite{Deyannis2022Diversification} and Jepsen et al.\ \cite{Jepsen2019PISA}
-motivate line-rate intrusion detection on constrained or specialized platforms,
-while Reg{\'e}ciov{\'a} et al.\ \cite{Regeciova2021MYARA} connects the automaton
-to YARA-style malware scanning. Aldwairi et al.\
-\cite{Aldwairi2018Characterizing} contributes benchmark methodology and
-redistributable traces rather than a parallel technique. These application
-papers justify the use of realistic dictionaries and corpora, but they do not
-close the shared-memory CPU gap identified above.
+    \item \textbf{Applications and benchmarking:} the application studies anchor the
+    problem in realistic security and inspection workloads. Deyannis et al.\
+    \cite{Deyannis2022Diversification} and Jepsen et al.\ \cite{Jepsen2019PISA}
+    motivate line-rate intrusion detection on constrained or specialized platforms,
+    while Reg{\'e}ciov{\'a} et al.\ \cite{Regeciova2021MYARA} connects the automaton
+    to YARA-style malware scanning. Aldwairi et al.\
+    \cite{Aldwairi2018Characterizing} contributes benchmark methodology and
+    redistributable traces rather than a parallel technique. These application
+    papers justify the use of realistic dictionaries and corpora, but they do not
+    close the shared-memory CPU gap identified above.
+\end{itemize}
 
 The gap addressed by the present work is therefore the following: a portable,
 POSIX Threads parallelization of the \emph{unmodified} Aho--Corasick automaton on

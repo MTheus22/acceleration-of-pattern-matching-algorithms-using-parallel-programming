@@ -1,12 +1,14 @@
 % review: comment 047 -- give the reader the chapter's organization instead of
 % concluding in the opening paragraph.
+% review: issue #178, comment 12
 This chapter presents the experimental evaluation of the proposed parallel
 Aho-Corasick implementation. Following the methodology described in the previous
-chapter, each experiment is reported in a fixed order---experimental question,
-configuration, the measured data, an objective description of the observed
-pattern, the interpretation that the data permit, and a local conclusion tied to
-the corresponding hypothesis---so that what was measured stays separate from what
-is inferred.
+chapter, each results section follows the same reporting sequence: a brief
+introduction states the experimental question and configuration, the corresponding
+figure or table is presented before the discussion, the measured pattern is then
+described without interpretation, the explanation is separated from the observation,
+and the subsection closes with a local conclusion tied to the corresponding
+hypothesis. This ordering keeps what was measured separate from what is inferred.
 
 The chapter is organized as follows. It first characterizes how the execution
 platform responds to a growing automaton footprint, establishing the experimental
@@ -127,11 +129,11 @@ of a small corpus.
 % review: comment 051 -- explain why the sweep stops at the hardware thread budget.
 % epic-03: 32 hardware threads (16 physical cores x 2-way SMT).
 The thread count is swept up to thirty-two. This is not an arbitrary cut-off: the
-workstation has sixteen physical cores with two-way simultaneous multithreading, so
-$T=32$ is the full hardware concurrency of the platform and larger values would
-merely oversubscribe the cores. The sweep therefore covers the platform's entire
-thread budget, separating the sixteen-thread point (one worker per physical core)
-from the thirty-two-thread point (both SMT siblings active).
+workstation has sixteen physical cores with two-way simultaneous multithreading
+(SMT), so $T=32$ is the full hardware concurrency of the platform and larger
+values would merely oversubscribe the cores. The sweep therefore covers the
+platform's entire thread budget, separating the sixteen-thread point (one worker
+per physical core) from the thirty-two-thread point (both SMT siblings active).
 Figure~\ref{fig:speedup} shows the resulting speedup curves.
 
 % epic-03: workstation champion pthread_dynamic_flat on the canonical Enron
@@ -242,50 +244,62 @@ automaton dominates the behaviour far more than the characteristics of the corpu
 
 \subsecao{The Flattened Output Layout}
 
+% review: issue #179, comment 13
 The proposed output-layout optimization replaces the pointer-chasing emission of
-matches with a sequential read of a contiguous array. Because it changes only
-the memory layout, its effect can be measured in isolation on a single thread.
-% review: task step 8 -- report the regime dependence as observed, not as a
-% universal growth law.
-Table~\ref{tab:flat} shows that the gain is regime-dependent and increases with
-memory pressure.
+matches with a sequential read of a contiguous array. Because it changes only the
+match-output representation, its effect is measured first on a single thread while
+the automaton footprint is varied. The question is whether removing one layer of
+indirection from match emission produces a visible gain when the transition table
+and output metadata grow from a small to a large working set. Table~\ref{tab:flat}
+reports the measured gain by automaton footprint.
 
 \begin{table}[H]
     \centering
-    \caption{Single-threaded gain of the flattened output layout, by regime.}
+    \caption{Single-threaded gain of the flattened output layout, by automaton
+    footprint.}
     \label{tab:flat}
     \small
     \begin{tabular}{@{} l r r r r @{}}
         \toprule
-        \textbf{Regime (dictionary)} & \textbf{Automaton} & \textbf{Baseline} & \textbf{Flattened} & \textbf{Gain} \\
+        \textbf{Dictionary} & \textbf{Automaton} & \textbf{Baseline} & \textbf{Flattened} & \textbf{Gain} \\
          & & \textbf{(MB/s)} & \textbf{(MB/s)} & \\
         \midrule
-        Snort-100 ($\ll$L3)      & 1.93~MiB   & 629.0 & 647.8 & $+3.0\%$ \\ \addlinespace
-        Snort (full, $\approx$L3)      & 55.23~MiB  & 328.9 & 342.6 & $+4.2\%$ \\ \addlinespace
-        Emerging Threats ($\gg$L3) & 506.78~MiB & 210.2 & 224.6 & $+6.9\%$ \\
+        Snort-100        & 1.93~MiB   & 629.0 & 647.8 & $+3.0\%$ \\ \addlinespace
+        Snort (full)     & 55.23~MiB  & 328.9 & 342.6 & $+4.2\%$ \\ \addlinespace
+        Emerging Threats & 506.78~MiB & 210.2 & 224.6 & $+6.9\%$ \\
         \bottomrule
     \end{tabular}
 
     {\footnotesize\raggedright Single thread.\par}
 \end{table}
 
-When the automaton fits in cache, the optimization provides only a small
-benefit ($+3.0\%$), because the linked structures are already cache-resident.
-When the automaton is far larger than the cache, the contiguous layout avoids
-the scattered misses of the pointer walk and delivers $+6.9\%$ on a single
-thread, which is the cheapest gain available in the memory-bound regime. In the
-parallel case, the layout is inherited by the chunked strategies, and the
+The measured gain is positive in every row and grows with the automaton footprint:
+$+3.0\%$ for the $1.93$~MiB automaton, $+4.2\%$ for the $55.23$~MiB automaton,
+and $+6.9\%$ for the $506.78$~MiB automaton. The baseline throughput itself falls
+as the automaton grows, but the flattened representation consistently improves the
+same searcher under the same dictionary and corpus.
+
+The interpretation is that the output layout removes work from a part of the scan
+that becomes increasingly expensive as the working set grows. The optimization
+does not change the transition function and therefore cannot remove the main
+per-byte cost of the algorithm; it only turns match emission from a pointer walk
+into a linear access pattern. This explains both why the single-threaded gain
+remains modest and why it is largest for the largest automaton. The cache
+hierarchy of the workstation provides supporting evidence for this reading, as
+shown in the footprint experiment, but the argument does not depend on a specific
+last-level-cache size: a processor with a different cache organization would move
+the boundary between regimes, not change the fact that a larger automaton creates a
+larger working set.
+
+In the parallel case, the layout is inherited by the chunked strategies, and the
 flattened variants lead their pointer-chasing counterparts in both
-intrusion-detection-scale regimes; the winning strategies at thirty-two threads
---- \texttt{pthread\_dynamic\_flat} at $22.91\times$ for the moderate dictionary
-and $18.96\times$ for the memory-bound one --- both incorporate this layout. It is
-worth noting that the gain does not compound multiplicatively with text
-parallelism in the moderate regime: there, the DRAM stalls of the transition
-table already partially mask the emission cost, so the layout provides a smaller
-improvement than its single-threaded figure would suggest. The optimization
-is therefore best described as a cheap, broadly applicable improvement whose
-payoff is largest exactly where the problem is hardest---the memory-bound regime,
-where the per-regime gain climbs with the automaton footprint.
+intrusion-detection-scale regimes. The winning strategies at thirty-two
+threads---\texttt{pthread\_\allowbreak dynamic\_\allowbreak flat} at
+$22.91\times$ for the moderate dictionary and $18.96\times$ for the large
+dictionary---both incorporate this layout. The local conclusion is therefore
+limited but useful: flattening is not the main source of parallel speedup, but it
+is a cheap improvement that becomes more valuable as the automaton footprint
+grows.
 
 % epic-03: on the homogeneous workstation, uniform cores are already balanced;
 % frequency-weighted topology-aware chunking has little to correct. The
@@ -432,7 +446,7 @@ spawn-and-join overhead exceeds the work. This optimization should therefore be
 understood as an operational benefit---a reduction in rule-reloading latency for
 systems that frequently update their signatures---rather than as a contribution to
 scanning throughput; its share of the end-to-end pipeline is quantified in the
-consistency check below.
+brief consistency check below.
 
 \subsecao{Partitioning the Dictionary: A Qualified Negative Result}
 
@@ -523,53 +537,15 @@ This difference in memory traffic is illustrated in the proposal chapter
 (Figure~\ref{fig:memory_traffic}).
 % review: issue #128, comment 060 -- explanatory memory-traffic figure moved to the proposal chapter (epic-02 task-02)
 
-% review: issue #129, comment 061 -- this section does not pose a new experimental
-% question; it is reframed as a consistency check that confirms, rather than
-% extends, the separate construction and search analyses for the whole pipeline.
-\subsecao{End-to-End Consistency Check}
-
-The preceding sections measured construction and search in isolation. This final
-check verifies that those results hold for the complete pipeline---automaton
-construction followed by a single full scan of the $\sim$10.6~GiB corpus, reported
-as wall-clock time. It introduces no new experiment: to keep the figures
-auditable, each cell is reconstructed from the same canonical sweep as the
-measured build time plus one full-corpus search pass (Table~\ref{tab:e2e}).
-
-\begin{table}[H]
-    \centering
-    \caption{End-to-end wall-clock on the $\sim$10.6~GiB corpus, as construction
-    time plus a single full-corpus scan.}
-    \label{tab:e2e}
-    \small
-    \begin{tabular}{@{} l r r r @{}}
-        \toprule
-        \textbf{Dictionary} & \textbf{Sequential (ms)} & \textbf{Parallel (ms)} & \textbf{Speedup} \\
-        \midrule
-        Snort (full)     & 32{,}943  & 1{,}482 & $22.23\times$ \\ \addlinespace
-        Emerging Threats & 51{,}722  & 2{,}921 & $17.71\times$ \\
-        \bottomrule
-    \end{tabular}
-
-    {\footnotesize\raggedright Derived from the canonical sweep. Each cell is the measured build time plus one
-    full-corpus search pass ($\textit{build\_ms} + \textit{mean\_ms}$); the
-    parallel column uses the canonical thirty-two-thread strategy
-    (\texttt{pthread\_dynamic\_flat}) with a sequential build.\par}
-\end{table}
-
-The end-to-end speedups are $22.23\times$ for the moderate dictionary (roughly
-thirty-three seconds down to one and a half) and $17.71\times$ for the memory-bound
-one ($51.7$ to $2.9$~seconds, with the dynamic--flat strategy and a sequential
-build). Because the parallel scans on this platform are so fast, the sequential
-build---though small in absolute terms---becomes a visible share of the parallel
-pipeline for the largest dictionary: $324$~ms of the $2.9$~second Emerging Threats
-total ($11\%$), against just $28$~ms of the $1.5$~second Snort total ($2\%$). This
-is why the end-to-end figures fall a little below the search-only speedups on the
-same corpus ($22.23\times$ against $22.64\times$ for Snort; $17.71\times$ against
-$19.79\times$ for Emerging Threats): the parallel column pays the full sequential
-build while the sequential column barely notices it. The pipeline is still
-dominated by scanning, so the end-to-end measurement adds no scaling beyond what
-the search analysis already establishes; it confirms that the earlier speedups hold
-end to end, with construction a small and bounded overhead.
+% review: issue #181, comment 15
+As a final end-to-end consistency check, the same canonical sweep reconstructs the
+complete build-plus-one-scan pipeline on the $\sim$10.6~GiB corpus. The resulting
+speedups are $22.23\times$ for Snort and $17.71\times$ for Emerging Threats,
+slightly below the search-only speedups on the same corpus ($22.64\times$ and
+$19.79\times$) because the parallel column still pays the sequential construction
+cost. This does not introduce a separate experimental result; it only confirms
+that construction remains a small, bounded overhead and that the complete pipeline
+is still dominated by the scan.
 
 % epic-03: seção P/E (revisor: mostrar desbalanceamento dos dois)
 % review: issue #155, comment 055 -- the load-balancing material is retained,

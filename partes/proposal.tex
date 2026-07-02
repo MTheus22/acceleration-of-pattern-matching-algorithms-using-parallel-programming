@@ -74,6 +74,7 @@ redundant work. This boundary-crossing detection and overlap logic is illustrate
 
 \subsecao{Load Balancing on Heterogeneous Cores}
 
+% review: issue #170, comment 4
 Uniform segments are optimal only when all cores are equally fast. On a hybrid
 processor, where Performance and Efficiency cores run at different clock
 frequencies, equal-sized segments cause the threads on slower cores to finish
@@ -87,18 +88,21 @@ barrier.
 % review: issue #114, comment 027
 This proportional partitioning is computed once during initialization. The
 implementation reads the online CPU topology from the operating system, including
-the sibling list of each logical CPU and the maximum frequency exposed in
-\texttt{/sys/devices/system/cpu/cpu*/cpufreq/cpuinfo\_max\_freq}. Workers are
-assigned first to physical-core leaders ordered by descending maximum frequency
-and then to SMT siblings; each worker is pinned to its assigned CPU with
-\texttt{pthread\_setaffinity\_np}. If worker $i$ is assigned to a CPU with
-maximum frequency $f_i$, its owned text segment is sized as
-$|s_i| = N \cdot f_i / \sum_j f_j$, rounded to cache-line boundaries, while the
-same $L_{\max}-1$ overlap described above is preserved at segment borders. On a
-homogeneous processor all $f_i$ values are equal, so the scheme degenerates to
-ordinary static chunking with explicit affinity. If the required sysfs data are
-unavailable, the implementation falls back to equal chunks and identity affinity,
-preserving correctness without relying on topology information.
+the sibling list of each logical CPU and the maximum frequency reported by the
+per-CPU \texttt{cpufreq} metadata. Workers are assigned first to physical-core
+leaders ordered by descending maximum frequency and then to simultaneous
+multithreading (SMT) siblings; each worker is pinned to its assigned CPU with
+\texttt{pthread\_setaffinity\_np}. If
+worker $i$ is assigned to a CPU with maximum frequency $f_i$, its owned text
+segment is sized as $|s_i| = N \cdot f_i / \sum_j f_j$, rounded to cache-line
+boundaries, while the same $L_{\max}-1$ overlap described above is preserved at
+segment borders. On a homogeneous processor all $f_i$ values are equal, so the
+scheme degenerates to ordinary static chunking with explicit affinity. If the
+required operating-system metadata are unavailable, the implementation falls back
+to equal chunks and identity affinity, preserving correctness without relying on
+topology information. In this thesis the policy is evaluated only as a
+heterogeneous-core diagnostic; it is not the source of the canonical performance
+figures, which come from the homogeneous workstation.
 
 As an alternative that requires no knowledge of the topology, the framework also
 supports dynamic dispatch, in which the text is divided into many small tasks

@@ -32,8 +32,8 @@ outcome.
 The measurement platform, and the source of every headline number, table, and
 figure in this work, is an AMD Ryzen~9~9950X processor. It is a homogeneous
 design of the Zen~5 generation: sixteen identical cores, each with two-way
-simultaneous multithreading, expose thirty-two logical hardware threads, and
-every core reaches the same maximum clock, so the thread pool carries no
+simultaneous multithreading (SMT), exposes thirty-two logical hardware threads.
+Every core reaches the same maximum clock, so the thread pool carries no
 performance/efficiency asymmetry. Because the cores are uniform, a uniform text
 partition is naturally load-balanced, and the frequency-weighted, topology-aware
 weighting introduced in the previous chapter has little to correct on this
@@ -194,27 +194,38 @@ the flat layout, or topology-aware chunking with the flat layout --- which is
 precisely what allows one axis to be varied while the others are held fixed.
 
 % review: issue #149, comment 39 --- topology-aware vs dynamic are distinct axes
-The work-distribution options differ in how they assign work to threads. Static
-homogeneous chunking splits the text into equal segments, one per thread, with
-the boundary overlap required for correctness. Topology-aware chunking and
-dynamic dispatch are two \textit{distinct} answers to the load imbalance that
-equal segments cause when the cores are not all equally fast, and they are not
-the same mechanism. Topology-aware chunking sizes each segment
-\textit{statically}, in proportion to the maximum clock frequency of the core
-that will execute it --- read once from the operating system's per-core frequency
-information --- and pins the worker to that core, so that a faster core receives a
-proportionally larger segment before the scan begins; on a homogeneous processor,
-where every core reports the same maximum frequency, these weights become uniform
-and the strategy reduces to static chunking with thread pinning. Dynamic dispatch
-instead splits the text into many small, uniform tasks that idle workers pull
-from a shared atomic counter \textit{at run time} (a bag-of-tasks scheme),
-correcting imbalance reactively rather than from a hardware model. The dictionary-parallelism options
-partition the pattern set instead of the text: prefix sharding builds $K$
-independent sub-automata, and the two-dimensional composition combines sharding
-with text chunking to test whether the two kinds of parallelism add. An
-exploratory software-prefetch variant of the chunked searcher also exists in the
-laboratory as a microarchitectural probe; it introduces no new axis and is
-excluded from the controlled grid and from the reported results.
+% review: issue #170, comment 4
+The work-distribution options differ in how they assign work to threads.
+Static homogeneous chunking is the control case: it divides the text into equal
+segments, one per worker, and adds only the boundary overlap required for
+correctness. This policy is appropriate when the processor is homogeneous, as in
+the canonical Ryzen~9~9950X workstation used for the headline measurements.
+
+Topology-aware chunking and dynamic dispatch are two \textit{distinct} responses
+to the imbalance that equal segments can create on processors whose cores are
+not equally fast. Topology-aware chunking is a static policy: during
+initialization it reads the operating system's per-core frequency metadata,
+assigns each worker to a logical CPU, and sizes the worker's segment in
+proportion to that CPU's maximum frequency. Faster cores therefore receive
+larger segments before the scan begins. On a homogeneous processor these
+frequencies are equal, so the policy collapses to static chunking with explicit
+thread affinity.
+
+Dynamic dispatch does not use a hardware model. Instead, it splits the text into
+many small, uniform tasks and lets idle workers pull tasks from a shared atomic
+counter at run time. Faster cores naturally consume more tasks, so imbalance is
+corrected reactively rather than by a precomputed segment size. The later
+heterogeneous-core comparison uses the Intel Core i5-1235U only as a diagnostic
+P/E case for these policies; it is not part of the canonical measurement
+platform and supplies none of the headline performance numbers.
+
+The dictionary-parallelism options partition the pattern set instead of the
+text: prefix sharding builds $K$ independent sub-automata, and the
+two-dimensional composition combines sharding with text chunking to test whether
+the two kinds of parallelism add. An exploratory software-prefetch variant of
+the chunked searcher also exists in the laboratory as a microarchitectural
+probe; it introduces no new axis and is excluded from the controlled grid and
+from the reported results.
 
 \subsecao{Metrics and Instrumentation}
 
@@ -276,36 +287,43 @@ the previous section.
 \end{table}
 
 % review: issue #118, comment 42 --- one short paragraph per phase
-Phase~A measures the speedup curves, the headline scaling result. It sweeps
-thread counts $T \in \{1,2,4,6,\dots,32\}$ over the canonical Enron corpus and
-$T \in \{1,4,8,16,32\}$ over the eight-fold replica, up to the thirty-two
-hardware threads of the platform, running every parallel searcher against the two
-single-thread baselines, with two warm-ups and five timed iterations per point.
+% review: issue #175, comment 9
+\begin{itemize}
+    \item \textbf{Phase~A --- Speedup curves.} This phase measures the headline
+    scaling result. It sweeps thread counts $T \in \{1,2,4,6,\dots,32\}$ over the
+    canonical Enron corpus and $T \in \{1,4,8,16,32\}$ over the eight-fold
+    replica, up to the thirty-two hardware threads of the platform, running every
+    parallel searcher against the two single-thread baselines, with two warm-ups
+    and five timed iterations per point.
 
-Phase~B measures the automaton footprint against throughput. Holding the corpus
-fixed at Enron, it varies the dictionary across the four footprints of
-Table~\ref{tab:datasets} to locate the throughput cross-over, again with two
-warm-ups and five timed iterations.
+    \item \textbf{Phase~B --- Footprint sweep.} Holding the corpus fixed at
+    Enron, this phase varies the dictionary across the four footprints of
+    Table~\ref{tab:datasets} to locate the throughput cross-over, again with two
+    warm-ups and five timed iterations.
 
-Phase~C isolates the effect of the text content. Holding the dictionary fixed at
-the full Snort set, it compares the natural-language SimpleWiki corpus against
-Enron, with two warm-ups and five timed iterations, so that any throughput
-difference is attributable to the corpus rather than to the automaton.
+    \item \textbf{Phase~C --- Cross-corpus comparison.} Holding the dictionary
+    fixed at the full Snort set, this phase compares the natural-language
+    SimpleWiki corpus against Enron, with two warm-ups and five timed iterations,
+    so that any throughput difference is attributable to the corpus rather than
+    to the automaton.
 
-Phase~D is the per-thread diagnostic. At the full thread count it records
-per-thread timings for each parallel searcher --- one warm-up and three timed
-iterations --- to quantify barrier idle time and load balance.
+    \item \textbf{Phase~D --- Per-thread diagnostic.} At the full thread count,
+    this phase records per-thread timings for each parallel searcher --- one
+    warm-up and three timed iterations --- to quantify barrier idle time and load
+    balance.
 
-Phase~E measures parallel construction. It compares the sequential build against
-the level-synchronous parallel build across the four dictionaries; since only the
-build time is of interest, each build is timed once with no warm-up.
+    \item \textbf{Phase~E --- Parallel construction.} This phase compares the
+    sequential build against the level-synchronous parallel build across the four
+    dictionaries; since only the build time is of interest, each build is timed
+    once with no warm-up.
 
-Phase~G isolates the effect of task granularity on the dynamic scheduler. Holding
-the searcher, dictionary, and corpus fixed at the winning configuration
-(\texttt{pthread\_dynamic\_flat}, full Snort, Enron) at the full thread count, it
-sweeps the number of text tokens per dispatched task, with two warm-ups and five
-timed iterations, to measure how the atomic-counter contention of the bag-of-tasks
-scheme trades against load balance.
+    \item \textbf{Phase~G --- Task granularity.} Holding the searcher,
+    dictionary, and corpus fixed at the winning configuration
+    (\texttt{pthread\_dynamic\_flat}, full Snort, Enron) at the full thread
+    count, this phase sweeps the number of text tokens per dispatched task, with
+    two warm-ups and five timed iterations, to measure how the atomic-counter
+    contention of the bag-of-tasks scheme trades against load balance.
+\end{itemize}
 
 % review: issue #119, comment 43; issue #120, comment 44 --- drop thermal as a
 % premise; keep a short measurement limitation only
@@ -381,12 +399,17 @@ throughout, the comparison is against the sequential baseline for headline
 speedup and against the strongest text-parallel strategy when the question
 concerns composition.
 
+% review: issue #177, comment 11
 \begin{table}[htbp]
     \centering
     \caption{Hypotheses, the experiment that tests each one, and where the outcome is reported.}
     \label{tab:hypotheses}
     \small
-    \begin{tabular}{@{} p{6.8cm} l l @{}}
+    \begin{tabular}{@{}
+        >{\raggedright\arraybackslash}p{5.7cm}
+        >{\raggedright\arraybackslash}p{3.2cm}
+        >{\raggedright\arraybackslash}p{2.8cm}
+    @{}}
         \toprule
         \textbf{Hypothesis} & \textbf{Experiment} & \textbf{Reported in} \\
         \midrule

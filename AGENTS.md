@@ -119,6 +119,11 @@ Other custom commands relevant for editing:
   author's required style; do not "tidy" adjacent `\cite`s into one.
 - New references must have a corresponding entry in
   `referencias.bib`. Do not invent citation keys without adding them.
+- Expand acronyms at their first rendered use, e.g., "simultaneous
+  multithreading (SMT)"; LaTeX comments do not count.
+- For algorithmic function/table names that must visibly differ from prose
+  (`goto`, `fail`, `output`), prefer a math identifier macro such as
+  `\acfunc{...}` (`\mathtt`) over `\operatorname`, and inspect the PDF.
 - Do not commit `main.pdf` changes that you produced just to "see how
   it looks" — only commit when the content changes warrant it. The
   PDF is regeneratable.
