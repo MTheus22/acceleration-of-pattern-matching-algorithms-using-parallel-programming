@@ -7,7 +7,7 @@ These applications rely on highly efficient multi-pattern-matching algorithms, a
 
 Despite its efficiency, the Aho-Corasick algorithm is intrinsically sequential: its automaton processes input strictly left-to-right, with each state transition depending on the preceding one. As a result, when scanning a single large input on a modern multi-core CPU, the entire computational load is concentrated on one core. This serial dependency becomes a major performance bottleneck when scanning large target data, such as full disk images, packet captures, or genomic sequences. Consequently, the disparity between the algorithm's sequential nature and modern hardware's parallel processing capabilities widens as data volumes grow \cite{AhoCorasick1975}.
 
-\newpage\subsecao{Motivation}
+\subsecao{Motivation}
 
 The intrinsically sequential nature of Aho-Corasick, combined with the prevalence of multi-core architectures in general-purpose computing, presents a clear opportunity for acceleration through parallel computing. Previous studies report speedups on specialized platforms and in specific application domains \cite{Vajira2018}, \cite{LeeYang2017FHBM}; however, the behavior of a shared-memory, multi-threaded implementation on commodity CPUs in the \textit{memory-bound regime} --- where the automaton size far exceeds the last-level cache --- has received comparatively little attention. % review: comment 004 (issue #99) — point to the systematic review
 This observation is supported by the systematic literature review presented in Chapter 3.
