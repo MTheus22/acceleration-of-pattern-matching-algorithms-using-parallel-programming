@@ -109,7 +109,7 @@ barrier.
 
 % review: issue #155, comment 055 - explanatory figure moved here from results
 % review: issue #113, comment 026
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.78\linewidth]{load_balancing.pdf}
 \caption{Partitioning policies on heterogeneous cores. Bar length represents
@@ -149,7 +149,7 @@ sequential or parallel. Figure~\ref{fig:flattened_output} contrasts this contigu
 \label{fig:flattened_output}
 \end{figure}
 
-\subsecao{Parallel Construction of the Automaton}
+
 
 The scan-phase strategies above assume that the automaton has already been
 constructed. The framework also includes a build-phase variant that parallelizes
@@ -205,7 +205,7 @@ Figure~\ref{fig:memory_traffic} summarizes this cost trade-off.
 
 % review: issue #128, comment 060 - explanatory memory-traffic figure moved here from results
 % review: issue #140, comment 029
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.9\linewidth]{memory_traffic.pdf}
 \caption{Text-reading traffic in the two partitioning designs: (a) pure text
