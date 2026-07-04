@@ -1,50 +1,61 @@
-# Apresentação (defesa do TCC)
+# Apresentacao da defesa
 
-Slides da defesa, escritos em **Marp** (Markdown → HTML/PDF). A fonte de verdade
-é [`slides.md`](slides.md); `slides.html` e `slides.pdf` são **gerados** — não os
-edite à mão.
+Pasta de trabalho para preparar a defesa do TCC. A apresentacao sera feita em
+portugues, com foco didatico e visual, derivada do texto final do trabalho.
 
-## Ferramenta
+## Fonte de verdade
 
-[Marp CLI](https://github.com/marp-team/marp-cli) **v4.4.0**, executado via `npx`
-(o pacote já está no cache do npx desta máquina). O nome do pacote é
-`@marp-team/marp-cli` (não `marp`). Export para PDF usa o Google Chrome
-(`/usr/bin/google-chrome`).
+Para esta fase, o texto do TCC e a fonte de verdade:
 
-## Build
+- `../partes/introduction.tex`
+- `../partes/fundamentacao.tex`
+- `../partes/rsl.tex`
+- `../partes/proposal.tex`
+- `../partes/methodology.tex`
+- `../partes/results.tex`
+- `../partes/conclusion.tex`
+- `../partes/abstract.tex`
+
+Use `../../parallel-aho-corasick/` apenas para gerar ou conferir graficos quando
+for necessario. Se houver conflito entre banco de resultados, notas antigas e o
+texto do TCC, o texto do TCC vence.
+
+## Arquivos principais
+
+| Arquivo | Papel |
+|---|---|
+| `AGENTS.md` | Instrucoes para agentes de IA que trabalharem nesta pasta. |
+| `DESIGN.md` | Diretrizes visuais, paleta, tipografia e regras de legibilidade. |
+| `base-apresentacao.md` | Indice narrativo global: premissas, numeros, storyboard e orientacoes transversais. |
+
+## Subpastas
+
+| Pasta | Uso |
+|---|---|
+| `secoes/` | Briefs focados por secao da apresentacao; use para dividir trabalho entre agentes. |
+| `figuras/` | Figuras finais ou candidatas a entrar nos slides. |
+| `graficos/` | Graficos gerados para a apresentacao, preferencialmente em SVG. |
+| `dados/` | CSV/JSON intermediarios extraidos do TCC ou do `sweep.db`. |
+| `scripts/` | Scripts de extracao e geracao de graficos. |
+| `roteiro/` | Roteiros de fala derivados dos slides aprovados. |
+| `build/` | Saidas geradas, como HTML/PDF. Nao editar manualmente. |
+
+## Fluxo recomendado
+
+1. Revisar `base-apresentacao.md` para entender premissas, numeros e storyboard.
+2. Trabalhar a secao relevante em `secoes/secao-*.md`.
+3. Criar `slides.md` em Marp ou um deck HTML a partir da base e das secoes.
+4. Criar o roteiro em `roteiro/` slide a slide, depois que o deck estabilizar.
+5. Gerar figuras/graficos sob demanda, sempre com legenda e fonte rastreavel.
+6. Exportar HTML/PDF para `build/`.
+
+Comandos esperados para a fase de slides:
 
 ```bash
 cd apresentacao
-
-# 1) (se os dados mudaram) regenerar o gráfico de speedup a partir dos números do TCC
-python3 gerar_grafico_svg.py            # escreve figuras/speedup_results.svg
-
-# 2) HTML
-npx @marp-team/marp-cli@4.4.0 slides.md -o slides.html --allow-local-files
-
-# 3) PDF (precisa do Chrome)
-CHROME_PATH=/usr/bin/google-chrome \
-  npx @marp-team/marp-cli@4.4.0 slides.md -o slides.pdf --allow-local-files
+npx @marp-team/marp-cli@4.4.0 slides.md -o build/slides.html --allow-local-files
+CHROME_PATH=/usr/bin/google-chrome npx @marp-team/marp-cli@4.4.0 slides.md -o build/slides.pdf --allow-local-files
 ```
 
-`--allow-local-files` é necessário porque os slides referenciam imagens locais
-em `figuras/`. Para uma janela de pré-visualização ao vivo: `... -s slides.md`
-(modo server/watch).
-
-## Imagens (`figuras/`)
-
-| Arquivo | Origem |
-|---|---|
-| `speedup_results.svg` | **Gerado** por `gerar_grafico_svg.py` (dados do sweep canônico). |
-| `cache_hierarchy.svg`, `load_balancing.svg`, `parallel_bfs.svg` | Diagramas autorais (espelham as figuras TikZ do TCC). |
-| `trie-1.png`, `ac_matching-1.png` | Ilustrações do autômato Aho–Corasick. |
-
-> Coerência: qualquer número nos slides deve bater com o TCC, cuja fonte de
-> verdade é `../../parallel-aho-corasick/runs/i5/sweep.db` (sweep
-> 2026-05-29). E2E = `build_ms + mean_ms` (ver apêndice do TCC).
-
-## Citações
-
-Trabalhos nomeados em um slide recebem citação curta no rodapé via diretiva
-Marp por slide: `<!-- _footer: "Autor (ano); ..." -->`. Referências completas
-ficam no TCC.
+`build/slides.html` e `build/slides.pdf` sao artefatos gerados. O conteudo
+editavel deve ficar em Markdown, scripts e fontes de figura.

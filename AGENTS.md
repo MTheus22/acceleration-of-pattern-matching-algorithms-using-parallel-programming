@@ -159,26 +159,34 @@ When addressing advisor/reviewer comments from an annotated PDF:
 
 ## Presentation (`apresentacao/`)
 
-The defense slides live in `apresentacao/`, authored in **Marp**
-(Markdown → HTML/PDF). Source of truth: `apresentacao/slides.md`.
-`slides.html` and `slides.pdf` are **generated** — never edit them by
-hand; regenerate after editing `slides.md`.
+The defense material lives in `apresentacao/`. The current planning source is
+split between `apresentacao/base-apresentacao.md` (global narrative, numbers,
+storyboard, and cross-section guidance) and
+`apresentacao/secoes/secao-*.md` (one focused brief per presentation section).
+It is supported by `apresentacao/AGENTS.md` and `apresentacao/DESIGN.md`.
+Future work should derive two artifacts from that base: `apresentacao/slides.md`
+(deck source) and scripts or notes under `apresentacao/roteiro/` (spoken
+rehearsal script).
+
+For presentation work, read `apresentacao/AGENTS.md` first. The thesis text in
+`partes/*.tex` is the source of truth for narrative and numbers; old decks,
+generated PDFs/HTML, and historical i5-centered assets are not authoritative.
+If the deck is implemented as HTML/reveal.js instead of Marp, use the workspace
+skill `.agents/skills/html-slides` for slide-implementation patterns.
 
 Marp is **not** on `PATH`; it runs via `npx` and the package is
 `@marp-team/marp-cli` (v4.4.0), *not* `marp`. PDF export needs Chrome.
 
 ```bash
 cd apresentacao
-python3 gerar_grafico_svg.py                                   # if data changed → figuras/speedup_results.svg
-npx @marp-team/marp-cli@4.4.0 slides.md -o slides.html --allow-local-files
+npx @marp-team/marp-cli@4.4.0 slides.md -o build/slides.html --allow-local-files
 CHROME_PATH=/usr/bin/google-chrome \
-  npx @marp-team/marp-cli@4.4.0 slides.md -o slides.pdf --allow-local-files
+  npx @marp-team/marp-cli@4.4.0 slides.md -o build/slides.pdf --allow-local-files
 ```
 
-`--allow-local-files` is required because slides reference images in
-`figuras/`. Per-slide citations use the Marp directive
-`<!-- _footer: "Author (year); ..." -->`. Any number in the slides must
-match the thesis (and thus `sweep.db`). See `apresentacao/README.md`.
+`--allow-local-files` is required because slides reference local images.
+Generated HTML/PDF files belong in `apresentacao/build/` and must not be edited
+by hand.
 
 ## Helpers in this repo
 
