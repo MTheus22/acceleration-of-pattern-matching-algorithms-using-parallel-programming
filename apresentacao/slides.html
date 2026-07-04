@@ -598,6 +598,117 @@
             align-self: center; flex: 0 0 18px; text-align: center;
             color: var(--idp-azul); font-size: 1.1em; font-weight: 700;
         }
+
+        /* ================================================================
+           Ajustes didaticos (secoes/adjustments.md)
+           ================================================================ */
+
+        /* ---------- Divisores de secao numerados ---------- */
+        section.divisor { text-align: center; }
+        section.divisor .divisor-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 1.7em; height: 1.7em; border-radius: 50%;
+            background: var(--idp-ciano); color: var(--idp-capa);
+            font-size: 1.2em; font-weight: 700; margin-bottom: 0.5em;
+        }
+        section.divisor h2 { color: #FFFFFF; font-size: 1.7em; margin: 0 0 0.12em 0; }
+        section.divisor .divisor-sub { color: var(--idp-ciano); font-size: 0.92em; }
+        .divisor-trilha {
+            display: flex; justify-content: center; flex-wrap: wrap;
+            gap: 8px; margin-top: 1.7em;
+        }
+        .divisor-trilha span {
+            font-size: 0.5em; color: #9FC5E8; white-space: nowrap;
+            border: 1px solid #35618E; border-radius: 20px; padding: 5px 13px;
+        }
+        .divisor-trilha span.atual {
+            color: var(--idp-capa); background: var(--idp-ciano);
+            border-color: var(--idp-ciano); font-weight: 700;
+        }
+
+        /* ---------- Roteiro de 7 partes ---------- */
+        .roteiro-7 { gap: 11px; }
+        .roteiro-7 .bloco { padding: 15px 8px 13px 8px; border-top-width: 4px; }
+        .roteiro-7 .bloco .num { font-size: 0.72em; }
+        .roteiro-7 .bloco .nome { font-size: 0.7em; }
+        .roteiro-7 .bloco .desc { font-size: 0.5em; margin-top: 0.4em; }
+
+        /* ---------- Secao 2: cena memory-bound (quem le quais dados) ---------- */
+        .mem-lanes { margin-top: 0.9em; display: flex; flex-direction: column; gap: 12px; }
+        .mem-lane {
+            display: flex; align-items: center; gap: 16px;
+            background: var(--idp-fundo); border-radius: 8px; padding: 12px 18px;
+        }
+        .mem-lane .lane-nucleo {
+            flex: 0 0 168px; text-align: center;
+            background: var(--idp-azul); color: #FFFFFF;
+            border-radius: 6px; padding: 9px 6px;
+            font-size: 0.6em; font-weight: 600; line-height: 1.32;
+        }
+        .mem-lane .lane-seta { color: var(--idp-texto-sec); font-size: 1.1em; font-weight: 700; }
+        .mem-lane .lane-destino { flex: 1; font-size: 0.72em; line-height: 1.35; }
+        .mem-lane .lane-destino .onde { font-weight: 700; }
+        .mem-lane .lane-veredito {
+            flex: 0 0 150px; text-align: center;
+            border-radius: 6px; padding: 9px 6px;
+            font-size: 0.64em; font-weight: 700; line-height: 1.25;
+        }
+        .mem-lane-rapida { border-left: 6px solid var(--idp-sucesso); }
+        .mem-lane-rapida .lane-veredito { background: rgba(22,138,74,0.14); color: var(--idp-sucesso); }
+        .mem-lane-lenta { border-left: 6px solid var(--idp-negativo); }
+        .mem-lane-lenta .lane-veredito { background: rgba(198,40,40,0.12); color: var(--idp-negativo); }
+
+        /* ---------- Secao 3: arranjo indexado pelo byte ---------- */
+        .automato .array-celula { fill: #FFFFFF; stroke: var(--idp-divisor); stroke-width: 2; }
+        .automato .array-celula-ativa { fill: rgba(0,179,255,0.14); stroke: var(--idp-ciano); stroke-width: 3.5; }
+        .automato .array-indice {
+            fill: var(--idp-texto-sec); font-size: 17px;
+            font-family: "SFMono-Regular", Consolas, monospace; text-anchor: middle;
+        }
+        .automato .array-conteudo {
+            fill: var(--idp-texto); font-size: 18px; font-weight: 600;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            text-anchor: middle; dominant-baseline: central;
+        }
+        .automato .array-vazio { fill: #94A3B8; font-size: 22px; text-anchor: middle; dominant-baseline: central; }
+
+        /* ---------- Secao 3: link de saida distinto do link de falha ---------- */
+        .automato .saida { stroke: var(--idp-sucesso); stroke-width: 3.5; stroke-dasharray: 3 6; fill: none; }
+        .automato .rotulo-saida { fill: var(--idp-sucesso); font-size: 19px; font-weight: 600; text-anchor: middle; }
+        .legenda-ingredientes {
+            display: flex; justify-content: center; flex-wrap: wrap; gap: 26px;
+            margin-top: 0.4em; font-size: 0.62em; color: var(--idp-texto-sec);
+        }
+        .legenda-ingredientes span { display: inline-flex; align-items: center; gap: 8px; }
+        .legenda-ingredientes .amostra { width: 34px; height: 0; border-top-width: 3px; border-top-style: solid; }
+        .legenda-ingredientes .am-goto { border-top-color: var(--idp-azul); }
+        .legenda-ingredientes .am-falha { border-top-color: #94A3B8; border-top-style: dashed; }
+        .legenda-ingredientes .am-saida { border-top-color: var(--idp-sucesso); border-top-style: dashed; }
+        .legenda-ingredientes .am-terminal {
+            width: 18px; height: 18px; border-radius: 50%;
+            border: 2px solid var(--idp-azul); box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px var(--idp-azul);
+        }
+
+        /* ---------- Secao 3: derivacao do footprint ---------- */
+        .footprint-calc {
+            display: flex; align-items: center; justify-content: center; gap: 16px;
+            margin-top: 0.9em; flex-wrap: wrap;
+        }
+        .footprint-calc .fp-fator {
+            background: var(--idp-fundo); border: 1px solid var(--idp-divisor);
+            border-radius: 8px; padding: 12px 18px; text-align: center; min-width: 138px;
+        }
+        .footprint-calc .fp-fator .fp-num {
+            display: block; font-size: 1.05em; font-weight: 700; color: var(--idp-azul);
+        }
+        .footprint-calc .fp-fator .fp-rot {
+            display: block; font-size: 0.54em; color: var(--idp-texto-sec);
+            margin-top: 0.25em; line-height: 1.3;
+        }
+        .footprint-calc .fp-op { font-size: 1.25em; font-weight: 700; color: var(--idp-texto-sec); }
+        .footprint-calc .fp-igual { background: var(--idp-azul); border-color: var(--idp-azul); }
+        .footprint-calc .fp-igual .fp-num { color: #FFFFFF; }
+        .footprint-calc .fp-igual .fp-rot { color: #DCEBFF; }
     </style>
 </head>
 <body>
@@ -629,41 +740,54 @@
 
 <section>
     <h2>Caminho da defesa</h2>
-    <p class="texto-sec">O algoritmo Aho-Corasick casa milhares de padrões em uma
-       única passada pelo texto — este trabalho mede como paralelizá-lo em uma
-       CPU multi-core.</p>
-    <div class="roteiro">
+    <p class="texto-sec">Buscar um grande conjunto de padrões dentro de volumes enormes
+       de texto é uma tarefa comum — em segurança de redes, antivírus e
+       bioinformática. Este trabalho mede como distribuí-la entre os vários núcleos
+       de um processador moderno.</p>
+    <div class="roteiro roteiro-7">
         <div class="bloco">
             <span class="num">1</span>
-            <span class="nome">Motivação</span>
-            <span class="desc">gigabytes de dados, milhares de padrões, núcleos ociosos</span>
+            <span class="nome">Introdução</span>
+            <span class="desc">o descompasso: dados demais, núcleos ociosos</span>
         </div>
         <div class="bloco">
             <span class="num">2</span>
-            <span class="nome">Conceito</span>
-            <span class="desc">como o Aho-Corasick funciona</span>
+            <span class="nome">Fundamentação</span>
+            <span class="desc">o que é e como funciona o algoritmo estudado</span>
         </div>
         <div class="bloco">
             <span class="num">3</span>
-            <span class="nome">Estratégia</span>
-            <span class="desc">dividir o texto, compartilhar o autômato</span>
+            <span class="nome">Revisão da literatura</span>
+            <span class="desc">o que já se fez e onde está a lacuna</span>
         </div>
         <div class="bloco">
             <span class="num">4</span>
-            <span class="nome">Resultados</span>
-            <span class="desc">escalabilidade e o limite imposto pela memória</span>
+            <span class="nome">Solução proposta</span>
+            <span class="desc">dividir o texto, compartilhar o autômato</span>
         </div>
         <div class="bloco">
             <span class="num">5</span>
+            <span class="nome">Metodologia</span>
+            <span class="desc">a plataforma e como se mede</span>
+        </div>
+        <div class="bloco">
+            <span class="num">6</span>
+            <span class="nome">Resultados</span>
+            <span class="desc">escalabilidade e o limite da memória</span>
+        </div>
+        <div class="bloco">
+            <span class="num">7</span>
             <span class="nome">Conclusão</span>
-            <span class="desc">achados, limitações e trabalhos futuros</span>
+            <span class="desc">achados, limitações e futuro</span>
         </div>
     </div>
     <aside class="notes">
-        Avisar que o foco será didático: primeiro o problema, depois o
-        algoritmo e a estratégia, por fim os resultados. Cada parte prepara a
-        seguinte — quem não conhece Aho-Corasick sai do bloco 2 pronto para
-        entender o bloco 3.
+        Ainda sem citar o nome do algoritmo: primeiro o problema em linguagem
+        comum — procurar muitos padrões em muito texto. Avisar que o foco será
+        didático e que cada parte prepara a seguinte; quem não conhece o
+        algoritmo sai da Fundamentação pronto para entender a Solução. Os sete
+        blocos são as sete partes da defesa (as mesmas do TCC) e reaparecem como
+        marcadores numerados entre as seções, para o ouvinte se localizar.
     </aside>
 </section>
 
@@ -674,6 +798,26 @@
 <!-- ================================================================
      SECAO 2 — MOTIVACAO E PROBLEMA  (secoes/secao-02.md)
      ================================================================ -->
+
+<section class="divisor centrado" data-background-color="#003A6B">
+    <span class="divisor-num">1</span>
+    <h2>Introdução</h2>
+    <p class="divisor-sub">motivação e problema</p>
+    <div class="divisor-trilha">
+        <span class="atual">1 · Introdução</span>
+        <span>2 · Fundamentação</span>
+        <span>3 · Revisão</span>
+        <span>4 · Solução</span>
+        <span>5 · Metodologia</span>
+        <span>6 · Resultados</span>
+        <span>7 · Conclusão</span>
+    </div>
+    <aside class="notes">
+        Marcador de seção: anuncia a Introdução. A trilha embaixo mostra as sete
+        partes e onde estamos — voltar a ela a cada virada de seção ajuda a banca
+        e a plateia a se localizarem.
+    </aside>
+</section>
 
 <section class="s2-processadores">
     <h2>Processadores ficaram paralelos</h2>
@@ -715,44 +859,51 @@
 </section>
 
 <section>
-    <h2>Milhares de padrões em uma única passada</h2>
-    <p class="texto-sec">O algoritmo Aho-Corasick compila o dicionário de padrões
-       em um <strong>autômato</strong> e varre o texto uma única vez, em tempo
-       linear no tamanho da entrada.</p>
+    <h2>O mesmo problema em muitos domínios</h2>
+    <p class="texto-sec">Detectar intrusões em uma rede, reconhecer malware ou alinhar
+       sequências genéticas têm a mesma forma: procurar <strong>milhares de padrões ao
+       mesmo tempo</strong> dentro de um texto que pode ter gigabytes.</p>
     <div class="fluxo">
         <div class="caixa">Texto de entrada
-            <span class="sub">fluxo de bytes, gigabytes de dados</span>
+            <span class="sub">fluxo de bytes — pode ter gigabytes</span>
         </div>
         <div class="seta">&#8594;</div>
-        <div class="caixa caixa-central">Autômato
-            <span class="sub">dicionário compilado com milhares de padrões</span>
+        <div class="caixa caixa-central">Busca casada
+            <span class="sub">um dicionário de milhares de padrões, verificados de uma vez</span>
         </div>
         <div class="seta">&#8594;</div>
         <div class="caixa">Matches
             <span class="sub">onde cada padrão ocorre no texto</span>
         </div>
     </div>
-    <p class="apps">Usos representativos: detecção de intrusão (Snort, Suricata) ·
+    <p class="apps">Aplicações representativas: detecção de intrusão (Snort, Suricata) ·
        classificação de malware (YARA) · bioinformática · filtros de conteúdo</p>
     <div class="regra-dependencia fragment">
-        <p>A travessia, porém, é <strong>dependente</strong> — cada passo precisa do anterior:</p>
-        <p class="cadeia"><strong>estado atual + byte lido &#8594; próximo estado</strong></p>
+        <p>Existe um algoritmo clássico e eficiente para isso — o <strong>Aho-Corasick</strong>,
+           construído. Elaborado em 1965, este algoritmo foi projetado para execuções sequenciais, 
+            <strong>onde cada passo depende do anterior</strong>. 
     </div>
     <aside class="notes">
-        Explicar que o algoritmo é clássico e eficiente: uma passada só, tempo
-        linear, muito usado em IDS, antivírus e bioinformática — YARA, Snort e
-        Suricata são aplicações, não o sujeito do trabalho. Avanço do
-        fragmento: a eficiência vem de um caminho dependente — estado atual
-        mais byte atual dá o próximo estado. Não dizer que o algoritmo é ruim;
-        o ponto é que essa dependência concentra a varredura em um núcleo só.
+        Ancorar o problema antes de qualquer algoritmo, como faz a introdução do
+        TCC: domínios diferentes (segurança, antivírus, bioinformática) com a
+        mesma forma — muitos padrões, muito texto. O diagrama é conceitual: o
+        texto entra, a busca compara contra todo o dicionário de uma vez, saem os
+        matches. YARA, Snort e Suricata são aplicações, não o sujeito do trabalho.
+        Avanço do fragmento: só agora nomear o Aho-Corasick, dizendo que a
+        estrutura interna (o autômato) vem na próxima seção. O ponto que motiva
+        tudo: a leitura é sequencial e dependente — cada passo precisa do
+        anterior —, então ela se concentra em um núcleo só, enquanto os demais
+        ficam ociosos. Não dizer que o algoritmo é ruim; a eficiência dele é
+        justamente o que queremos preservar ao paralelizar.
     </aside>
 </section>
 
 <section>
     <h2>O problema muda quando o autômato cresce</h2>
-    <p class="texto-sec">Conjuntos de padrões reais podem gerar autômatos de centenas
-       de MiB — muito além da cache do processador.</p>
-    <div class="barras">
+    <p class="texto-sec">A varredura é, no fundo, uma sequência de consultas:
+       <strong>a cada byte, o núcleo busca o próximo estado na tabela do
+       autômato</strong>. Onde essa tabela mora depende do tamanho dela.</p>
+    <div class="barras barras-compactas">
         <div class="linha-barra">
             <span class="nome-barra">Cache L3 do processador
                 <span class="sub">2 fatias de 32 MiB</span></span>
@@ -777,24 +928,64 @@
             </div>
         </div>
     </div>
+    <div class="mem-lanes fragment">
+        <div class="mem-lane mem-lane-rapida">
+            <div class="lane-nucleo">Núcleo pede<br>o próximo estado</div>
+            <div class="lane-seta">&#8594;</div>
+            <div class="lane-destino"><span class="onde">Autômato pequeno, cabe na cache:</span>
+                a tabela está a poucos ciclos do núcleo, na cache do próprio chip.</div>
+            <div class="lane-veredito">resposta<br>imediata</div>
+        </div>
+        <div class="mem-lane mem-lane-lenta">
+            <div class="lane-nucleo">Núcleo pede<br>o próximo estado</div>
+            <div class="lane-seta">&#8594;</div>
+            <div class="lane-destino"><span class="onde">Autômato grande (507 MiB), não cabe:</span>
+                a maior parte da tabela mora na memória principal (DRAM), muito mais lenta.</div>
+            <div class="lane-veredito">o núcleo<br>espera</div>
+        </div>
+    </div>
     <div class="definicao fragment">
-        <p>Regime <strong>memory-bound</strong> (limitado pela memória): o desempenho
-           passa a ser ditado pela espera por dados da memória, não pelo cálculo.</p>
+        <p>Regime <strong>memory-bound</strong> (limitado pela memória): quando a tabela
+           excede a cache, o tempo passa a ser ditado pela <strong>espera por essas
+           consultas à memória</strong>, não pelo cálculo do próximo estado.</p>
     </div>
     <aside class="notes">
-        A cache é a memória rápida junto ao processador; o que não cabe nela
-        vem da memória principal, muito mais lenta. O autômato do Snort ainda
-        cabe na L3; o do Emerging Threats é cerca de oito vezes toda a L3.
-        Avanço do fragmento: definir memory-bound como "a CPU espera dados".
-        Cuidado na fala: no TCC esse gargalo é uma inferência a partir de
-        footprint, throughput e curvas de escala — não houve medição direta de
-        cache misses. Formular como "consistente com os dados".
+        Deixar concreto quem lê o quê: o "dado" esperado é a tabela de transições
+        do autômato, e "quem pede" é o núcleo, uma consulta por byte. A cache é a
+        memória rápida junto ao processador; o que não cabe nela vem da DRAM, bem
+        mais lenta. Avanço 1, as duas pistas: autômato pequeno mora na cache
+        (consulta imediata); o do Emerging Threats, ~8× toda a L3, mora na DRAM, e
+        o núcleo fica esperando o dado chegar. Avanço 2: definir memory-bound como
+        "a CPU espera dados, não calcula". Cuidado na fala: no TCC esse gargalo é
+        uma inferência a partir de footprint, throughput e curvas de escala — não
+        houve medição direta de cache misses. Formular como "consistente com os
+        dados".
     </aside>
 </section>
 
 <!-- ================================================================
      SECAO 3 — CONCEITO MINIMO DE AHO-CORASICK  (secoes/secao-03.md)
      ================================================================ -->
+
+<section class="divisor centrado" data-background-color="#003A6B">
+    <span class="divisor-num">2</span>
+    <h2>Fundamentação teórica</h2>
+    <p class="divisor-sub">o algoritmo Aho-Corasick, do zero</p>
+    <div class="divisor-trilha">
+        <span>1 · Introdução</span>
+        <span class="atual">2 · Fundamentação</span>
+        <span>3 · Revisão</span>
+        <span>4 · Solução</span>
+        <span>5 · Metodologia</span>
+        <span>6 · Resultados</span>
+        <span>7 · Conclusão</span>
+    </div>
+    <aside class="notes">
+        Marcador de seção: começa a Fundamentação. Aqui o algoritmo é construído
+        passo a passo — casamento de padrões, busca ingênua, trie, autômato,
+        varredura e tabela — para que a plateia saia pronta para a estratégia.
+    </aside>
+</section>
 
 <section>
     <h2>O problema do casamento de padrões</h2>
@@ -975,9 +1166,85 @@
         estados de saída ainda — só a trie pura. "raiz", "c" e "d" não são palavras
         completas, por isso não têm círculo duplo; car, cat, cart e dog são. O ponto
         central: "ca" é percorrido uma vez só e serve de base para car, cat e cart —
-        prefixos compartilhados economizam espaço e trabalho. Fecho: o Aho-Corasick
-        parte exatamente dessa ideia, aplicada aos padrões do texto, e adiciona dois
-        ingredientes novos — é o que vem no próximo slide.
+        prefixos compartilhados economizam espaço e trabalho. Fecho: antes de virar
+        autômato, vale ver como essa trie realmente vive na memória — é o próximo
+        slide; depois vêm os dois ingredientes que a transformam em Aho-Corasick.
+    </aside>
+</section>
+
+<section>
+    <h2>Como a trie vive na memória: o byte é o índice</h2>
+    <p class="texto-sec">Cada estado guarda um <strong>arranjo de 256 posições</strong> — uma
+       por byte possível. O caractere não é armazenado em lugar nenhum: ele é a
+       <strong>própria posição</strong> no arranjo.</p>
+    <p class="chips-padroes">Exemplo: o estado <code>ca</code> da trie anterior — seus
+        filhos são <code>car</code> e <code>cat</code>.</p>
+    <svg class="automato" viewBox="0 0 1100 330" role="img"
+         aria-label="O estado ca como um arranjo de 256 posições indexado pelo byte; as posições r e t apontam para os estados car e cat, as demais estão vazias">
+        <defs>
+            <marker id="seta-arr" markerWidth="10" markerHeight="10" refX="8" refY="4"
+                    orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M0,0 L9,4 L0,8 z" fill="#005DAA"/>
+            </marker>
+        </defs>
+
+        <!-- estado de origem -->
+        <circle class="estado" cx="95" cy="108" r="30"/>
+        <text class="nome-estado" x="95" y="108">ca</text>
+        <line class="aresta" x1="128" y1="108" x2="205" y2="108" marker-end="url(#seta-arr)"/>
+
+        <text class="legenda-svg" x="440" y="50" text-anchor="middle">arranjo do estado "ca" — a posição é o valor do byte</text>
+
+        <!-- reticencias e celulas -->
+        <text class="array-vazio" x="222" y="111">&#8943;</text>
+
+        <text class="array-indice" x="282" y="70">'a' &#183; 97</text>
+        <rect class="array-celula" x="240" y="80" width="84" height="62" rx="6"/>
+        <text class="array-vazio" x="282" y="111">&#8709;</text>
+
+        <text class="array-vazio" x="350" y="111">&#8943;</text>
+
+        <text class="array-indice" x="417" y="70">'r' &#183; 114</text>
+        <rect class="array-celula array-celula-ativa" x="375" y="80" width="84" height="62" rx="6"/>
+
+        <text class="array-indice" x="501" y="70">'s' &#183; 115</text>
+        <rect class="array-celula" x="459" y="80" width="84" height="62" rx="6"/>
+        <text class="array-vazio" x="501" y="111">&#8709;</text>
+
+        <text class="array-indice" x="585" y="70">'t' &#183; 116</text>
+        <rect class="array-celula array-celula-ativa" x="543" y="80" width="84" height="62" rx="6"/>
+
+        <text class="array-vazio" x="660" y="111">&#8943;</text>
+
+        <!-- ponteiros para os estados filhos -->
+        <line class="aresta" x1="417" y1="142" x2="417" y2="216" marker-end="url(#seta-arr)"/>
+        <line class="aresta" x1="585" y1="142" x2="585" y2="216" marker-end="url(#seta-arr)"/>
+        <circle class="estado" cx="417" cy="250" r="30"/><text class="nome-estado" x="417" y="250">car</text>
+        <circle class="estado" cx="585" cy="250" r="30"/><text class="nome-estado" x="585" y="250">cat</text>
+        <circle class="anel-saida" cx="417" cy="250" r="37"/>
+        <circle class="anel-saida" cx="585" cy="250" r="37"/>
+
+        <!-- nota lateral -->
+        <text class="legenda-svg" x="742" y="96">posições 'r' e 't' guardam</text>
+        <text class="legenda-svg" x="742" y="122">ponteiros para os próximos</text>
+        <text class="legenda-svg" x="742" y="148">estados; as 254 restantes</text>
+        <text class="legenda-svg" x="742" y="174">ficam vazias (&#8709;)</text>
+    </svg>
+    <div class="definicao fragment">
+        <p>Seguir um byte é um <strong>acesso direto por índice</strong> — sem comparar
+           caractere a caractere. O preço: cada estado reserva as 256 posições, mesmo
+           as vazias — é daí que virá o tamanho da tabela.</p>
+    </div>
+    <aside class="notes">
+        Este slide responde a uma dúvida comum: como o autômato "sabe" para onde ir
+        com um byte. A resposta é que o byte não é comparado — ele indexa. Cada
+        estado é um vetor de 256 entradas; o valor do byte (por exemplo 'r' = 114) é
+        a posição, e a entrada guarda o ponteiro para o próximo estado. Mostrar que
+        'r' leva a "car" e 't' leva a "cat", enquanto quase todas as outras 254
+        posições estão vazias. Duas consequências que preparam os próximos slides:
+        a busca por byte é O(1), um acesso direto; e reservar 256 posições por
+        estado, mesmo vazias, é exatamente o que faz a tabela crescer — gancho para
+        o footprint. Não é preciso citar tamanho de ponteiro aqui.
     </aside>
 </section>
 
@@ -985,10 +1252,10 @@
     <h2>Da trie ao autômato de Aho-Corasick</h2>
     <p class="chips-padroes">Padrões do exemplo:
         <code>he</code><code>her</code><code>hers</code><code>she</code>
-        — a mesma ideia de trie do slide anterior, aplicada a estes padrões, com dois
-        ingredientes novos: links de falha e estados de saída.</p>
+        — a trie do slide anterior ganha <strong>três acréscimos</strong>: links de
+        falha, estados de saída e links de saída.</p>
     <svg class="automato" viewBox="0 165 1100 330" role="img"
-         aria-label="Trie dos padrões he, her, hers e she com links de falha e estados de saída">
+         aria-label="Trie dos padrões he, her, hers e she com links de falha, estados de saída e um link de saída de she para he">
         <defs>
             <marker id="seta-azul" markerWidth="10" markerHeight="10" refX="8" refY="4"
                     orient="auto" markerUnits="userSpaceOnUse">
@@ -997,6 +1264,10 @@
             <marker id="seta-cinza" markerWidth="10" markerHeight="10" refX="8" refY="4"
                     orient="auto" markerUnits="userSpaceOnUse">
                 <path d="M0,0 L9,4 L0,8 z" fill="#94A3B8"/>
+            </marker>
+            <marker id="seta-verde" markerWidth="10" markerHeight="10" refX="8" refY="4"
+                    orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M0,0 L9,4 L0,8 z" fill="#168A4A"/>
             </marker>
         </defs>
 
@@ -1016,14 +1287,11 @@
         <line class="aresta" x1="476" y1="410" x2="596" y2="410" marker-end="url(#seta-azul)"/>
         <text class="letra" x="540" y="394">e</text>
 
-        <!-- links de falha (fragmento 1) -->
+        <!-- ACRESCIMO 1: links de falha — PARA ONDE IR (fragmento 1) -->
         <g class="fragment" data-fragment-index="1">
             <path class="falha" d="M 612 388 Q 520 300 468 254" marker-end="url(#seta-cinza)"/>
             <path class="falha" d="M 432 388 Q 340 300 288 254" marker-end="url(#seta-cinza)"/>
             <path class="falha" d="M 792 252 Q 540 520 302 418" marker-end="url(#seta-cinza)"/>
-            <text class="legenda-svg" x="836" y="330">tracejado: link de falha</text>
-            <text class="legenda-svg" x="836" y="358">(retoma pelo maior sufixo</text>
-            <text class="legenda-svg" x="836" y="386">ainda útil, sem reler o texto)</text>
         </g>
 
         <!-- estados -->
@@ -1036,7 +1304,7 @@
         <circle class="estado" cx="450" cy="410" r="26"/><text class="nome-estado" x="450" y="410">sh</text>
         <circle class="estado" cx="630" cy="410" r="26"/><text class="nome-estado" x="630" y="410">she</text>
 
-        <!-- estados de saida (fragmento 2) -->
+        <!-- ACRESCIMO 2: estados de saida — QUE PADRAO TERMINA AQUI (fragmento 2) -->
         <g class="fragment" data-fragment-index="2">
             <circle class="anel-saida" cx="450" cy="230" r="33"/>
             <circle class="anel-saida" cx="630" cy="230" r="33"/>
@@ -1045,18 +1313,35 @@
             <text class="rotulo-padrao" x="450" y="188">he</text>
             <text class="rotulo-padrao" x="630" y="188">her</text>
             <text class="rotulo-padrao" x="810" y="188">hers</text>
-            <text class="rotulo-padrao" x="630" y="470">she (e he, via falha)</text>
+            <text class="rotulo-padrao" x="630" y="470">she</text>
+        </g>
+
+        <!-- ACRESCIMO 3: link de saida — QUE MAIS EMITIR (fragmento 3) -->
+        <g class="fragment" data-fragment-index="3">
+            <path class="saida" d="M 620 392 Q 468 476 442 262" marker-end="url(#seta-verde)"/>
+            <text class="rotulo-saida" x="470" y="452">emitir também: he</text>
         </g>
     </svg>
+    <div class="legenda-ingredientes">
+        <span><span class="amostra am-goto"></span>transição (goto): avança um byte</span>
+        <span><span class="amostra am-falha"></span>link de falha: para onde ir sem transição</span>
+        <span><span class="am-terminal"></span>estado de saída: um padrão termina aqui</span>
+        <span><span class="amostra am-saida"></span>link de saída: outro padrão que também termina aqui</span>
+    </div>
     <aside class="notes">
-        Já vimos o que é uma trie no slide anterior — aqui a mesma ideia é aplicada
-        aos quatro padrões do exemplo: "he", "her" e "hers" compartilham o prefixo
-        "he". Avanço 1: os links de falha — quando não há transição para o próximo
-        byte, o autômato salta para o estado que representa o maior sufixo do que já
-        foi lido; os estados sem seta tracejada voltam à raiz. Avanço 2: os estados
-        de saída (círculo duplo) carregam os matches; "she" também emite "he" porque
-        o sufixo "he" termina no mesmo ponto. É a combinação da trie com esses dois
-        ingredientes que forma o autômato de Aho-Corasick.
+        Ponto que costuma ser confundido — separar três acréscimos distintos, não
+        dois. Base: a trie dos quatro padrões ("he", "her", "hers" compartilham o
+        prefixo "he"). Acréscimo 1, links de falha (tracejado cinza): dizem PARA
+        ONDE IR quando não há transição — saltam para o estado do maior sufixo já
+        lido; estados sem seta tracejada voltam à raiz. Acréscimo 2, estados de
+        saída (círculo duplo): dizem QUE PADRÃO termina naquele estado — cada um
+        emite o seu. Acréscimo 3, link de saída (pontilhado verde): diz QUE MAIS
+        EMITIR — em "she", além de "she", também sai "he", porque "he" é um sufixo
+        que termina ali. Enfatizar a diferença: o link de FALHA controla a
+        navegação; o link de SAÍDA controla o que se reporta. Neste exemplo os dois
+        de "she" apontam para o mesmo estado "he", mas são conceitos distintos —
+        por isso duas setas separadas. É a trie somada a esses três acréscimos que
+        forma o autômato de Aho-Corasick.
     </aside>
 </section>
 
@@ -1193,7 +1478,8 @@
         <p class="passo fragment current-visible" data-fragment-index="3">
             <strong>Lê "h".</strong> Avança: o autômato já leu "sh".</p>
         <p class="passo fragment current-visible" data-fragment-index="4">
-            <strong>Lê "e".</strong> Estado final: emite os matches "she" e "he".</p>
+            <strong>Lê "e".</strong> Estado de saída: emite "she" e, pelo link de saída,
+            também "he".</p>
         <p class="passo fragment current-visible" data-fragment-index="5">
             <strong>Lê "r".</strong> Não há transição em "she" — o link de falha retoma em "he"
             e avança para "her". <strong>O texto não é relido.</strong></p>
@@ -1215,10 +1501,11 @@
 </section>
 
 <section>
-    <h2>A tabela acelera a busca, mas aumenta o footprint</h2>
-    <p class="texto-sec">Na prática, o autômato é compilado em uma tabela
-       <strong>estado &#215; byte</strong>: os links de falha já ficam embutidos e a
-       varredura vira <strong>um lookup por byte</strong>.</p>
+    <h2>A tabela de transições: uma leitura por byte</h2>
+    <p class="texto-sec">Empilhe os arranjos do slide anterior — <strong>uma linha por
+       estado</strong>, 256 colunas (uma por byte) — e o autômato vira uma tabela
+       <strong>estado &#215; byte</strong>. Os links de falha já ficam embutidos: a
+       varredura é <strong>um único acesso por byte</strong>.</p>
     <table class="tabela-ac">
         <thead>
             <tr><th>estado \ byte</th><th>e</th><th>h</th><th>r</th><th>s</th><th>u</th><th>&#8230;</th></tr>
@@ -1234,19 +1521,77 @@
         </tbody>
     </table>
     <div class="definicao fragment">
-        <p>Ótima para um núcleo — mas as linhas crescem com o dicionário:
-           4.188 padrões &#8594; <strong>55,23 MiB</strong>;
-           44.678 padrões &#8594; <strong>506,78 MiB</strong>, além de qualquer cache.</p>
+        <p>Ótima para um núcleo — cada byte custa um único acesso. O preço está no
+           tamanho: guardar as 256 colunas de <strong>cada</strong> estado ocupa memória
+           que cresce com o dicionário. <strong>Quanto?</strong> É o próximo slide.</p>
     </div>
     <aside class="notes">
         A célula destacada é o passo do "r" do slide anterior: na tabela
         compilada, sair de "she" com "r" leva direto a "her" — a cascata de
-        falhas foi pré-calculada. Por isso a busca custa um acesso à tabela
-        por byte. O preço: uma linha por estado e 256 colunas; com dicionários
-        reais isso dá os 55 e 507 MiB vistos na motivação. Fecho da seção:
-        "essa tabela é ótima para um núcleo, mas cresce com o número de
-        estados" — e é sobre essa estrutura grande e somente-leitura que a
-        estratégia paralela vai operar.
+        falhas foi pré-calculada. Por isso a busca custa um acesso à tabela por
+        byte. Amarrar com o slide do arranjo: cada linha desta tabela é aquele
+        vetor de 256 posições, agora empilhado, um por estado. Avanço do
+        fragmento: adiar o número — o preço em memória (o footprint) é derivado no
+        próximo slide, e é ele que vai reencontrar a cache da motivação.
+    </aside>
+</section>
+
+<section>
+    <h2>De onde vem o footprint do autômato</h2>
+    <p class="texto-sec"><strong>Footprint</strong> é a memória que a estrutura ocupa.
+       A conta é direta: uma linha por estado, 256 colunas por linha, alguns bytes por
+       célula.</p>
+    <div class="footprint-calc">
+        <div class="fp-fator">
+            <span class="fp-num">55.479</span>
+            <span class="fp-rot">estados<br>(uma linha cada)</span>
+        </div>
+        <div class="fp-op">&#215;</div>
+        <div class="fp-fator">
+            <span class="fp-num">256</span>
+            <span class="fp-rot">colunas por estado<br>uma por byte possível</span>
+        </div>
+        <div class="fp-op">&#215;</div>
+        <div class="fp-fator">
+            <span class="fp-num">&#8776; 4 B</span>
+            <span class="fp-rot">por célula<br>índice do próximo estado</span>
+        </div>
+        <div class="fp-op">=</div>
+        <div class="fp-fator fp-igual">
+            <span class="fp-num">55,23 MiB</span>
+            <span class="fp-rot">footprint do autômato Snort</span>
+        </div>
+    </div>
+    <p class="nota-tabela">Aproximação didática: a conta ignora as listas de saída de
+       cada estado, que respondem pelo restante.</p>
+    <div class="duas-colunas">
+        <div class="painel metrica">
+            <span class="rotulo">Snort · 4.188 padrões</span>
+            <span class="valor">55,23 MiB</span>
+            <span class="contexto">55.479 estados — ainda perto da L3 de 64 MiB</span>
+        </div>
+        <div class="painel metrica">
+            <span class="rotulo">Emerging Threats · 44.678 padrões</span>
+            <span class="valor valor-alerta">506,78 MiB</span>
+            <span class="contexto">508.896 estados — &#8776; 8&#215; toda a L3</span>
+        </div>
+    </div>
+    <div class="definicao fragment">
+        <p>É <strong>este footprint</strong> que, lá na motivação, excede a cache: mais
+           estados &#8594; mais linhas &#8594; a tabela deixa de caber na cache e passa a
+           ser lida da memória principal, mais lenta.</p>
+    </div>
+    <aside class="notes">
+        Fechar a Fundamentação respondendo à pergunta que ficou no ar: quanto ocupa
+        a tabela. Definir footprint em uma frase — a memória que a estrutura ocupa.
+        A conta é deliberadamente simples: linhas (estados) × 256 colunas × poucos
+        bytes por célula. Deixar claro que é aproximada (as listas de saída somam o
+        resto) para não prometer aritmética exata. Os dois dicionários dão a escala:
+        o Snort ainda ronda a L3; o Emerging Threats, com dez vezes mais estados,
+        chega a ~8× toda a L3. Avanço do fragmento: reconectar com a motivação — é
+        exatamente este footprint que estoura a cache e leva ao regime memory-bound;
+        e é sobre essa tabela grande e somente-leitura que a estratégia paralela vai
+        operar, na próxima seção.
     </aside>
 </section>
 
@@ -1257,6 +1602,21 @@
 <!-- ================================================================
      SECAO 4 — LACUNA DA LITERATURA  (secoes/secao-04.md)
      ================================================================ -->
+
+<section class="divisor centrado" data-background-color="#003A6B">
+    <span class="divisor-num">3</span>
+    <h2>Revisão da literatura</h2>
+    <p class="divisor-sub">o que já se fez e onde está a lacuna</p>
+    <div class="divisor-trilha">
+        <span>1 · Introdução</span>
+        <span>2 · Fundamentação</span>
+        <span class="atual">3 · Revisão</span>
+        <span>4 · Solução</span>
+        <span>5 · Metodologia</span>
+        <span>6 · Resultados</span>
+        <span>7 · Conclusão</span>
+    </div>
+</section>
 
 <section>
     <h2>Revisão sistemática da literatura</h2>
@@ -1349,6 +1709,21 @@
 <!-- ================================================================
      SECAO 5 — ESTRATEGIA ADOTADA  (secoes/secao-05.md)
      ================================================================ -->
+
+<section class="divisor centrado" data-background-color="#003A6B">
+    <span class="divisor-num">4</span>
+    <h2>Solução proposta</h2>
+    <p class="divisor-sub">dividir o texto, compartilhar o autômato</p>
+    <div class="divisor-trilha">
+        <span>1 · Introdução</span>
+        <span>2 · Fundamentação</span>
+        <span>3 · Revisão</span>
+        <span class="atual">4 · Solução</span>
+        <span>5 · Metodologia</span>
+        <span>6 · Resultados</span>
+        <span>7 · Conclusão</span>
+    </div>
+</section>
 
 <section>
     <h2>Texto dividido, autômato compartilhado</h2>
@@ -1598,6 +1973,21 @@
      SECAO 6 — METODOLOGIA EXPERIMENTAL  (secoes/secao-06.md)
      ================================================================ -->
 
+<section class="divisor centrado" data-background-color="#003A6B">
+    <span class="divisor-num">5</span>
+    <h2>Metodologia</h2>
+    <p class="divisor-sub">a plataforma e como se mede</p>
+    <div class="divisor-trilha">
+        <span>1 · Introdução</span>
+        <span>2 · Fundamentação</span>
+        <span>3 · Revisão</span>
+        <span>4 · Solução</span>
+        <span class="atual">5 · Metodologia</span>
+        <span>6 · Resultados</span>
+        <span>7 · Conclusão</span>
+    </div>
+</section>
+
 <section>
     <h2>Ambiente de medição: uma plataforma, uma campanha</h2>
     <p class="texto-sec">Todos os números principais do trabalho vêm de uma única
@@ -1805,6 +2195,26 @@
 <!-- ================================================================
      SECAO 7 — RESULTADOS PRINCIPAIS  (secoes/secao-07.md)
      ================================================================ -->
+
+<section class="divisor centrado" data-background-color="#003A6B">
+    <span class="divisor-num">6</span>
+    <h2>Resultados</h2>
+    <p class="divisor-sub">escalabilidade e o limite da memória</p>
+    <div class="divisor-trilha">
+        <span>1 · Introdução</span>
+        <span>2 · Fundamentação</span>
+        <span>3 · Revisão</span>
+        <span>4 · Solução</span>
+        <span>5 · Metodologia</span>
+        <span class="atual">6 · Resultados</span>
+        <span>7 · Conclusão</span>
+    </div>
+    <aside class="notes">
+        Marcador de seção: entra Resultados. Inclui os resultados principais na
+        plataforma homogênea e, ao final, os diagnósticos de balanceamento — tudo
+        sob a mesma parte da defesa.
+    </aside>
+</section>
 
 <section>
     <h2>O tamanho do autômato, sozinho, derruba o throughput</h2>
@@ -2291,6 +2701,21 @@
 <!-- ================================================================
      SECAO 9 — CONCLUSAO, LIMITACOES E FUTURO  (secoes/secao-09.md)
      ================================================================ -->
+
+<section class="divisor centrado" data-background-color="#003A6B">
+    <span class="divisor-num">7</span>
+    <h2>Conclusão</h2>
+    <p class="divisor-sub">achados, limitações e futuro</p>
+    <div class="divisor-trilha">
+        <span>1 · Introdução</span>
+        <span>2 · Fundamentação</span>
+        <span>3 · Revisão</span>
+        <span>4 · Solução</span>
+        <span>5 · Metodologia</span>
+        <span>6 · Resultados</span>
+        <span class="atual">7 · Conclusão</span>
+    </div>
+</section>
 
 <section>
     <h2>O limite é a memória, não a lógica de casamento</h2>
