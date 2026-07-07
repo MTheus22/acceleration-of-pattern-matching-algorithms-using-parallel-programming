@@ -140,6 +140,13 @@
             line-height: 1.4;
             margin-top: 0.6em;
         }
+        .painel .citacao {
+            display: block;
+            margin-top: 0.7em;
+            font-size: 0.58em;
+            line-height: 1.25;
+            color: var(--idp-texto-sec);
+        }
         .chip { display: grid; gap: 8px; justify-content: center; }
         .chip-1 { grid-template-columns: 236px; }
         .chip-16 { grid-template-columns: repeat(4, 53px); }
@@ -692,26 +699,25 @@
             border: 2px solid var(--idp-azul); box-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px var(--idp-azul);
         }
 
-        /* ---------- Secao 3: derivacao do footprint ---------- */
+        /* ---------- Secao 3: escala do footprint ---------- */
         .footprint-calc {
-            display: flex; align-items: center; justify-content: center; gap: 16px;
-            margin-top: 0.9em; flex-wrap: wrap;
+            display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px;
+            margin-top: 0.9em;
         }
         .footprint-calc .fp-fator {
             background: var(--idp-fundo); border: 1px solid var(--idp-divisor);
-            border-radius: 8px; padding: 12px 18px; text-align: center; min-width: 138px;
+            border-radius: 8px; padding: 16px 20px; text-align: center;
         }
         .footprint-calc .fp-fator .fp-num {
-            display: block; font-size: 1.05em; font-weight: 700; color: var(--idp-azul);
+            display: block; font-size: 1.18em; font-weight: 700; color: var(--idp-azul);
         }
         .footprint-calc .fp-fator .fp-rot {
             display: block; font-size: 0.54em; color: var(--idp-texto-sec);
             margin-top: 0.25em; line-height: 1.3;
         }
-        .footprint-calc .fp-op { font-size: 1.25em; font-weight: 700; color: var(--idp-texto-sec); }
-        .footprint-calc .fp-igual { background: var(--idp-azul); border-color: var(--idp-azul); }
-        .footprint-calc .fp-igual .fp-num { color: #FFFFFF; }
-        .footprint-calc .fp-igual .fp-rot { color: #DCEBFF; }
+        .footprint-calc .fp-total { background: var(--idp-azul); border-color: var(--idp-azul); }
+        .footprint-calc .fp-total .fp-num { color: #FFFFFF; }
+        .footprint-calc .fp-total .fp-rot { color: #DCEBFF; }
 
         /* ---------- Secao 3: comparacao de complexidade ---------- */
         .metrica .valor em { font-style: italic; }
@@ -744,8 +750,6 @@
 
 <section class="capa centrado" data-background-color="#003A6B">
     <h1>Acceleration of Pattern Matching Algorithms Using&nbsp;Parallel Programming</h1>
-    <p class="subtitulo">Paralelização do algoritmo Aho-Corasick<br>
-       em CPUs multi-core de memória compartilhada</p>
     <hr class="filete">
     <div class="autoria">
         <p><strong>Matheus Antônio de Castro de Barros</strong><br>
@@ -753,63 +757,41 @@
     </div>
     <p class="instituicao">Engenharia de Software · IDP — Instituto Brasileiro de Ensino,
        Desenvolvimento e Pesquisa</p>
-    <aside class="notes">
-        Cumprimentar a banca. Dizer que o trabalho investiga como acelerar o
-        casamento de múltiplos padrões em entradas grandes usando threads em
-        memória compartilhada. Não entrar em detalhes de implementação no
-        primeiro minuto.
-    </aside>
 </section>
 
 <section>
-    <h2>Caminho da defesa</h2>
-    <p class="texto-sec">Procurar milhares de padrões em gigabytes de texto — e medir
-       como distribuir essa tarefa entre os núcleos de um processador moderno.</p>
+    <h2>Roteiro</h2>
     <div class="roteiro roteiro-7">
         <div class="bloco">
             <span class="num">1</span>
             <span class="nome">Introdução</span>
-            <span class="desc">o descompasso: dados demais, núcleos ociosos</span>
         </div>
         <div class="bloco">
             <span class="num">2</span>
             <span class="nome">Fundamentação</span>
-            <span class="desc">o que é e como funciona o algoritmo estudado</span>
         </div>
         <div class="bloco">
             <span class="num">3</span>
             <span class="nome">Revisão da literatura</span>
-            <span class="desc">o que já se fez e onde está a lacuna</span>
         </div>
         <div class="bloco">
             <span class="num">4</span>
             <span class="nome">Solução proposta</span>
-            <span class="desc">dividir o texto, compartilhar o autômato</span>
         </div>
         <div class="bloco">
             <span class="num">5</span>
             <span class="nome">Metodologia</span>
-            <span class="desc">a plataforma e como se mede</span>
         </div>
         <div class="bloco">
             <span class="num">6</span>
             <span class="nome">Resultados</span>
-            <span class="desc">escalabilidade e o limite da memória</span>
         </div>
         <div class="bloco">
             <span class="num">7</span>
             <span class="nome">Conclusão</span>
-            <span class="desc">achados, limitações e futuro</span>
         </div>
     </div>
-    <aside class="notes">
-        Ainda sem citar o nome do algoritmo: primeiro o problema em linguagem
-        comum — procurar muitos padrões em muito texto. Avisar que o foco será
-        didático e que cada parte prepara a seguinte; quem não conhece o
-        algoritmo sai da Fundamentação pronto para entender a Solução. Os sete
-        blocos são as sete partes da defesa (as mesmas do TCC) e reaparecem como
-        marcadores numerados entre as seções, para o ouvinte se localizar.
-    </aside>
+    <p class="texto-sec">Estratégias de paralelismo para distribuir a tarefa de casamento de padrões entre os núcleos de um processador moderno.</p>
 </section>
 
 <!-- ================================================================
@@ -833,11 +815,6 @@
         <span>6 · Resultados</span>
         <span>7 · Conclusão</span>
     </div>
-    <aside class="notes">
-        Marcador de seção: anuncia a Introdução. A trilha embaixo mostra as sete
-        partes e onde estamos — voltar a ela a cada virada de seção ajuda a banca
-        e a plateia a se localizarem.
-    </aside>
 </section>
 
 <section class="s2-processadores">
@@ -868,92 +845,50 @@
             </div>
         </div>
     </div>
-    <aside class="notes">
-        Começar pelo cotidiano: volumes de dados em gigabytes são rotina em
-        segurança, e-mail, bioinformática. O hardware respondeu às barreiras
-        físicas com paralelismo: em vez de um núcleo mais rápido, muitos
-        núcleos. O exemplo de 16 núcleos / 32 threads é a própria máquina usada
-        no trabalho. Avanço do fragmento: software sequencial não aproveita
-        nada disso — um núcleo trabalha, quinze esperam. Esse é o descompasso
-        que motiva o trabalho.
-    </aside>
 </section>
 
 <section>
-    <h2>O mesmo problema em muitos domínios</h2>
+    <h2>O Casamento de padrões</h2>
     <p class="texto-sec">Detecção de intrusão, antivírus, bioinformática — a mesma forma:
        procurar <strong>milhares de padrões ao mesmo tempo</strong> em um texto de
        gigabytes.</p>
     <div class="fluxo">
         <div class="caixa">Texto de entrada
-            <span class="sub">fluxo de bytes — pode ter gigabytes</span>
         </div>
         <div class="seta">&#8594;</div>
         <div class="caixa caixa-central">Busca casada
-            <span class="sub">um dicionário de milhares de padrões, verificados de uma vez</span>
         </div>
         <div class="seta">&#8594;</div>
         <div class="caixa">Matches
-            <span class="sub">onde cada padrão ocorre no texto</span>
         </div>
     </div>
-    <p class="apps">Aplicações representativas: detecção de intrusão (Snort, Suricata) ·
-       classificação de malware (YARA) · bioinformática · filtros de conteúdo</p>
     <div class="regra-dependencia fragment">
         <p>O algoritmo clássico e eficiente para isso — o <strong>Aho-Corasick</strong>
-           (1975) — foi projetado para execução sequencial:
-           <strong>cada passo depende do anterior</strong>.</p>
+           (1975) — foi projetado para execução sequencial.</p>
     </div>
-    <aside class="notes">
-        Ancorar o problema antes de qualquer algoritmo, como faz a introdução do
-        TCC: domínios diferentes (segurança, antivírus, bioinformática) com a
-        mesma forma — muitos padrões, muito texto. O diagrama é conceitual: o
-        texto entra, a busca compara contra todo o dicionário de uma vez, saem os
-        matches. YARA, Snort e Suricata são aplicações, não o sujeito do trabalho.
-        Avanço do fragmento: só agora nomear o Aho-Corasick, dizendo que a
-        estrutura interna (o autômato) vem na próxima seção. O ponto que motiva
-        tudo: a leitura é sequencial e dependente — cada passo precisa do
-        anterior —, então ela se concentra em um núcleo só, enquanto os demais
-        ficam ociosos. Não dizer que o algoritmo é ruim; a eficiência dele é
-        justamente o que queremos preservar ao paralelizar.
-    </aside>
 </section>
 
 <section>
-    <h2>A ideia do trabalho: paralelizar o casamento de padrões</h2>
-    <p class="texto-sec">Muitos núcleos disponíveis, um algoritmo que usa só um —
-       a proposta: <strong>implementar e avaliar estratégias de paralelismo</strong>
-       em CPUs multi-core de memória compartilhada.</p>
+    <h2>Proposta</h2>
+    <p class="texto-sec"><strong>implementar e avaliar estratégias de paralelismo</strong>
+       em CPUs multi-core.</p>
     <div class="duas-colunas">
         <div class="painel">
             <span class="rotulo">Implementar</span>
-            <p class="painel-texto">Laboratório próprio em C com <strong>POSIX
-               Threads</strong> (o modelo padrão de threads em C) — sobre o
-               <strong>autômato não modificado</strong>, somente leitura.</p>
+            <p class="painel-texto">Utilizar <strong>POSIX
+               Threads</strong> sobre o
+               <strong>autômato não modificado</strong></p>
         </div>
         <div class="painel">
             <span class="rotulo">Avaliar</span>
             <p class="painel-texto">Medir <strong>speedup, throughput e eficiência</strong>
-               contra o sequencial — variando dicionário, corpus e threads.</p>
+               contra o sequencial.</p>
         </div>
     </div>
     <div class="definicao fragment">
-        <p>Restrição central: produzir <strong>exatamente os mesmos matches</strong>
-           que o sequencial — acelerar sem mudar o resultado.</p>
+        <p>Acelerar e produzir <strong>exatamente os mesmos matches</strong>
+           que o sequencial.</p>
     </div>
-    <aside class="notes">
-        Fechar a Introdução com o objetivo, como faz o TCC. O descompasso já está
-        montado: o hardware é paralelo (slide dos núcleos) e o algoritmo é sequencial e
-        dependente (slide anterior). A ideia decorre disso: implementar e avaliar
-        estratégias para paralelizar o casamento de múltiplos padrões em memória
-        compartilhada. Dois verbos, dois blocos: implementar um laboratório em C com
-        POSIX Threads, sobre o autômato intacto e somente leitura; avaliar com métricas
-        clássicas — speedup, throughput e eficiência — contra o sequencial, varrendo
-        dicionários, corpora e contagem de threads. Avanço do fragmento: a restrição de
-        corretude — o resultado paralelo tem de ser idêntico ao sequencial; sem isso,
-        acelerar não vale nada. Não detalhar aqui as estratégias (isso é a Solução) nem
-        citar nomes internos; o objetivo é anunciar o que o trabalho se propõe a fazer.
-    </aside>
 </section>
 
 <!-- ================================================================
@@ -973,27 +908,21 @@
         <span>6 · Resultados</span>
         <span>7 · Conclusão</span>
     </div>
-    <aside class="notes">
-        Marcador de seção: começa a Fundamentação. Aqui o algoritmo é construído
-        passo a passo — casamento de padrões, busca ingênua, trie, autômato,
-        varredura e tabela — para que a plateia saia pronta para a estratégia.
-    </aside>
 </section>
 
 <section>
     <h2>O problema do casamento de padrões</h2>
-    <p class="texto-sec">Dado um texto <strong>T</strong> e um padrão <strong>P</strong>, o
-       problema de <em>string matching</em> (casamento de padrões) consiste em encontrar
-       todas as posições em que P ocorre dentro de T.</p>
+    <p class="texto-sec">Dado um texto <strong>T</strong> e um padrão <strong>P</strong>, encontrar
+        todas as posições em que P ocorre dentro de T.</p>
     <svg class="automato" viewBox="0 0 1100 170" role="img"
-         aria-label="Texto ushers com o padrão her destacado nas posições 2 a 4">
+        aria-label="Texto ushers com o padrão her destacado nas posições 2 a 4">
         <text class="legenda-svg" x="370" y="18">T = "ushers"</text>
-        <rect class="fita-caixa" x="370" y="28" width="56" height="56" rx="6"/>
-        <rect class="fita-caixa" x="430" y="28" width="56" height="56" rx="6"/>
-        <rect class="destaque-fita" x="490" y="28" width="56" height="56" rx="6"/>
-        <rect class="destaque-fita" x="550" y="28" width="56" height="56" rx="6"/>
-        <rect class="destaque-fita" x="610" y="28" width="56" height="56" rx="6"/>
-        <rect class="fita-caixa" x="670" y="28" width="56" height="56" rx="6"/>
+        <rect class="fita-caixa" x="370" y="28" width="56" height="56" rx="6" />
+        <rect class="fita-caixa" x="430" y="28" width="56" height="56" rx="6" />
+        <rect class="destaque-fita" x="490" y="28" width="56" height="56" rx="6" />
+        <rect class="destaque-fita" x="550" y="28" width="56" height="56" rx="6" />
+        <rect class="destaque-fita" x="610" y="28" width="56" height="56" rx="6" />
+        <rect class="fita-caixa" x="670" y="28" width="56" height="56" rx="6" />
         <text class="fita-char" x="398" y="56">u</text>
         <text class="fita-char" x="458" y="56">s</text>
         <text class="fita-char" x="518" y="56">h</text>
@@ -1004,21 +933,13 @@
     </svg>
     <div class="definicao fragment">
         <p>Uma <strong>ocorrência</strong> é uma posição em que todos os caracteres de P
-           coincidem, um a um, com o trecho correspondente de T.</p>
+            coincidem com o trecho correspondente de T.</p>
     </div>
-    <aside class="notes">
-        Este é o problema clássico de casamento de padrões (string matching),
-        independente de Aho-Corasick: dado um texto e um padrão, encontrar onde o
-        padrão ocorre. O exemplo "her" em "ushers" vai reaparecer nos próximos
-        slides — guardar essa imagem ajuda a conectar tudo o que vem a seguir. Por
-        enquanto, um único padrão; o próximo passo é ver como resolver isso, e
-        depois o que muda com milhares de padrões.
-    </aside>
 </section>
 
 <section>
-    <h2>Abordagem ingênua: deslizar e comparar</h2>
-    <p class="texto-sec">A forma mais direta de resolver o problema: tentar o padrão em
+    <h2>Abordagem ingênua</h2>
+    <p class="texto-sec">Tentar o padrão em
        cada posição do texto, comparando caractere a caractere.</p>
     <svg class="automato" viewBox="0 0 1100 170" role="img"
          aria-label="Três tentativas de alinhamento do padrão her sobre o texto ushers">
@@ -1059,51 +980,32 @@
         <p class="passo fragment current-visible" data-fragment-index="2">
             <strong>Posição 2.</strong> "her" vs. "her": todos os caracteres coincidem — ocorrência!</p>
         <p class="passo passo-final fragment" data-fragment-index="3">
-            No pior caso, quase todo par posição-caractere é revisitado — o custo cresce
+            O custo cresce
             com o tamanho do texto e do padrão.</p>
     </div>
-    <aside class="notes">
-        Mesma tape do slide anterior. Avançar os três fragmentos narrando pouco:
-        posição 0 e 1 erram no primeiro caractere e descartam rápido; posição 2
-        confirma "her". Fechar com o custo no pior caso — não usar notação O(),
-        apenas "quase todo par é revisitado". Gancho: o que acontece quando, em vez
-        de um padrão, são milhares?
-    </aside>
 </section>
 
 <section>
     <h2>De um padrão para milhares</h2>
-    <p class="texto-sec">Aplicações reais raramente buscam um único padrão — precisam
-       checar um texto contra um conjunto com milhares de padrões ao mesmo tempo.</p>
+    <p class="texto-sec">Aplicações reais precisam buscar milhares de padrões ao mesmo tempo.</p>
     <div class="duas-colunas">
         <div class="painel">
             <span class="rotulo">Busca ingênua repetida</span>
-            <p class="painel-texto">Repetir a busca de padrão único uma vez para cada
+            <p class="painel-texto">Repetir para cada
                um dos <strong>k</strong> padrões — k passadas pelo texto inteiro.</p>
         </div>
         <div class="painel">
-            <span class="rotulo">Autômato combinado</span>
+            <span class="rotulo">Aho-Corasick</span>
             <p class="painel-texto">Compilar todos os k padrões em <strong>um único
                autômato</strong> — uma única passada reconhece todos eles.</p>
         </div>
     </div>
-    <div class="definicao fragment">
-        <p>A diferença entre k passadas e 1 passada torna o problema tratável —
-           é esse autômato combinado que o Aho-Corasick constrói.</p>
-    </div>
-    <aside class="notes">
-        Ponte entre o problema de um padrão só (slides anteriores) e o Aho-Corasick.
-        Repetir a busca ingênua k vezes escala mal; a alternativa é compilar todos os
-        padrões em uma única estrutura e varrer o texto uma vez só. Fecho: para
-        chegar nesse autômato combinado, o primeiro passo é entender a estrutura que
-        ele usa como base — a trie, no próximo slide.
-    </aside>
 </section>
 
 <section>
-    <h2>O que é uma trie?</h2>
-    <p class="texto-sec">A base do autômato combinado é a <strong>trie</strong> (árvore de
-       prefixos): uma estrutura que guarda um conjunto de strings compartilhando os
+    <h2>Tries</h2>
+    <p class="texto-sec"><strong>Trie</strong> (árvore de
+       prefixos) é uma estrutura que armazena strings compartilhando os
        prefixos em comum.</p>
     <p class="chips-padroes">Palavras do exemplo:
         <code>car</code><code>cat</code><code>cart</code><code>dog</code></p>
@@ -1153,24 +1055,12 @@
            custa apenas o seu próprio comprimento, não o total de palavras armazenadas
            na trie.</p>
     </div>
-    <aside class="notes">
-        Mesmo estilo visual do autômato de Aho-Corasick, mas sem links de falha e sem
-        estados de saída ainda — só a trie pura. "raiz", "c" e "d" não são palavras
-        completas, por isso não têm círculo duplo; car, cat, cart e dog são. O ponto
-        central: "ca" é percorrido uma vez só e serve de base para car, cat e cart —
-        prefixos compartilhados economizam espaço e trabalho. Fecho: antes de virar
-        autômato, vale ver como essa trie realmente vive na memória — é o próximo
-        slide; depois vêm os dois ingredientes que a transformam em Aho-Corasick.
-    </aside>
 </section>
 
 <section>
-    <h2>Como a trie vive na memória: o byte é o índice</h2>
-    <p class="texto-sec">Cada estado guarda um <strong>arranjo de 256 posições</strong> — uma
-       por byte possível. O caractere não é armazenado em lugar nenhum: ele é a
+    <h2>Ponteiros representam caracteres</h2>
+    <p class="texto-sec">O caractere não é armazenado: ele é a
        <strong>própria posição</strong> no arranjo.</p>
-    <p class="chips-padroes">Exemplo: o estado <code>ca</code> da trie anterior — seus
-        filhos são <code>car</code> e <code>cat</code>.</p>
     <svg class="automato" viewBox="0 0 1120 320" role="img"
          aria-label="O estado ca como um arranjo contíguo de 256 posições, da posição 0 à 255, indexado pelo byte; a posição 114 ('r') aponta para o estado car e a 116 ('t') para o estado cat, as demais estão vazias">
         <defs>
@@ -1184,8 +1074,6 @@
         <circle class="estado" cx="80" cy="140" r="30"/>
         <text class="nome-estado" x="80" y="140">ca</text>
         <line class="aresta" x1="113" y1="140" x2="143" y2="140" marker-end="url(#seta-arr)"/>
-
-        <text class="legenda-svg" x="492" y="34" text-anchor="middle">arranjo do estado "ca" — a posição é o valor do byte</text>
 
         <!-- índice de cada posição: caractere em cima, valor do byte embaixo -->
         <text class="letra letra-inativa" x="335" y="76">'a'</text>
@@ -1234,22 +1122,12 @@
         <text class="legenda-svg" x="856" y="164">estados; as 254 restantes</text>
         <text class="legenda-svg" x="856" y="190">ficam vazias (&#8709;)</text>
     </svg>
+
     <div class="definicao fragment">
         <p>Seguir um byte é um <strong>acesso direto por índice</strong> — sem comparar
-           caractere a caractere. O preço: cada estado reserva as 256 posições, mesmo
-           as vazias — é daí que virá o tamanho da tabela.</p>
+           caractere a caractere. Cada estado reserva as 256 posições, mesmo
+           as vazias.</p>
     </div>
-    <aside class="notes">
-        Este slide responde a uma dúvida comum: como o autômato "sabe" para onde ir
-        com um byte. A resposta é que o byte não é comparado — ele indexa. Cada
-        estado é um vetor de 256 entradas; o valor do byte (por exemplo 'r' = 114) é
-        a posição, e a entrada guarda o ponteiro para o próximo estado. Mostrar que
-        'r' leva a "car" e 't' leva a "cat", enquanto quase todas as outras 254
-        posições estão vazias. Duas consequências que preparam os próximos slides:
-        a busca por byte é O(1), um acesso direto; e reservar 256 posições por
-        estado, mesmo vazias, é exatamente o que faz a tabela crescer — gancho para
-        o footprint. Não é preciso citar tamanho de ponteiro aqui.
-    </aside>
 </section>
 
 <section>
@@ -1332,21 +1210,6 @@
         <span><span class="am-terminal"></span>estado de saída: um padrão termina aqui</span>
         <span><span class="amostra am-saida"></span>link de saída: outro padrão que também termina aqui</span>
     </div>
-    <aside class="notes">
-        Ponto que costuma ser confundido — separar três acréscimos distintos, não
-        dois. Base: a trie dos quatro padrões ("he", "her", "hers" compartilham o
-        prefixo "he"). Acréscimo 1, links de falha (tracejado cinza): dizem PARA
-        ONDE IR quando não há transição — saltam para o estado do maior sufixo já
-        lido; estados sem seta tracejada voltam à raiz. Acréscimo 2, estados de
-        saída (círculo duplo): dizem QUE PADRÃO termina naquele estado — cada um
-        emite o seu. Acréscimo 3, link de saída (verde contínuo): diz QUE MAIS
-        EMITIR — em "she", além de "she", também sai "he", porque "he" é um sufixo
-        que termina ali. Enfatizar a diferença: o link de FALHA controla a
-        navegação; o link de SAÍDA controla o que se reporta. Neste exemplo os dois
-        de "she" apontam para o mesmo estado "he", mas são conceitos distintos —
-        por isso duas setas separadas. É a trie somada a esses três acréscimos que
-        forma o autômato de Aho-Corasick.
-    </aside>
 </section>
 
 <section>
@@ -1497,68 +1360,68 @@
             e avança para "her". <strong>O texto não é relido.</strong></p>
         <p class="passo fragment current-visible" data-fragment-index="6">
             <strong>Lê "s".</strong> Chega ao estado final "hers": quarto match, em uma única passada.</p>
-        <p class="passo passo-final fragment" data-fragment-index="7">
-            <strong>Cada transição depende do estado anterior</strong> — a varredura é uma
-            cadeia sequencial de dependências, byte a byte.</p>
     </div>
-    <aside class="notes">
-        Deixar a sequência substituir a explicação longa: avançar os passos
-        narrando pouco. Pontos a falar: no passo do "e", o círculo duplo
-        significa estado de saída — "she" sai dali e a seta verde (o link de
-        saída do slide anterior) emite também "he". No passo do
-        "r", enfatizar que o link de falha reaproveita o que já foi lido: o
-        texto nunca volta atrás. Fecho: essa cadeia estado-a-estado é
-        exatamente o que impede dividir a travessia entre núcleos — gancho
-        para a estratégia de paralelização.
-    </aside>
 </section>
 
 <section>
-    <h2>Complexidade: a busca deixa de depender do número de padrões</h2>
-    <p class="texto-sec">Na notação O — que descreve <strong>como o custo cresce</strong>
-       com o tamanho da entrada — as três abordagens vistas nesta seção se separam:</p>
+    <h2>Complexidade</h2>
     <div class="tres-colunas">
         <div class="painel metrica">
             <span class="rotulo">Busca ingênua — 1 padrão</span>
             <span class="valor">O(<em>n</em> · <em>m</em>)</span>
-            <span class="contexto">desliza e compara: no pior caso, revisita
-                quase todo par posição &#215; caractere</span>
         </div>
         <div class="painel metrica">
             <span class="rotulo">Busca repetida — k padrões</span>
-            <span class="valor valor-alerta">O(<em>k</em> · <em>n</em>)</span>
-            <span class="contexto">k travessias do texto inteiro — mesmo que cada
-                busca individual seja linear</span>
+            <span class="valor valor-alerta">O(<em>k</em> · <em>L</em>)</span>
         </div>
         <div class="painel metrica">
             <span class="rotulo">Aho-Corasick — k padrões</span>
-            <span class="valor valor-sucesso">O(<em>n</em> + <em>z</em>)</span>
-            <span class="contexto">uma única travessia: menos de 2n transições,
-                mais a emissão das z ocorrências</span>
+            <span class="valor valor-sucesso">O(<em>L</em> + <em>n</em> + <em>z</em>)</span>
         </div>
     </div>
     <p class="nota-tabela"><em>n</em> = tamanho do texto &#183; <em>m</em> = tamanho do
-       padrão &#183; <em>k</em> = número de padrões &#183; <em>z</em> = total de
+       padrão &#183; <em>k</em> = número de padrões &#183; <em>L</em> = soma dos comprimentos dos padrões &#183; <em>z</em> = total de
        ocorrências encontradas</p>
     <div class="definicao fragment">
         <p>O número de padrões sai do custo da busca: é pago <strong>uma única
-           vez</strong>, na construção do autômato — e no <strong>tamanho da
-           estrutura</strong> que garante esse custo: a tabela a seguir.</p>
+           vez</strong>, na construção do autômato</p>
     </div>
-    <aside class="notes">
-        Fechar a conta da Fundamentação. Explicar a notação em uma frase: O descreve
-        como o custo cresce quando a entrada cresce, ignorando constantes. Ler os
-        painéis retomando os slides anteriores: a ingênua é o deslizar-e-comparar —
-        no pior caso quase todo par é revisitado (n·m); a repetida é o "de um padrão
-        para milhares" — k travessias, mesmo que cada uma fosse ótima; o Aho-Corasick
-        é a varredura que acabamos de ver — o texto é atravessado uma única vez.
-        Detalhe para a arguição: com os links de falha o total de transições fica
-        abaixo de 2n (custo amortizado); na forma de tabela pré-computada, exatamente
-        um acesso por byte — é o próximo slide. O termo z é o custo inevitável de
-        reportar as ocorrências. Avanço do fragmento: o k não desaparece — migra para
-        a construção O(L), paga uma vez, e para o tamanho da estrutura em memória;
-        gancho direto para a tabela de transições e o footprint.
-    </aside>
+</section>
+
+<section>
+    <h2>Medições</h2>
+    <div class="tres-colunas">
+        <div class="painel metrica">
+            <span class="rotulo">Throughput</span>
+            <div class="formula">
+                <span class="frac"><span class="num">bytes varridos</span>
+                    <span class="den">tempo de busca</span></span>
+            </div>
+            <span class="contexto">volume processado por segundo</span>
+        </div>
+        <div class="painel metrica">
+            <span class="rotulo">Speedup</span>
+            <div class="formula">
+                <span class="var">S</span><span class="igual">=</span>
+                <span class="frac"><span class="num">tempo sequencial</span>
+                    <span class="den">tempo com <em>T</em> threads</span></span>
+            </div>
+            <span class="contexto">quantas vezes mais rápido</span>
+        </div>
+        <div class="painel metrica">
+            <span class="rotulo">Eficiência</span>
+            <div class="formula">
+                <span class="var">E</span><span class="igual">=</span>
+                <span class="frac"><span class="num"><em>S</em></span>
+                    <span class="den"><em>T</em></span></span>
+            </div>
+            <span class="contexto">fração do ideal linear</span>
+        </div>
+    </div>
+    <div class="definicao fragment">
+        <p>Mais adiante, esses números comparam estratégias, dicionários,
+           corpora e contagens de threads contra o mesmo sequencial.</p>
+    </div>
 </section>
 
 <section>
@@ -1580,118 +1443,6 @@
             <tr class="linha-reticencias"><th>&#8942;</th><td colspan="6">uma linha por estado &#8212; 256 colunas, uma por byte poss&#237;vel</td></tr>
         </tbody>
     </table>
-    <div class="definicao fragment">
-        <p>Ótima para um núcleo — um acesso por byte. O preço é o tamanho: 256 colunas
-           por estado, memória que cresce com o dicionário. <strong>Quanto?</strong>
-           É o próximo slide.</p>
-    </div>
-    <aside class="notes">
-        A célula destacada é o passo do "r" do slide anterior: na tabela
-        compilada, sair de "she" com "r" leva direto a "her" — a cascata de
-        falhas foi pré-calculada. Por isso a busca custa um acesso à tabela por
-        byte. Amarrar com o slide do arranjo: cada linha desta tabela é aquele
-        vetor de 256 posições, agora empilhado, um por estado. Avanço do
-        fragmento: adiar o número — o preço em memória (o footprint) é derivado no
-        próximo slide, e é ele que vai reencontrar a cache da motivação.
-    </aside>
-</section>
-
-<section>
-    <h2>De onde vem o footprint do autômato</h2>
-    <p class="texto-sec"><strong>Footprint</strong> é a memória que a estrutura ocupa.
-       A conta é direta: uma linha por estado, 256 colunas por linha, alguns bytes por
-       célula.</p>
-    <div class="footprint-calc">
-        <div class="fp-fator">
-            <span class="fp-num">55.479</span>
-            <span class="fp-rot">estados<br>(uma linha cada)</span>
-        </div>
-        <div class="fp-op">&#215;</div>
-        <div class="fp-fator">
-            <span class="fp-num">256</span>
-            <span class="fp-rot">colunas por estado<br>uma por byte possível</span>
-        </div>
-        <div class="fp-op">&#215;</div>
-        <div class="fp-fator">
-            <span class="fp-num">&#8776; 4 B</span>
-            <span class="fp-rot">por célula<br>índice do próximo estado</span>
-        </div>
-        <div class="fp-op">=</div>
-        <div class="fp-fator fp-igual">
-            <span class="fp-num">55,23 MiB</span>
-            <span class="fp-rot">footprint do autômato Snort</span>
-        </div>
-    </div>
-    <p class="nota-tabela">Aproximação didática: a conta ignora as listas de saída de
-       cada estado, que respondem pelo restante.</p>
-    <div class="duas-colunas">
-        <div class="painel metrica">
-            <span class="rotulo">Snort · 4.188 padrões</span>
-            <span class="valor">55,23 MiB</span>
-            <span class="contexto">55.479 estados — ainda perto da L3 de 64 MiB</span>
-        </div>
-        <div class="painel metrica">
-            <span class="rotulo">Emerging Threats · 44.678 padrões</span>
-            <span class="valor valor-alerta">506,78 MiB</span>
-            <span class="contexto">508.896 estados — &#8776; 8&#215; toda a L3</span>
-        </div>
-    </div>
-    <div class="definicao fragment">
-        <p>O Snort ainda ronda a cache; o Emerging Threats, com dez vezes mais estados,
-           <strong>não tem como caber</strong> — e um autômato que não cabe muda o
-           desempenho, como veremos a seguir.</p>
-    </div>
-    <aside class="notes">
-        Responder à pergunta que ficou no ar: quanto ocupa a tabela. Definir footprint
-        em uma frase — a memória que a estrutura ocupa. A conta é deliberadamente
-        simples: linhas (estados) × 256 colunas × poucos bytes por célula. Deixar claro
-        que é aproximada (as listas de saída somam o resto) para não prometer aritmética
-        exata. Os dois dicionários dão a escala: o Snort ainda ronda a L3; o Emerging
-        Threats, com dez vezes mais estados, chega a ~8× toda a L3. Avanço do fragmento:
-        o Snort ainda cabe perto da cache, o Emerging Threats não cabe de jeito nenhum —
-        gancho direto para o próximo slide, que mostra o que a memória faz com um
-        autômato que não cabe: o regime memory-bound.
-    </aside>
-</section>
-
-<section>
-    <h2>O problema muda quando o autômato cresce</h2>
-    <p class="texto-sec"><strong>A cada byte, o núcleo consulta a tabela</strong> em busca
-       do próximo estado — e onde a tabela mora depende do seu tamanho.</p>
-    <div class="mem-lanes">
-        <div class="mem-lane mem-lane-rapida">
-            <div class="lane-nucleo">Núcleo pede<br>o próximo estado</div>
-            <div class="lane-seta">&#8594;</div>
-            <div class="lane-destino"><span class="onde">Autômato pequeno (Snort, 55 MiB):</span>
-                cabe na cache do próprio chip, a poucos ciclos do núcleo.</div>
-            <div class="lane-veredito">resposta<br>imediata</div>
-        </div>
-        <div class="mem-lane mem-lane-lenta">
-            <div class="lane-nucleo">Núcleo pede<br>o próximo estado</div>
-            <div class="lane-seta">&#8594;</div>
-            <div class="lane-destino"><span class="onde">Autômato grande (Emerging Threats, 507 MiB):</span>
-                a maior parte mora na memória principal (DRAM), muito mais lenta.</div>
-            <div class="lane-veredito">o núcleo<br>espera</div>
-        </div>
-    </div>
-    <div class="definicao fragment">
-        <p>Regime <strong>memory-bound</strong> (limitado pela memória): o tempo passa
-           a ser ditado pela <strong>espera pelas consultas</strong>, não pelo cálculo
-           do próximo estado.</p>
-    </div>
-    <aside class="notes">
-        Agora o memory-bound cai no lugar certo: a plateia já viu a tabela e o footprint.
-        Recap em uma frase — o autômato vai de dezenas a centenas de MiB, e a varredura é
-        uma consulta à tabela por byte. As duas pistas: com o Snort (55 MiB) a tabela
-        ainda cabe perto do núcleo, na cache — consulta imediata; com o Emerging Threats
-        (507 MiB, ~8× a L3) a maior parte mora na DRAM, e o núcleo fica esperando o dado.
-        Avanço do fragmento: definir memory-bound — a CPU espera dados, não calcula.
-        Cuidado na fala: no TCC esse gargalo é inferência a partir de footprint,
-        throughput e curvas de escala, sem medição direta de cache misses; formular como
-        "consistente com os dados". Fecho da Fundamentação e gancho para a Revisão: é
-        justamente esse regime — autômato que escapa da cache — que a literatura observa
-        de passagem, mas raramente estuda de frente.
-    </aside>
 </section>
 
 <!-- ================================================================
@@ -1745,58 +1496,37 @@
                 <span class="sub">revisados em detalhe</span></span>
         </div>
     </div>
-    <aside class="notes">
-        Dizer que o trabalho não nasceu de tentativa aleatória: uma revisão
-        sistemática delimitou o eixo. Quatro bases, janela de dez anos, busca em
-        maio de 2025. Avançar os fragmentos narrando o funil: 196 registros
-        recuperados; 24 estudos únicos depois de deduplicação e triagem contra os
-        critérios de inclusão e exclusão; 10 primários revisados em detalhe. Não
-        gastar tempo em strings de busca nem revisar papers um a um — o que
-        importa é a síntese do próximo slide.
-    </aside>
 </section>
 
 <section>
-    <h2>A literatura aponta o eixo e a lacuna</h2>
-    <p class="texto-sec">Lidos em conjunto, os dez estudos primários convergem em
-       três pontos.</p>
+    <h2>Abordagens</h2>
     <div class="tres-colunas">
         <div class="painel">
-            <span class="rotulo">Eixo natural</span>
-            <p class="painel-texto">Dividir o <strong>texto</strong> entre os
-               núcleos, com sobreposição nas fronteiras, é o caminho
-               recorrente de paralelização em CPU.</p>
+            <span class="rotulo">Eixo similar</span>
+            <p class="painel-texto">Em CPU, há precedentes de paralelismo por
+               dados: dividir a <strong>entrada</strong> entre workers e tratar
+               fronteiras.
+               <span class="citacao">Qu et al. (MPI); Tovarňák (REtrie)</span></p>
         </div>
         <div class="painel">
-            <span class="rotulo">Limite recorrente</span>
-            <p class="painel-texto">O throughput satura quando o autômato
-               <strong>escapa da cache</strong> — observado em vários estudos,
-               mas nunca como objeto central.</p>
+            <span class="rotulo">Limitação</span>
+            <p class="painel-texto">O throughput fica ligado à
+               <strong>localidade da tabela</strong>: quando o autômato deixa a
+               cache, os ganhos tendem a saturar.
+               <span class="citacao">Lee &amp; Yang (FHBM); Sitaridi et al. (SIMD)</span></p>
         </div>
         <div class="painel">
             <span class="rotulo">Eixos complementares</span>
             <p class="painel-texto">GPU, FPGA, SIMD e autômatos modificados
-               atacam <strong>outros eixos</strong> do problema — complementares,
-               não concorrentes.</p>
+               atacam <strong>outros eixos</strong>.
+               <span class="citacao">Thambawita et al. (GPU); Deyannis et al. (FPGA)</span></p>
         </div>
     </div>
     <div class="faixa-lacuna fragment">
         <p><strong>Lacuna:</strong> <strong>POSIX Threads</strong> em memória
-           compartilhada, <strong>autômato não modificado</strong>, no regime que
-           <strong>excede a cache</strong> — nenhum estudo entrega essa combinação.</p>
+           compartilhada, <strong>autômato não modificado</strong>, avaliando escalabilidade quando
+           <strong>o autômato é maior que a cache</strong>.</p>
     </div>
-    <aside class="notes">
-        Não revisar os papers um a um: apresentar a síntese. Primeiro bloco:
-        quem paraleliza em CPU divide o texto entre os núcleos e protege as
-        fronteiras com uma margem — exatamente a estratégia que vem a seguir.
-        Segundo bloco: o limite de cache aparece repetidamente como observação
-        lateral, nunca como o regime estudado em si. Terceiro bloco: GPU, FPGA,
-        SIMD e autômatos modificados são eixos diferentes do problema, não
-        competidores diretos desta abordagem. Avanço do fragmento: a lacuna é a
-        combinação — POSIX Threads portátil, memória compartilhada, autômato
-        intacto e somente leitura, no regime além da cache, com equivalência
-        exata de matches ao sequencial. É essa combinação que o trabalho mede.
-    </aside>
 </section>
 
 <!-- ================================================================
@@ -1847,17 +1577,6 @@
            as threads o percorrem <strong>sem locks</strong> no caminho quente, e cada
            uma escreve seus matches em uma <strong>lista privada</strong>.</p>
     </div>
-    <aside class="notes">
-        Esta é a resposta direta à lacuna do slide anterior: paralelizar sobre o
-        autômato não modificado. Três fases: construir (sequencial — a construção
-        é paga uma vez), buscar (a fase paralela, onde está o custo dominante) e
-        mesclar (determinística, para a saída ser comparável ao sequencial).
-        Avanço do fragmento: tudo deriva de uma decisão estrutural — depois de
-        construído, o autômato é imutável. Sem escrita compartilhada não há
-        necessidade de locks no caminho quente, e cada thread acumula matches em
-        lista própria. Não mexer no autômato também facilita validar corretude:
-        a referência sequencial continua válida byte a byte.
-    </aside>
 </section>
 
 <section>
@@ -1939,17 +1658,6 @@
             Cada match pertence ao segmento onde <strong>termina</strong>: nenhuma perda,
             nenhuma duplicata — <strong>equivalência exata</strong> com o sequencial.</p>
     </div>
-    <aside class="notes">
-        Este é o único ponto delicado de corretude da estratégia. Passo 0: um corte
-        seco perderia qualquer padrão que cruza a fronteira. Passo 1: a margem é
-        pequena e determinada pelo maior padrão do dicionário — L máximo menos um
-        byte; menor que isso perde matches, maior só repete trabalho. Passo 2: o
-        aquecimento garante que a thread chega à própria fronteira no mesmo estado
-        da varredura sequencial. Fecho: a regra de posse — o match é de quem contém
-        a posição final — elimina duplicatas sem comunicação entre threads. Na
-        validação, o conjunto de matches é comparado exatamente contra o
-        sequencial.
-    </aside>
 </section>
 
 <section>
@@ -2002,29 +1710,10 @@
         <text class="bloco-plano-t" x="995" y="130">6</text>
         <text class="legenda-svg" x="830" y="322" text-anchor="middle">uma leitura sequencial curta, que o hardware antecipa sozinho</text>
     </svg>
-    <div class="definicao fragment">
-        <p>Mudança <strong>apenas de layout</strong>: o conjunto de matches reportado é
-           exatamente o mesmo — e o ganho é herdado pelo sequencial e por todas as
-           variantes paralelas.</p>
-    </div>
-    <aside class="notes">
-        Contexto: com dicionários grandes, os nós dessas cadeias de ponteiros
-        ficam espalhados por uma estrutura maior que a cache — cada emissão
-        disputa a memória com o tráfego quente das transições. A proposta:
-        durante a construção, os padrões de cada estado são copiados para um
-        único vetor contíguo; o estado guarda apenas o início e a contagem.
-        Emitir vira uma leitura sequencial curta, que o prefetcher do hardware
-        resolve bem. Avanço do fragmento: é uma mudança pura de layout — mesmos
-        matches, sem alterar a lógica do autômato — e vale tanto para o
-        sequencial quanto para as variantes paralelas. Os números do ganho ficam
-        para os resultados.
-    </aside>
 </section>
 
 <section>
     <h2>Dois eixos de particionamento: texto e dicionário</h2>
-    <p class="texto-sec">O arcabouço avalia as estratégias como eixos independentes —
-       inclusive a alternativa de dividir o dicionário, medida como contraste.</p>
     <div class="duas-colunas">
         <div class="painel">
             <span class="rotulo">Eixo principal — dividir o texto</span>
@@ -2042,22 +1731,64 @@
                inteiro</strong> — tráfego de leitura &#215; K.</p>
         </div>
     </div>
-    <div class="definicao fragment">
-        <p>Se a localidade dos sub-autômatos menores compensa o tráfego repetido é uma
-           pergunta <strong>empírica</strong> — respondida no capítulo de resultados.</p>
+</section>
+
+<section>
+    <h2>Footprint do autômato</h2>
+    <p class="texto-sec">Na solução, todas as threads consultam o mesmo autômato
+       compartilhado.</p>
+    <div class="footprint-calc">
+        <div class="fp-fator">
+            <span class="fp-num">4.188</span>
+            <span class="fp-rot">padrões Snort</span>
+        </div>
+        <div class="fp-fator">
+            <span class="fp-num">55.479</span>
+            <span class="fp-rot">estados do autômato</span>
+        </div>
+        <div class="fp-fator fp-total">
+            <span class="fp-num">55,23 MiB</span>
+            <span class="fp-rot">tamanho total</span>
+        </div>
     </div>
-    <aside class="notes">
-        Fechar a estratégia mostrando o espaço avaliado. No eixo do texto, o
-        despacho dinâmico não deve ser vendido como sempre mais rápido: ele foi
-        adotado pela combinação de throughput nos cenários canônicos com robustez
-        contra as duas fontes de desequilíbrio — núcleos desiguais e conteúdo
-        desigual. O particionamento do dicionário entra como contraste
-        metodológico: a motivação dele é localidade (sub-autômatos menores), não
-        paralelismo adicional, porque cada shard precisa reler o texto inteiro.
-        Avanço do fragmento: deixar a pergunta em aberto de propósito — ela cria
-        a expectativa para o resultado negativo do sharding nos resultados. Não
-        citar nomes internos de variantes.
-    </aside>
+    <div class="duas-colunas">
+        <div class="painel metrica">
+            <span class="rotulo">Snort</span>
+            <span class="valor">55,23 MiB</span>
+            <span class="contexto">4.188 padrões · 55.479 estados</span>
+        </div>
+        <div class="painel metrica">
+            <span class="rotulo">Emerging Threats</span>
+            <span class="valor valor-alerta">506,78 MiB</span>
+            <span class="contexto">44.678 padrões · 508.896 estados</span>
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2>Impacto na velocidade</h2>
+    <p class="texto-sec"><strong>A cada byte, o núcleo consulta a tabela</strong> em busca
+       do próximo estado.</p>
+    <div class="mem-lanes">
+        <div class="mem-lane mem-lane-rapida">
+            <div class="lane-nucleo">Núcleo pede<br>o próximo estado</div>
+            <div class="lane-seta">&#8594;</div>
+            <div class="lane-destino"><span class="onde">Autômato cabe na cache:</span>
+                núcleo consulta a cache.</div>
+            <div class="lane-veredito">resposta<br>mais rápida</div>
+        </div>
+        <div class="mem-lane mem-lane-lenta">
+            <div class="lane-nucleo">Núcleo pede<br>o próximo estado</div>
+            <div class="lane-seta">&#8594;</div>
+            <div class="lane-destino"><span class="onde">Autômato não cabe na cache:</span>
+                núcleo consulta a memória principal.</div>
+            <div class="lane-veredito">resposta<br>mais lenta</div>
+        </div>
+    </div>
+    <div class="definicao fragment">
+        <p>Quando o autômato cresce, o limite deixa de ser só cálculo e passa a ser
+           também <strong>espera por memória</strong>.</p>
+    </div>
 </section>
 
 <!-- ================================================================
@@ -2084,9 +1815,7 @@
 </section>
 
 <section>
-    <h2>Ambiente de medição: uma plataforma, uma campanha</h2>
-    <p class="texto-sec">Todos os números principais do trabalho vêm de uma única
-       máquina, medidos em uma única campanha experimental de ponta a ponta.</p>
+    <h2>Ambiente de medição</h2>
     <div class="duas-colunas">
         <div class="painel">
             <span class="rotulo">Processador — AMD Ryzen 9 9950X</span>
@@ -2115,26 +1844,13 @@
     </div>
     <div class="definicao">
         <p>Laboratório próprio em C · GCC · POSIX Threads · Linux — frequência
-           fixada em modo de desempenho durante toda a campanha.</p>
+           fixada em modo de desempenho.</p>
     </div>
     <div class="regra-dependencia fragment">
         <p>Um segundo processador, de núcleos híbridos, aparece <strong>apenas nos
            diagnósticos de desbalanceamento</strong> ao final dos resultados —
            nenhum número principal vem dele.</p>
     </div>
-    <aside class="notes">
-        Explicar por que esta máquina é a plataforma principal: os 16 núcleos são
-        idênticos e atingem a mesma frequência, então não há assimetria de
-        desempenho entre threads — uma partição uniforme do texto já nasce
-        balanceada. Todos os números de destaque (speedup, throughput, eficiência)
-        vêm desta máquina, na mesma campanha. A frequência fixa em modo de
-        desempenho garante números de regime permanente, não de rajada. Detalhe da
-        L3 que prepara os resultados: são duas fatias de 32 MiB, uma por complexo
-        de núcleos — um autômato maior que 32 MiB já não fica residente na fatia
-        de um complexo. Avanço do fragmento: separar o i5 com clareza — ele é
-        diagnóstico de núcleos híbridos, não plataforma de medição; zero números
-        principais vêm dele.
-    </aside>
 </section>
 
 <section>
@@ -2211,129 +1927,28 @@
             </div>
         </div>
     </div>
-    <aside class="notes">
-        Os dicionários vêm de conjuntos de regras públicos de detecção de
-        intrusão. Os dois menores são regimes de contraste: delimitam o ponto em
-        que o autômato deixa de caber confortavelmente na cache. O Snort completo
-        é o alvo principal (footprint moderado); o Emerging Threats é o estressor
-        mais agressivo — cerca de oito vezes toda a L3, não cabe nem em uma fatia.
-        Avanço do fragmento, corpora: Enron é o corpus canônico (e-mails reais,
-        densidade média de matches); SimpleWiki isola o efeito do conteúdo no
-        experimento entre corpora; o Enron 8x amortiza custos fixos e reduz ruído
-        nas curvas de escala. O par uniforme/concentrado é sintético e controlado:
-        mesmos blocos, mesmos bytes, mesmo total de matches — só muda a posição
-        dos blocos densos; serve exclusivamente ao diagnóstico de conteúdo
-        desbalanceado. Se perguntarem: o gerador verifica a paridade de bytes e
-        de matches entre os dois arquivos.
-    </aside>
-</section>
-
-<section>
-    <h2>Como se mede: três métricas sobre o mesmo baseline</h2>
-    <p class="texto-sec">Toda medição compara a <strong>fase de busca</strong> paralela
-       com o mesmo algoritmo sequencial, na mesma máquina — três métricas resumem
-       o resultado.</p>
-    <div class="tres-colunas">
-        <div class="painel metrica">
-            <span class="rotulo">Throughput</span>
-            <div class="formula">
-                <span class="frac"><span class="num">bytes varridos</span>
-                    <span class="den">tempo de busca</span></span>
-            </div>
-            <span class="contexto">volume processado por segundo —
-                reportado em MB/s</span>
-        </div>
-        <div class="painel metrica">
-            <span class="rotulo">Speedup</span>
-            <div class="formula">
-                <span class="var">S</span><span class="igual">=</span>
-                <span class="frac"><span class="num">tempo sequencial</span>
-                    <span class="den">tempo com <em>T</em> threads</span></span>
-            </div>
-            <span class="contexto">quantas vezes mais rápido —
-                o ideal linear é S&nbsp;=&nbsp;T</span>
-        </div>
-        <div class="painel metrica">
-            <span class="rotulo">Eficiência</span>
-            <div class="formula">
-                <span class="var">E</span><span class="igual">=</span>
-                <span class="frac"><span class="num"><em>S</em></span>
-                    <span class="den"><em>T</em></span></span>
-            </div>
-            <span class="contexto">fração do ideal que se concretiza —
-                100% = escala perfeita</span>
-        </div>
-    </div>
-    <div class="definicao fragment">
-        <p>Teto teórico — <strong>Lei de Amdahl</strong>: qualquer fração serial limita
-           o speedup, por mais threads que se somem. Nos resultados, um teto mais
-           concreto — a <strong>memória compartilhada</strong> — aparecerá antes.</p>
-    </div>
-    <aside class="notes">
-        Definir a régua antes dos resultados, para os números seguintes não
-        precisarem de parênteses. Throughput é a métrica absoluta: bytes do corpus
-        divididos pelo tempo da fase de busca. Speedup é relativa: tempo sequencial
-        sobre tempo paralelo, sempre na mesma máquina. Eficiência normaliza o
-        speedup pelo número de threads — exemplo para ancorar (e que vai reaparecer):
-        tempo 22,91 vezes menor com 32 threads é eficiência de 71,6%. Avanço do
-        fragmento: a Lei de Amdahl dá o teto clássico — qualquer fração serial
-        limita o speedup mesmo com threads infinitas (no limite, 1/s). Aqui a fase
-        paralela (a busca) domina o tempo total, então o teto de Amdahl fica alto;
-        o que os resultados vão mostrar é um teto mais baixo e mais concreto — a
-        banda de memória compartilhada no regime memory-bound, formulado como
-        inferência consistente com os dados. Se a banca puxar escalabilidade fraca,
-        citar Gustafson-Barsis como a perspectiva complementar tratada no TCC.
-    </aside>
 </section>
 
 <section>
     <h2>Como os números foram protegidos</h2>
-    <p class="texto-sec">Desenho dirigido por hipóteses falseáveis: cada experimento
-       isola <strong>um único eixo de projeto</strong> — inclusive nas hipóteses que
-       os resultados vão rejeitar.</p>
     <div class="tres-colunas">
         <div class="painel painel-selo">
             <span class="rotulo">Baseline sequencial</span>
-            <p class="painel-texto">Métricas sempre <strong>relativas ao
-               sequencial</strong>, na mesma máquina — busca medida
-               <strong>separada da construção</strong>.</p>
+            <p class="painel-texto">Sempre contra o mesmo sequencial, na mesma máquina.</p>
         </div>
         <div class="painel painel-selo">
             <span class="rotulo">Medição controlada</span>
-            <p class="painel-texto"><strong>Aquecimento descartado</strong>, iterações
-               temporizadas — variação interna <strong>abaixo de 2%</strong>.</p>
+            <p class="painel-texto"><strong>Aquecimento descartado</strong> e iterações temporizadas.</p>
         </div>
         <div class="painel painel-selo">
             <span class="rotulo">Corretude verificada</span>
-            <p class="painel-texto"><strong>Equivalência exata</strong> de matches até
-               64 threads — e <strong>sem data races</strong> (condições de corrida),
-               verificado por sanitizers.</p>
+            <p class="painel-texto"><strong>Matches idênticos</strong> e sanitizers sem data races.</p>
         </div>
     </div>
     <div class="regra-dependencia fragment">
-        <p>Limitação reconhecida: campanha canônica em <strong>varredura única</strong>,
-           sem réplicas independentes — só o diagnóstico de desbalanceamento usa
-           <strong>mediana de 5 execuções independentes</strong>.</p>
+        <p>Limitação: sweep canônico único; diagnóstico de desbalanceamento com
+           <strong>mediana de 5 execuções</strong>.</p>
     </div>
-    <aside class="notes">
-        Primeiro o desenho: cada hipótese é falseável, isola um eixo de projeto e
-        mapeia para um experimento e uma seção de resultados — os resultados
-        negativos que vêm adiante eram hipóteses testadas, não acidentes.
-        Selo 1: toda métrica relativa é contra o baseline sequencial na mesma
-        máquina; o tempo de construção é medido à parte, e o pipeline completo
-        aparece como resultado end-to-end. Selo 2: cada ponto tem aquecimento
-        descartado e iterações temporizadas; o coeficiente de variação interno
-        fica tipicamente abaixo de 1%, nunca acima de ~2%. Selo 3, para a
-        arguição, são três níveis: conjunto exato de matches contra o sequencial
-        na suíte automatizada; digest MD5 do fluxo canonicalizado de matches,
-        idêntico até 64 threads (o dobro das 32 de hardware); e ThreadSanitizer
-        sem data races. No slide basta "equivalência exata + sanitizers".
-        Avanço do fragmento, com honestidade e sem tom defensivo: não afirmar
-        validação estatística entre execuções independentes — a campanha é uma
-        varredura única; a exceção que fortalece é o diagnóstico de skew, com
-        mediana de cinco invocações independentes. Réplicas com mediana e IQR
-        ficam como fortalecimento futuro.
-    </aside>
 </section>
 
 <!-- ================================================================
