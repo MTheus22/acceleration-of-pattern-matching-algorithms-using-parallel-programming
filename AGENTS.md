@@ -119,6 +119,11 @@ Other custom commands relevant for editing:
   author's required style; do not "tidy" adjacent `\cite`s into one.
 - New references must have a corresponding entry in
   `referencias.bib`. Do not invent citation keys without adding them.
+- Expand acronyms at their first rendered use, e.g., "simultaneous
+  multithreading (SMT)"; LaTeX comments do not count.
+- For algorithmic function/table names that must visibly differ from prose
+  (`goto`, `fail`, `output`), prefer a math identifier macro such as
+  `\acfunc{...}` (`\mathtt`) over `\operatorname`, and inspect the PDF.
 - Do not commit `main.pdf` changes that you produced just to "see how
   it looks" — only commit when the content changes warrant it. The
   PDF is regeneratable.
@@ -154,26 +159,34 @@ When addressing advisor/reviewer comments from an annotated PDF:
 
 ## Presentation (`apresentacao/`)
 
-The defense slides live in `apresentacao/`, authored in **Marp**
-(Markdown → HTML/PDF). Source of truth: `apresentacao/slides.md`.
-`slides.html` and `slides.pdf` are **generated** — never edit them by
-hand; regenerate after editing `slides.md`.
+The defense material lives in `apresentacao/`. The current planning source is
+split between `apresentacao/base-apresentacao.md` (global narrative, numbers,
+storyboard, and cross-section guidance) and
+`apresentacao/secoes/secao-*.md` (one focused brief per presentation section).
+It is supported by `apresentacao/AGENTS.md` and `apresentacao/DESIGN.md`.
+Future work should derive two artifacts from that base: `apresentacao/slides.md`
+(deck source) and scripts or notes under `apresentacao/roteiro/` (spoken
+rehearsal script).
+
+For presentation work, read `apresentacao/AGENTS.md` first. The thesis text in
+`partes/*.tex` is the source of truth for narrative and numbers; old decks,
+generated PDFs/HTML, and historical i5-centered assets are not authoritative.
+If the deck is implemented as HTML/reveal.js instead of Marp, use the workspace
+skill `.agents/skills/html-slides` for slide-implementation patterns.
 
 Marp is **not** on `PATH`; it runs via `npx` and the package is
 `@marp-team/marp-cli` (v4.4.0), *not* `marp`. PDF export needs Chrome.
 
 ```bash
 cd apresentacao
-python3 gerar_grafico_svg.py                                   # if data changed → figuras/speedup_results.svg
-npx @marp-team/marp-cli@4.4.0 slides.md -o slides.html --allow-local-files
+npx @marp-team/marp-cli@4.4.0 slides.md -o build/slides.html --allow-local-files
 CHROME_PATH=/usr/bin/google-chrome \
-  npx @marp-team/marp-cli@4.4.0 slides.md -o slides.pdf --allow-local-files
+  npx @marp-team/marp-cli@4.4.0 slides.md -o build/slides.pdf --allow-local-files
 ```
 
-`--allow-local-files` is required because slides reference images in
-`figuras/`. Per-slide citations use the Marp directive
-`<!-- _footer: "Author (year); ..." -->`. Any number in the slides must
-match the thesis (and thus `sweep.db`). See `apresentacao/README.md`.
+`--allow-local-files` is required because slides reference local images.
+Generated HTML/PDF files belong in `apresentacao/build/` and must not be edited
+by hand.
 
 ## Helpers in this repo
 
@@ -201,10 +214,14 @@ this versioned LaTeX source.
 
 - `../parallel-aho-corasick` — C implementation, datasets, benchmarks.
   Its own `AGENTS.md` is the source of truth for the empirical side.
-  Body numbers come from the **i5-1235U** sweep (`runs/i5/sweep.db`);
-  a portability run on a **Ryzen 9 9950X** (`runs/workstation/sweep.db`,
-  analysis in `docs/workstation-analysis.md`) generalizes — but does not
-  replace — those results.
+  **The canonical machine is the Ryzen 9 9950X workstation** (homogeneous
+  16C/32T); the canonical collection is `runs/workstation_2026-06-30/`
+  (analysis in its `RESULTS.md`; champion `pthread_dynamic_flat`, snort 22.91× /
+  et_32 18.96× @ T=32). The **thesis body already cites these workstation
+  numbers** (migration completed 2026-07-02 via epic-03); the **i5-1235U sweep**
+  (`runs/i5/sweep.db`, 2026-05-29) is used **only** in the P/E (hybrid-core)
+  section. Any headline number must match the canonical `sweep.db`; interim runs
+  were removed (see `runs/MANIFEST.md`).
 - `../tcc_notes` — Obsidian vault with the systematic-review notes
   and related-work summaries. Use `sections/notes/` for consolidated
   raw material and `sections/text/` for prose drafts before touching

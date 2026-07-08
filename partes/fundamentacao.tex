@@ -1,7 +1,7 @@
 % A subseção "Fundamentos do Paralelismo" começa aqui.
 \subsecao{Fundamentals of Parallelism}
 
-Parallelism in computing refers to the simultaneous execution of multiple tasks or parts of the same task, with the primary goal of reducing a program's total execution time. It is crucial to distinguish parallelism from concurrency. Concurrency occurs when multiple tasks are in progress at a given time, but may not be executing simultaneously. A single-core system can exhibit concurrency by rapidly switching between the execution of different tasks, simulating parallelism through preemption. True parallelism, on the other hand, requires hardware with multiple processing units \cite{Butenhof1997}.
+Parallelism in computing refers to the simultaneous execution of multiple tasks or parts of the same task, with the primary goal of reducing a program's total execution time. It is crucial to distinguish parallelism from concurrency. Concurrency occurs when multiple tasks are in progress at a given time, but may not be executing simultaneously. A single-core system can exhibit concurrency by rapidly switching between the execution of different tasks, simulating parallelism through preemption. True parallelism, on the other hand, requires hardware with multiple processing units \cite{Butenhof1997}. This distinction is fundamental to the present work, which exploits true hardware parallelism through multiple CPU cores. % review: comment 007 (issue #102)
 
 \subsubsecao{Parallel Computing Architectures}
 
@@ -47,46 +47,36 @@ A workload is \textit{compute-bound} when its execution time is dominated by ari
 
 Parallelism can intensify memory pressure. When multiple threads simultaneously traverse different regions of a large, read-only automaton, the combined working set exceeds the LLC, raising the aggregate cache-miss rate for all threads. Two additional hazards arise when threads share writable data. \textit{Cache coherence} protocols (such as MESI) ensure that modifications made by one core become visible to all others; they introduce inter-core invalidation traffic whenever a shared cache line is written \cite{Pacheco2011}. \textit{False sharing} occurs when two threads write to logically independent variables that happen to reside on the same cache line, causing coherence invalidations despite the absence of a true data dependency. False sharing can be avoided by aligning per-thread accumulators to cache-line boundaries.
 
-Non-Uniform Memory Access (NUMA) architectures differentiate memory latency based on which socket owns the physical memory being accessed. Although the experimental platform used in this work—the Intel i5-1235U—employs a single-socket Uniform Memory Access (UMA) topology, NUMA is an important consideration in multi-socket server deployments where memory-bound workloads exhibit significant latency asymmetry \cite{Grama2003}.
+Non-Uniform Memory Access (NUMA) architectures differentiate memory latency based on which socket owns the physical memory being accessed. The experimental platform used for the main measurements in this work is a single-socket Uniform Memory Access (UMA) machine; nevertheless, NUMA is an important consideration in multi-socket server deployments where memory-bound workloads exhibit significant latency asymmetry \cite{Grama2003}.
 
+\newpage
 \subsubsecao{Hybrid P/E-Core Architectures}
 
 Modern consumer and mobile processors have introduced a \textit{hybrid}
-microarchitecture that integrates two distinct core types on a single die.
-Intel's Alder Lake platform---which includes the Intel Core i5-1235U used as
-the experimental platform in this work---pairs two high-performance cores
-(P-cores), each supporting Hyper-Threading (two logical hardware threads per
-core), with eight energy-efficient cores (E-cores), each providing a single
-hardware thread, for a total of twelve logical hardware threads
-\cite{IntelI51235U}.
+microarchitecture that integrates two distinct core types on a single die. A
+typical Alder Lake mobile processor pairs high-performance cores (P-cores), often
+with simultaneous multithreading, with energy-efficient cores (E-cores) that
+prioritize throughput per watt.
 
 P-cores feature wider out-of-order execution pipelines and higher operating
 frequencies, delivering greater per-thread throughput at higher power
 consumption. E-cores are physically smaller and optimized for
 throughput-per-watt rather than single-thread latency; they operate at lower
-frequencies. A memory-bound workload therefore achieves significantly higher
-per-thread throughput on a P-core than on an E-core.
-
-Because the experimental platform of this work happens to be such a hybrid
-design, this heterogeneity is a property of the measurement environment rather
-than an object of study, but it does have a predictable effect on the observed
-scaling curves. At low thread counts, threads are preferentially dispatched to
-P-core hardware threads; speedup rises steeply because each additional thread
-contributes high-throughput capacity. Once all P-core hardware threads are
-occupied---four on the i5-1235U---additional threads are scheduled onto E-cores,
-which contribute lower per-thread throughput. The cumulative scaling curve
-therefore exhibits a \textit{knee} near the P-core saturation point, beyond which
-the marginal speedup per additional thread declines. This is noted here only so
-that the scaling curves reported in the Results and Discussion chapter can be
-read in context; it also motivates the load-balancing strategy introduced in the
-proposed solution, whose purpose is to keep the heterogeneous cores from idling
-at the synchronization barrier.
+frequencies. When equal-size work units are assigned across both core types, the
+faster cores can finish early and wait at a synchronization barrier while slower
+cores complete their share. This is the architectural reason for the
+frequency-weighted and dynamic load-balancing strategies introduced later: they
+are mechanisms for reducing stragglers on heterogeneous processors, not a change
+to the Aho--Corasick matching semantics. The main experimental campaign of this
+thesis is conducted on homogeneous cores; the hybrid-core discussion appears only
+as a diagnostic comparison in the results chapter.
 % Fim da subseção "Fundamentos do Paralelismo".
 
 % A subseção "Parallel Performance Evaluation Metrics" começa aqui.
 \subsecao{Parallel Performance Evaluation Metrics}
 
-Performance evaluation is fundamental to understanding the effectiveness of a parallel program. The following metrics compare the execution time of the parallel program with its equivalent sequential counterpart \cite{Grama2003}.
+Performance evaluation is fundamental to understanding the effectiveness of a parallel program. The following metrics compare the execution time of the parallel program with its equivalent sequential counterpart \cite{Grama2003}. % review: comment 008 (issue #103) — relate the metrics to the experiments
+The evaluation of parallel algorithms requires objective metrics that quantify both performance gains and resource utilization; accordingly, the metrics presented in this section provide the basis for evaluating the implementation proposed in this work and for interpreting the experimental results reported in Chapters 5 and 6.
 
 \subsubsecao{Execution Time and Overhead}
 
@@ -98,6 +88,8 @@ The performance of a program is measured by its execution time. For parallel pro
 
 Ideally, \texttt{Tp} is expected to be substantially less than \texttt{Ts}. However, parallel execution introduces \textit{overhead}. This encompasses the time spent by processors on tasks that do not directly contribute to problem resolution, including communication, synchronization, load balance, and other computations inherent to the parallel implementation \cite{Grama2003}.
 
+
+\newpage
 \subsubsecao{Speedup}
 
 Speedup (\texttt{S}) measures the performance gain achieved through parallel execution relative to sequential execution, as shown in Eq.~\ref{eq:speedup}. It is defined as the ratio of sequential execution time to parallel execution time:
@@ -112,12 +104,11 @@ An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law~\cite{Amdahl1
 \end{equation}
 In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by $\frac{1}{s}$. This implies that even a small sequential fraction (small \texttt{s}) can severely limit the total speedup, regardless of the number of processors available. Figure~\ref{fig:speedup-plot} illustrates the theoretical speedup according to Amdahl's Law compared to ideal speedup for a given sequential fraction. 
 
+% review: comments 009 (issue #104) caption below figure, 010 (issue #105) no source line for author-made figures
 \begin{figure}[H]
   \centering
-  \caption{Ideal vs.\ Amdahl’s theoretical speedup ($s=0.1$).}
   \includegraphics[width=0.7\linewidth]{speedup-plot.png}
-  \par\smallskip
-  {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+  \caption{Ideal vs.\ Amdahl’s theoretical speedup ($s=0.1$).}
   \label{fig:speedup-plot}
 \end{figure}
 
@@ -160,17 +151,6 @@ This section explains the Trie data structure, detailing its defining properties
 
 A Trie---also known as a prefix tree---is a specialized tree-like data structure optimized for the efficient storage and retrieval of a dynamic set of strings. Edward Fredkin introduced the term ``trie'' in 1960, highlighting its primary application in information retrieval \cite{Fredkin1960}, \cite{Knuth1998}. Figure~\ref{fig:trie-example} illustrates an example of a trie storing a set of words.
 
-% Figura da Trie
-\begin{figure}[H]
-  \centering % Centraliza a figura
-  \caption{Example trie storing \{``car'', ``cat'', ``cart'', ``dog''\}. Nodes marking the end of a complete word are shown with a double circle.} % Legenda da figura
-    \includegraphics[width=0.4\textwidth]{trie.pdf}
-    \par\smallskip
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
-  \label{fig:trie-example} % Rótulo para referenciar a figura
-\end{figure}
-% Fim da Figura da Trie
-
 Tries store strings by organizing nodes so that each path from the root to a node represents a unique prefix. In a standard $R$-way trie, each node can branch to $R$ children, where $R$ denotes the size of the character alphabet. The existence of a parent-child edge highlights two key aspects of tries:
 \begin{itemize}
     \item The edge's position (index) within the parent node's array of $R$ possible child links directly corresponds to a unique character in the alphabet. For instance, index 0 might correspond to `a', index 1 to `b', and so on, according to a predefined mapping.
@@ -188,6 +168,16 @@ Tries support several primary operations, including search, insertion, and delet
     \item \textbf{Deletion}: deleting a key first involves locating the node corresponding to the key's final character and removing its end-of-word marker. If there are no child links (meaning it is not a prefix for any other key), it can be deleted. This deletion may proceed recursively: when a child node is removed, if its parent has no other children and the parent node is not marking a key, the parent node becomes redundant and can be deleted. This process continues up to the root as long as parent nodes become redundant.
 \end{itemize}
 
+% Figura da Trie
+% review: comments 009 (issue #104) caption below figure, 010 (issue #105) no source line for author-made figures
+\begin{figure}[H]
+  \centering % Centraliza a figura
+    \includegraphics[width=0.4\textwidth]{trie.pdf}
+  \caption{Example trie storing \{``car'', ``cat'', ``cart'', ``dog''\}. Nodes marking the end of a complete word are shown with a double circle.} % Legenda da figura
+  \label{fig:trie-example} % Rótulo para referenciar a figura
+\end{figure}
+% Fim da Figura da Trie
+
 \subsubsecao{Advantages and Performance Characteristics}
 
 Tries provide distinct advantages for operations on string collections, as detailed below.
@@ -199,9 +189,8 @@ Tries provide distinct advantages for operations on string collections, as detai
 
 While prefix sharing can save space, the overall space complexity of $R$-way tries requires careful consideration. Each node in an $R$-way trie conceptually provides $R$ potential links. If the alphabet size $R$ is large (e.g., for Unicode) and the actual branching factor at most nodes is low (a sparse trie), allocating space for all $R$ links per node can lead to considerable memory consumption due to numerous unused (null) links \cite{Knuth1998}, \cite{SedgewickWayne2011}.
 
-\subsubsecao{Foundational Role in String Processing}
-
-The trie data structure is a cornerstone for numerous advanced string processing algorithms. Critically for this work, the Aho-Corasick algorithm, engineered for the efficient, simultaneous matching of multiple patterns within a text, employs a trie---constructed from the set of patterns (the dictionary)---as its initial structural framework \cite{AhoCorasick1975}. A thorough grasp of trie principles is thus essential for developing and analyzing the Aho-Corasick algorithm.
+% review: comment 011 (issue #131) — closing wrap-up demoted from a subsection to a reinforcing paragraph
+In summary, the trie data structure is a cornerstone for numerous advanced string processing algorithms. Critically for this work, the Aho-Corasick algorithm, engineered for the efficient, simultaneous matching of multiple patterns within a text, employs a trie---constructed from the set of patterns (the dictionary)---as its initial structural framework \cite{AhoCorasick1975}. A thorough grasp of the trie principles presented above is thus essential for developing and analyzing the Aho-Corasick algorithm.
 
 % Fim da subseção "Tries".
 
@@ -229,6 +218,25 @@ Algorithms that address the string matching problem are generally categorized ba
 
 The naive or brute-force algorithm represents the most straightforward method for exact pattern matching. Its operation involves iteratively aligning the pattern $P$ with the text $T$ at every possible starting position $i$ (from 0 to $N-M$). For each alignment, $P$ is compared character by character, from left to right, against the corresponding substring. If all characters match, an occurrence is reported \cite{Gusfield1997}.
 
+% review: issue #132, comment 012
+\begin{algorithm}[H]
+\caption{Naive exact string matching}
+\label{alg:naive-matching}
+\begin{algorithmic}[1]
+\Require text $T[0 \dots N-1]$, pattern $P[0 \dots M-1]$
+\Ensure all starting positions where $P$ occurs in $T$
+\For{$i \gets 0$ \textbf{to} $N - M$}
+    \State $j \gets 0$
+    \While{$j < M$ \textbf{and} $T[i+j] = P[j]$}
+        \State $j \gets j + 1$
+    \EndWhile
+    \If{$j = M$}
+        \State report occurrence at position $i$
+    \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
 Following this comparison (whether a match or a mismatch), the algorithm shifts $P$ one position to the right relative to $T$ and proceeds to the next alignment. Despite its simplicity, Knuth, Morris, and Pratt (1977) state that this method can be highly inefficient \cite{KnuthMorrisPratt1977}. Its worst-case time complexity is $O(M \cdot N)$ character comparisons. This occurs, for example, when searching for a pattern like $P = a^n b$ within a text $T = a^{2n} b$, where many partial matches occur. To address these limitations, more advanced pattern matching algorithms include a preprocessing phase for the pattern $P$. This phase extracts structural information about $P$ that is then utilized during the search, enabling larger shifts of the pattern relative to the text and thus reducing the total number of character comparisons.
 
 \vspace{1em}
@@ -249,17 +257,20 @@ Its efficiency primarily stems from two rules (or heuristics):
 \end{itemize}
 These two rules combined enable the Boyer-Moore algorithm to skip larger portions of the text, significantly reducing the total number of comparisons.
 
+\newpage
 \subsubsecao{The Need for Specialized Multi-Pattern Algorithms}
 
 When the task involves searching for multiple patterns simultaneously from a set $K = \{P_1, P_2, \dots, P_k\}$ within a text $T$, simply applying a single-pattern matching algorithm for each $P_i$ independently proves highly inefficient. This ``iterative'' approach requires scanning the text multiple times, resulting in a total time complexity that can be approximately $O(k \cdot (N+M_{\text{avg}}))$ or worse, where $M_{\text{avg}}$ is the average pattern length \cite{AhoCorasick1975}.
 
 To efficiently handle applications that require simultaneous searches for a large number of patterns, specialized algorithms are essential. These methods usually preprocess the entire set of patterns to create a unified data structure, which enables a single, efficient pass over the text to identify all occurrences of any pattern within the set \cite{Gusfield1997}.
 
-The theoretical framework of \textit{finite automata} provides a robust and elegant solution to this problem. By constructing a single \textit{finite automaton} (FA) that can recognize all patterns in a given set, the text can be processed in a single continuous scan. Each character read from the text triggers a \textit{state transition} within the FA. When the FA reaches an \textit{accepting state}---a state explicitly designed to indicate the successful recognition of one or more patterns---the algorithm reports an occurrence. Algorithms like the Aho-Corasick algorithm exemplify this approach; they automate the construction of such a \textit{pattern-matching machine}, typically based on a trie structure augmented with specialized \textit{failure transitions} \cite{AhoCorasick1975}. This automaton-based paradigm forms the critical foundation for efficiently solving multi-pattern matching problems.
+The theoretical framework of \textit{finite automata} provides a robust and elegant solution to this problem. By constructing a single \textit{finite automaton} (FA) that can recognize all patterns in a given set, the text can be processed in a single continuous scan. Each character read from the text triggers a \textit{state transition} within the FA. When the FA reaches an \textit{accepting state}---a state explicitly designed to indicate the successful recognition of one or more patterns---the algorithm reports an occurrence. Algorithms like the Aho-Corasick algorithm exemplify this approach; they automate the construction of such a \textit{pattern-matching machine}, typically based on a trie structure augmented with specialized \textit{failure transitions} \cite{AhoCorasick1975}. This automaton-based paradigm forms the critical foundation for efficiently solving multi-pattern matching problems. The Aho-Corasick algorithm, which instantiates this paradigm and is the focus of this work, is examined in detail in the next section. % review: comment 013 (issue #133) — forward reference to the next section
 
 % Fim da seção/subseção "Pattern Matching".
 
 % Conteúdo da subseção "The Aho-Corasick Algorithm"
+
+\providecommand{\acfunc}[1]{\ensuremath{\mathtt{#1}}}
 
 \subsecao{The Aho-Corasick Algorithm}
 
@@ -275,56 +286,59 @@ The Aho-Corasick algorithm overcomes this by building one \textit{finite automat
 
 Aho-Corasick has two main phases: (i) construction, which builds the automaton, and (ii) search, which scans the text. The automaton has three key tables, built in the following order:
 
+% review: issue #168, comment 2
 \begin{itemize}
-    \item \textbf{Keyword Trie (goto)}: a \textit{keyword trie} is first constructed from the pattern set $K=\{ P_1, P_2, \dots, P_k \}$. Each node represents a state, and each edge corresponds to a character transition. A path from the root to any state $s$ spells a prefix of one or more keywords. Formally, the \textit{goto function} $\operatorname{goto}(s, a)$ returns the next state $s'$ when an edge labelled $a$ exists; otherwise the transition fails. Undefined transitions from the root are assigned back to the root, i.e., $\operatorname{goto}(0, a) = 0$, creating implicit self-loops for every alphabet symbol;
-    \item \textbf{Failure Function (f)}: for any state $s$ (except the root), $\operatorname{f}(s)$ is the state $s'$ whose path label is the longest proper suffix of the path label of $s$ that is also a prefix of some keyword. On a mismatch, the automaton follows $\operatorname{f}(s)$ and resumes matching without consuming the current character. The \textit{failure function} is computed level-by-level (breadth-first) after the goto table is complete;
-    \item \textbf{The Output Function}: the \textit{output function}, $\operatorname{output}(s)$, identifies all keywords that end at state $s$. For a given state $s$, $\operatorname{output}(s)$ is the set of all patterns $P_i$ in $K$ such that the string corresponding to the path to $s$ is $P_i$. To ensure all matches are reported, including those that are suffixes of other patterns, $\operatorname{output}(s)$ is augmented during the failure function computation: if $\operatorname{f}(s) = s'$, then $\operatorname{output}(s) \leftarrow \operatorname{output}(s) \cup \operatorname{output}(\operatorname{f}(s))$. This incremental union lets each state report every pattern that ends either at that state or at any suffix state reached through its failure chain.
+    \item \textbf{Keyword trie (\acfunc{goto}):} a \textit{keyword trie} is first constructed from the pattern set $K=\{ P_1, P_2, \dots, P_k \}$. Each node represents a state, and each edge corresponds to a character transition. A path from the root to any state $s$ spells a prefix of one or more keywords. Formally, the transition function $\acfunc{goto}(s, a)$ returns the next state $s'$ when an edge labelled $a$ exists; otherwise the transition fails. Undefined transitions from the root are assigned back to the root, i.e., $\acfunc{goto}(0, a) = 0$, creating implicit self-loops for every alphabet symbol;
+    \item \textbf{Failure function (\acfunc{fail}):} for any state $s$ (except the root), $\acfunc{fail}(s)$ is the state $s'$ whose path label is the longest proper suffix of the path label of $s$ that is also a prefix of some keyword. On a mismatch, the automaton follows $\acfunc{fail}(s)$ and resumes matching without consuming the current character. The failure function \acfunc{fail} is computed level-by-level (breadth-first) after the \acfunc{goto} table is complete;
+    \item \textbf{Output function (\acfunc{output}):} the output function $\acfunc{output}(s)$ identifies all keywords that end at state $s$. For a given state $s$, $\acfunc{output}(s)$ is the set of all patterns $P_i$ in $K$ such that the string corresponding to the path to $s$ is $P_i$. To ensure all matches are reported, including those that are suffixes of other patterns, $\acfunc{output}(s)$ is augmented during the computation of \acfunc{fail}: if $\acfunc{fail}(s) = s'$, then $\acfunc{output}(s) \leftarrow \acfunc{output}(s) \cup \acfunc{output}(\acfunc{fail}(s))$. This incremental union lets each state report every pattern that ends either at that state or at any suffix state reached through its failure chain.
 \end{itemize}
 
-The complete automaton, combining the goto transitions, failure links, and output match sets, is illustrated in Figure~\ref{fig:ac_automaton} for the pattern set $K=\{\text{"he"}, \text{"she"}, \text{"hers"}\}$.
+The complete automaton, combining the \acfunc{goto} transitions, \acfunc{fail} links, and \acfunc{output} match sets, is illustrated in Figure~\ref{fig:ac_automaton} for the pattern set $K=\{\text{"he"}, \text{"she"}, \text{"hers"}\}$.
 
+% review: comments 009 (issue #104) caption below figure, 010/017 (issues #105/#135) no source line for author-made figures
 \begin{figure}[H]
 \centering
-\caption{Complete Aho–Corasick automaton for the pattern set $K=\{\text{"he"}, \text{"she"}, \text{"hers"}\}$, showing solid blue goto transitions, dashed red failure links, double-circled accepting states, and their corresponding output match sets.}
 \includegraphics[width=1.0\linewidth]{ac_automaton.pdf}
-\par\smallskip
-{\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
+\caption{Complete Aho–Corasick automaton for the pattern set $K=\{\text{"he"}, \text{"she"}, \text{"hers"}\}$, showing solid blue \acfunc{goto} transitions, dashed red \acfunc{fail} links, double-circled accepting states, and their corresponding \acfunc{output} match sets.}
 \label{fig:ac_automaton}
 \end{figure}
 
 
+% review: comment 015 (issue #107) — worked example of how the automaton in Figure 3 operates
+To make the interaction of the three tables concrete, consider scanning the text \texttt{ushers} with the automaton of Figure~\ref{fig:ac_automaton}. The leading \texttt{u} has no outgoing edge from the root, so the implicit self-loop keeps the machine at state~$0$. The substring \texttt{she} then drives three successive \acfunc{goto} transitions to the accepting state for \texttt{she}; because the failure link of that state points to the state for \texttt{he}---the longest proper suffix of \texttt{she} that is also a keyword prefix---its augmented \acfunc{output} set reports both \texttt{she} and \texttt{he} at that position. The next character \texttt{r} has no \acfunc{goto} edge from the \texttt{she} state, so the automaton follows the failure link to the \texttt{he} state and continues along \texttt{her} and then \texttt{hers}, emitting \texttt{hers} when the final \texttt{s} is consumed. A single left-to-right pass thus reports every occurrence---\texttt{he}, \texttt{she}, and \texttt{hers}---without ever rescanning a character.
+
 \subsubsecao{Matching Phase}
 
-Once the Aho–Corasick automaton has been built, it scans the text $T = a_1 a_2 \dots a_n$ in one left-to-right pass. At each position $i$, the machine attempts to follow the transition labelled $a_i$ from its \textit{current\_state} (cs); if that edge exists, it moves along it, otherwise it follows \textit{failure links} (f) until either a matching transition is found or the root is reached. Every time a successful transition is made, the automaton inspects the $\operatorname{output}$ set of the new state and emits all patterns ending at position $i$.
+Once the Aho–Corasick automaton has been built, it scans the text $T = a_1 a_2 \dots a_n$ in one left-to-right pass. At each position $i$, the machine attempts to follow the transition labelled $a_i$ from its \textit{current\_state} ($cs$); if that edge exists, it moves along it, otherwise it follows \textit{failure links} (\acfunc{fail}) until either a matching transition is found or the root is reached. Every time a successful transition is made, the automaton inspects the \acfunc{output} set of the new state and emits all patterns ending at position $i$.
 
-Figure~\ref{fig:ac-matching-flow} illustrates this control flow in detail, which: starts at the root with $i=1$, attempt each $\operatorname{goto}(\textit{current\_state}, a_i)$, follow failure links on a “no” decision, report matches via $\operatorname{output}(\textit{current\_state})$ on a “yes,” advance $i$, and terminate when $i>n$.
+Figure~\ref{fig:ac-matching-flow} illustrates this control flow in detail, which: starts at the root with $i=1$, attempt each $\acfunc{goto}(cs, a_i)$, follow failure links on a “no” decision, report matches via $\acfunc{output}(cs)$ on a “yes,” advance $i$, and terminate when $i>n$.
 
-\begin{figure}[H] 
+% review: comments 009 (issue #104) caption below figure, 010 (issue #105) no source line for author-made figures
+\begin{figure}[H]
     \centering
+    \includegraphics[width=0.6\textwidth,keepaspectratio]{ac_matching.pdf}
     \caption{Flowchart of the Aho–Corasick matching phase.}
-    \includegraphics[width=0.6\textwidth,keepaspectratio]{ac_matching.pdf} 
-    \par\smallskip
-    {\footnotesize\raggedright \textbf{Source:} Prepared by the author.\par}
     \label{fig:ac-matching-flow}
 \end{figure}
 
-Each input character advances the automaton by at most one $\operatorname{goto}$ transition, which increases the current depth by one, whereas every failure-link traversal strictly decreases that depth. Since the depth is non-negative, the total number of failure transitions over the scan cannot exceed the number of goto transitions, which bounds the total number of transitions (goto plus failure) by $< 2n$ \cite{AhoCorasick1975}.
+Each input character advances the automaton by at most one \acfunc{goto} transition, which increases the current depth by one, whereas every failure-link traversal strictly decreases that depth. Since the depth is non-negative, the total number of failure transitions over the scan cannot exceed the number of \acfunc{goto} transitions, which bounds the total number of transitions (\acfunc{goto} plus \acfunc{fail}) by $< 2n$ \cite{AhoCorasick1975}.
 
+\newpage
 \subsubsecao{Time and Space Complexity}
 
 The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for multi-pattern matching \cite{AhoCorasick1975}, \cite{Gusfield1997}. The complexities for the construction and search phases and storing the automaton are as follows:
 
 \begin{itemize}
-    \item \textbf{Construction phase}: building the goto, failure, and output functions takes $O(L)$ time, where $L$ is the total length of all keywords. If a dense array is used for the root, an additional $O(|\Sigma|)$ initialization cost is incurred, giving $O(L + |\Sigma|)$;
+    \item \textbf{Construction phase}: building the \acfunc{goto}, \acfunc{fail}, and \acfunc{output} functions takes $O(L)$ time, where $L$ is the total length of all keywords. If a dense array is used for the root, an additional $O(|\Sigma|)$ initialization cost is incurred, giving $O(L + |\Sigma|)$;
     \item \textbf{Search phase}: Scanning a text of length $n$ performs fewer than $2n$ state transitions. Reporting matches costs time proportional to the total number of occurrences $z$, so the total search time is $O(n + z)$;
     \item \textbf{Space complexity}: Storing the automaton requires $O(L + |\Sigma|)$ space: $O(L)$ for trie edges, $O(L)$ pointers for failure links, and additional space for output lists (proportional to the number of stored outputs).
 \end{itemize}
 
 \subsubsecao{NFA versus DFA Representations}
 
-The goto-plus-failure automaton described above is commonly distinguished, in the network-intrusion-detection literature, as the \textit{nondeterministic finite automaton} (NFA) configuration of Aho--Corasick, in contrast to the fully precomputed \textit{deterministic finite automaton} (DFA) discussed below \cite{Qu2016MPI}. This NFA label is conventional rather than formal---the goto-plus-failure machine in fact behaves deterministically---but it captures the operational difference: the goto function is undefined on many (state, character) pairs, and the search algorithm resolves those gaps by traversing failure links at runtime, so a single character may require several memory accesses in the worst case (the cost is constant only in the amortized sense established above). A widely adopted optimization converts this NFA into a \textit{deterministic finite automaton} (DFA) by precomputing the failure-link chains during construction: for every state $s$ and character $a$, the full deterministic transition $\delta(s,a)$ is stored in a flat two-dimensional table of size $|Q| \times |\Sigma|$, where $|Q|$ is the number of states and $|\Sigma|$ is the alphabet size \cite{AhoCorasick1975}, \cite{Gusfield1997}. With this representation every character in the input triggers exactly one array lookup; no runtime failure-link traversal occurs, which reduces per-character latency and simplifies the inner search loop.
+The \acfunc{goto}-plus-\acfunc{fail} automaton described above is commonly distinguished, in the network-intrusion-detection literature, as the \textit{nondeterministic finite automaton} (NFA) configuration of Aho--Corasick, in contrast to the fully precomputed \textit{deterministic finite automaton} (DFA) discussed below \cite{Qu2016MPI}. This NFA label is conventional rather than formal---the \acfunc{goto}-plus-\acfunc{fail} machine in fact behaves deterministically---but it captures the operational difference: the \acfunc{goto} function is undefined on many (state, character) pairs, and the search algorithm resolves those gaps by traversing failure links at runtime, so a single character may require several memory accesses in the worst case (the cost is constant only in the amortized sense established above). A widely adopted optimization converts this NFA into a \textit{deterministic finite automaton} (DFA) by precomputing the failure-link chains during construction: for every state $s$ and character $a$, the full deterministic transition $\delta(s,a)$ is stored in a flat two-dimensional table of size $|Q| \times |\Sigma|$, where $|Q|$ is the number of states and $|\Sigma|$ is the alphabet size \cite{AhoCorasick1975}, \cite{Gusfield1997}. With this representation every character in the input triggers exactly one array lookup; no runtime failure-link traversal occurs, which reduces per-character latency and simplifies the inner search loop.
 
-The cost of the DFA representation is memory: for the standard 256-symbol byte alphabet the flat transition table occupies $4 \cdot |Q| \cdot 256$ bytes. This footprint grows linearly with the pattern-set size and can easily exceed the processor's last-level cache (LLC). When the table no longer fits in cache, each state transition becomes a potential cache miss, shifting the workload from compute-bound to \textit{memory-bandwidth-bound}. The implementation in this work uses the DFA (flat transition table) representation exclusively; the goto function, failure function, and output function described in the preceding subsection are intermediate construction artefacts that are not retained at search time.
+The cost of the DFA representation is memory: for the standard 256-symbol byte alphabet the flat transition table occupies $4 \cdot |Q| \cdot 256$ bytes. This footprint grows linearly with the pattern-set size and can easily exceed the processor's last-level cache (LLC). When the table no longer fits in cache, each state transition becomes a potential cache miss, shifting the workload from compute-bound to \textit{memory-bandwidth-bound}. The implementation in this work uses the DFA (flat transition table) representation exclusively; the \acfunc{goto}, \acfunc{fail}, and \acfunc{output} functions described in the preceding subsection are intermediate construction artefacts that are not retained at search time.
 
 \subsubsecao{Applications and Relevance}
 

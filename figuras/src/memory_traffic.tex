@@ -29,28 +29,28 @@
     % =====================================================================
     % (a) PURE TEXT CHUNKING (1D)
     % =====================================================================
-    \node[title] at (3.5, 3.8) {(a) Pure Text Chunking (Text Parallelism)};
+    \node[title] at (3.5, 3.8) {(a) Text chunking: one shared automaton};
     
     % DRAM input text
-    \node[dram] (dram1) at (0, 2.5) {\textbf{DRAM}\\Input Text (Size: $N$)};
+    \node[dram] (dram1) at (0, 2.5) {\textbf{DRAM}\\Input text (size $N$)};
     
     % Memory Bus
     \draw[bus] (0, 1.7) -- (7.0, 1.7);
     \node[anchor=west, font=\scriptsize\bfseries, text=inkgray] at (7.1, 1.7) {DRAM BUS};
     
     % Threads
-    \node[thread] (t1_0) at (1.5, 0.5) {\textbf{Thread 0}\\Scans Chunk 0};
-    \node[thread] (t1_1) at (5.0, 0.5) {\textbf{Thread 1}\\Scans Chunk 1};
+    \node[thread] (t1_0) at (1.5, 0.5) {\textbf{Worker 0}\\Chunk 0};
+    \node[thread] (t1_1) at (5.0, 0.5) {\textbf{Worker 1}\\Chunk 1};
     
     % Automaton
-    \node[shard, fill=forestgreen!8, draw=forestgreen, minimum width=15mm] (auto1) at (3.25, -0.6) {Monolithic Automaton\\(Full Dictionary)};
+    \node[shard, fill=forestgreen!8, draw=forestgreen, minimum width=15mm] (auto1) at (3.25, -0.6) {Read-only automaton\\(full dictionary)};
 
     % Arrows from DRAM to threads (1x total transfer)
     \draw[arrow, idpblue] (dram1.south) to[out=-90, in=90] (0, 1.8);
     \draw[arrow, idpblue] (0.75, 1.6) to[out=-90, in=90] (t1_0.north);
     \draw[arrow, idpblue] (6.25, 1.6) to[out=-90, in=90] (t1_1.north);
-    \node[note, anchor=east, text=idpblue] at (-0.2, 1.7) {Reads Chunk 0 ($N/2$)};
-    \node[note, anchor=west, text=idpblue] at (5.5, 1.0) {Reads Chunk 1 ($N/2$)};
+    \node[note, anchor=east, text=idpblue] at (-0.2, 1.7) {reads chunk 0 ($N/2$)};
+    \node[note, anchor=west, text=idpblue] at (5.5, 1.0) {reads chunk 1 ($N/2$)};
 
     % Connections to Automaton
     \draw[->, forestgreen, dashed] (t1_0.south) to[out=-45, in=135] (auto1.north west);
@@ -58,32 +58,32 @@
 
     % Summary Note
     \node[note, anchor=north, text width=9.0cm] at (3.5, -1.3) {
-        \textbf{Total Text Read: $1 \times N$}\\
+        \textbf{Total text traffic: $1 \times N$}\\
         Each byte is read once from main memory.\\
-        DRAM bus operates under moderate load, avoiding saturation.
+        Parallelism comes from dividing the text.
     };
 
     % =====================================================================
     % (b) 2D COMPOSITION (Chunking + Sharding)
     % =====================================================================
     \begin{scope}[yshift=-7.5cm]
-        \node[title] at (3.5, 3.8) {(b) Two-Dimensional Composition (Falsified Hypothesis)};
+        \node[title] at (3.5, 3.8) {(b) Dictionary sharding: repeated text scans};
         
         % DRAM input text
-        \node[dram] (dram2) at (0, 2.5) {\textbf{DRAM}\\Input Text (Size: $N$)};
+        \node[dram] (dram2) at (0, 2.5) {\textbf{DRAM}\\Input text (size $N$)};
         
         % Memory Bus
         \draw[bus, draw=warm] (0, 1.7) -- (7.0, 1.7);
-        \node[anchor=west, font=\scriptsize\bfseries, text=warm] at (7.1, 1.7) {BUS SATURATED!};
+        \node[anchor=west, font=\scriptsize\bfseries, text=warm] at (7.1, 1.7) {REPEATED READS};
         
         % Threads & Shards
-        \node[thread] (t2_0) at (1.5, 0.5) {\textbf{Thread 0}\\Scans Chunk 0};
-        \node[thread] (t2_1) at (5.0, 0.5) {\textbf{Thread 1}\\Scans Chunk 1};
+        \node[thread] (t2_0) at (1.5, 0.5) {\textbf{Worker 0}\\text scan};
+        \node[thread] (t2_1) at (5.0, 0.5) {\textbf{Worker 1}\\text scan};
         
-        % 2 sub-automata shards
-        \node[shard, draw=warm, fill=warm!8, minimum width=22mm] (shard0) at (0.5, -0.6) {Shard 0\\(Prefix A--M)};
-        \node[shard, draw=warm, fill=warm!8, minimum width=22mm] (shard1) at (2.9, -0.6) {Shard 1\\(Prefix N--Z)};
-        \node[shard, draw=warm, fill=warm!8, minimum width=22mm] (shard2) at (5.3, -0.6) {Shard 2\\(Prefix ... )};
+        % Sub-automata shards
+        \node[shard, draw=warm, fill=warm!8, minimum width=22mm] (shard0) at (0.5, -0.6) {Shard 0\\sub-automaton};
+        \node[shard, draw=warm, fill=warm!8, minimum width=22mm] (shard1) at (2.9, -0.6) {Shard 1\\sub-automaton};
+        \node[shard, draw=warm, fill=warm!8, minimum width=22mm] (shard2) at (5.3, -0.6) {Shard $K{-}1$\\sub-automaton};
 
         % Multiplied text traffic (K shards = K reads per chunk)
         \draw[heavyarrow] (dram2.south) to[out=-90, in=90] (0, 1.8);
@@ -92,8 +92,8 @@
         \draw[heavyarrow] (0.75, 1.6) to[out=-90, in=90] (t2_0.north);
         \draw[heavyarrow] (6.25, 1.6) to[out=-90, in=90] (t2_1.north);
         
-        \node[note, anchor=east, text=warm] at (-0.2, 1.7) {Reads Chunks $K$ times!};
-        \node[note, anchor=west, text=warm] at (5.5, 1.0) {Reads $K \times (N/2)$};
+        \node[note, anchor=east, text=warm] at (-0.2, 1.7) {each shard scans $N$};
+        \node[note, anchor=west, text=warm] at (5.5, 1.0) {$K$ scans of the text};
 
         % Connections to Shards
         \draw[->, warm, dashed] (t2_0.south) -- (shard0.north);
@@ -103,9 +103,9 @@
 
         % Summary Note
         \node[note, anchor=north, text width=9.0cm] at (3.5, -1.3) {
-            \textbf{Total Text Read: $K \times N$}\\
-            Chunks must be scanned against all $K$ dictionary shards.\\
-            Multiplies memory traffic, saturating the bus and degrading speedup.
+            \textbf{Total text traffic: $K \times N$}\\
+            Shards have disjoint patterns and smaller automata.\\
+            The cost is repeated input reads plus duplicated build state.
         };
     \end{scope}
 
