@@ -406,7 +406,19 @@
         }
         .faixa-lacuna p { margin: 0; color: #FFFFFF; font-size: 0.85em; line-height: 1.45; }
         .faixa-lacuna strong { color: var(--idp-ciano); }
+        .faixa-lacuna .lead { margin-bottom: 8px; }
+        .faixa-lacuna ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+        .faixa-lacuna li { position: relative; padding-left: 1.3em; color: #FFFFFF; font-size: 0.85em; line-height: 1.4; }
+        .faixa-lacuna li::before { content: "\25B8"; position: absolute; left: 0; color: var(--idp-ciano); }
         .tres-colunas { display: flex; gap: 24px; margin-top: 0.9em; }
+        .grade-dominios {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px 24px;
+            margin-top: 0.7em;
+        }
+        .grade-dominios .painel { padding: 12px 16px; }
+        .grade-dominios .painel .rotulo { margin-bottom: 0.4em; }
 
         /* ---------- Secao 5: overlap de fronteira ---------- */
         .automato .seg-a { fill: rgba(0, 93, 170, 0.10); }
@@ -447,6 +459,13 @@
             text-anchor: middle;
         }
         .automato .divisor-svg { stroke: var(--idp-divisor); stroke-width: 2; }
+
+        /* ---------- Fase 1: construcao BFS por niveis ---------- */
+        .automato .estado-pronto { fill: rgba(22, 138, 74, 0.15); stroke: var(--idp-sucesso); stroke-width: 3; }
+        .automato .estado-espera { fill: #FFFFFF; stroke: #94A3B8; stroke-width: 3; }
+        .automato .barreira { stroke: var(--idp-alerta); stroke-width: 4; stroke-dasharray: 10 8; }
+        .automato .rotulo-nivel { fill: var(--idp-texto-sec); font-size: 19px; font-weight: 600; text-anchor: middle; }
+        .automato .rotulo-thread { fill: #0077AA; font-size: 18px; font-weight: 600; text-anchor: middle; }
 
         /* ---------- Secao 6: plataforma ---------- */
         .chip-32t { grid-template-columns: repeat(8, 46px); }
@@ -761,22 +780,29 @@
 
 <section>
     <h2>O casamento de padrões</h2>
-    <p class="texto-sec">Detecção de intrusão, antivírus, bioinformática — a mesma forma:
-       procurar <strong>milhares de padrões ao mesmo tempo</strong> em um texto de
-       gigabytes.</p>
-    <div class="fluxo">
-        <div class="caixa">Texto de entrada
+    <p class="texto-sec">Procurar <strong>um ou múltiplos padrões</strong>
+       em conjuntos de dados que podem ter gigabytes</p>
+    <div class="grade-dominios">
+        <div class="painel">
+            <span class="rotulo">Antivírus</span>
+            <p class="painel-texto">Assinaturas de malware procuradas em arquivos
+               e na memória.</p>
         </div>
-        <div class="seta">&#8594;</div>
-        <div class="caixa caixa-central">Busca
+        <div class="painel">
+            <span class="rotulo">Detecção de intrusão</span>
+            <p class="painel-texto">Regras conhecidas aplicadas ao tráfego
+               de rede.</p>
         </div>
-        <div class="seta">&#8594;</div>
-        <div class="caixa">Matches
+        <div class="painel">
+            <span class="rotulo">Bioinformática</span>
+            <p class="painel-texto">Sequências de interesse localizadas em
+               genomas inteiros.</p>
         </div>
-    </div>
-    <div class="regra-dependencia">
-        <p>O algoritmo clássico e eficiente para isso — o <strong>Aho-Corasick</strong>
-           (1975) — foi projetado para execução sequencial.</p>
+        <div class="painel">
+            <span class="rotulo">Bancos de dados</span>
+            <p class="painel-texto">Filtros textuais como <code>LIKE '%…%'</code>
+               avaliados linha a linha, varrendo tabelas inteiras.</p>
+        </div>
     </div>
 </section>
 
@@ -846,29 +872,6 @@
             <strong>Posição 2.</strong> "she" vs. "her": h ≠ s — descarta de novo.</p>
         <p class="passo fragment current-visible" data-fragment-index="2">
             <strong>Posição 3.</strong> "her" vs. "her": todos os caracteres coincidem — ocorrência!</p>
-    </div>
-</section>
-
-<section>
-    <h2>Cenários reais</h2>
-    <p class="texto-sec">Na prática, a busca é por <strong>milhares de padrões ao
-       mesmo tempo</strong>, sobre entradas de gigabytes.</p>
-    <div class="tres-colunas">
-        <div class="painel">
-            <span class="rotulo">Antivírus</span>
-            <p class="painel-texto">Assinaturas de malware procuradas em arquivos
-               e na memória.</p>
-        </div>
-        <div class="painel">
-            <span class="rotulo">Detecção de intrusão</span>
-            <p class="painel-texto">Regras como as do Snort aplicadas ao tráfego
-               de rede.</p>
-        </div>
-        <div class="painel">
-            <span class="rotulo">Bioinformática</span>
-            <p class="painel-texto">Sequências de interesse localizadas em
-               genomas inteiros.</p>
-        </div>
     </div>
 </section>
 
@@ -993,8 +996,27 @@
 
 <section>
     <h2>Aho-Corasick</h2>
-    <p>A trie ganha <strong>três acréscimos</strong>: links de
-    falha, estados de saída e links de saída.</p>
+    <p class="texto-sec">A execução é organizada em três fases</p>
+    <div class="fluxo">
+        <div class="caixa">Fase 1 — Construção
+            <span class="sub">o autômato é montado uma única vez</span>
+        </div>
+        <div class="seta">&#8594;</div>
+        <div class="caixa caixa-central">Fase 2 — Busca
+            <span class="sub"> O autômado percorre todo o texto. <br>
+                <strong>é a fase que consome mais tempo</strong></span>
+        </div>
+        <div class="seta">&#8594;</div>
+        <div class="caixa">Fase 3 — Emissão
+            <span class="sub">As ocorrências são reportadas</span>
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2>Aho-Corasick</h2>
+    <p><strong>Fase 1</strong> — a trie ganha três acréscimos: <strong>links de
+    falha</strong>, <strong>estados de saída</strong> e <strong>links de saída</strong>.</p>
     <p class="chips-padroes">Padrões:
     <code>he</code><code>her</code><code>hers</code><code>she</code></p>
     <svg class="automato" viewBox="0 165 1100 330" role="img"
@@ -1030,8 +1052,8 @@
         <line class="aresta" x1="476" y1="410" x2="596" y2="410" marker-end="url(#seta-azul)"/>
         <text class="letra" x="540" y="394">e</text>
 
-        <!-- ACRESCIMO 1: links de falha — PARA ONDE IR -->
-        <g>
+        <!-- ACRESCIMO 1: links de falha — PARA ONDE IR (fragmento 1) -->
+        <g class="fragment" data-fragment-index="1">
             <path class="falha" d="M 612 388 Q 520 300 468 254" marker-end="url(#seta-cinza)"/>
             <path class="falha" d="M 432 388 Q 340 300 288 254" marker-end="url(#seta-cinza)"/>
             <path class="falha" d="M 792 252 Q 540 520 302 418" marker-end="url(#seta-cinza)"/>
@@ -1047,8 +1069,8 @@
         <circle class="estado" cx="450" cy="410" r="26"/><text class="nome-estado" x="450" y="410">sh</text>
         <circle class="estado" cx="630" cy="410" r="26"/><text class="nome-estado" x="630" y="410">she</text>
 
-        <!-- ACRESCIMO 2: estados de saida — QUE PADRAO TERMINA AQUI -->
-        <g>
+        <!-- ACRESCIMO 2: estados de saida — QUE PADRAO TERMINA AQUI (fragmento 2) -->
+        <g class="fragment" data-fragment-index="2">
             <circle class="anel-saida" cx="450" cy="230" r="33"/>
             <circle class="anel-saida" cx="630" cy="230" r="33"/>
             <circle class="anel-saida" cx="810" cy="230" r="33"/>
@@ -1059,23 +1081,22 @@
             <text class="rotulo-padrao" x="630" y="470">she</text>
         </g>
 
-        <!-- ACRESCIMO 3: link de saida — QUE MAIS EMITIR -->
-        <g>
+        <!-- ACRESCIMO 3: link de saida — QUE MAIS EMITIR (fragmento 3) -->
+        <g class="fragment" data-fragment-index="3">
             <path class="saida" d="M 620 392 Q 468 476 442 262" marker-end="url(#seta-verde)"/>
             <text class="rotulo-saida" x="500" y="466">emitir também: he</text>
         </g>
     </svg>
     <div class="legenda-ingredientes">
-        <span><span class="amostra am-goto"></span>transição (goto): avança um byte</span>
-        <span><span class="amostra am-falha"></span>link de falha: para onde ir sem transição</span>
-        <span><span class="am-terminal"></span>estado de saída: um padrão termina aqui</span>
-        <span><span class="amostra am-saida"></span>link de saída: outro padrão que também termina aqui</span>
+        <span><span class="amostra am-falha"></span>link de falha</span>
+        <span><span class="am-terminal"></span>estado de saída</span>
+        <span><span class="amostra am-saida"></span>link de saída</span>
     </div>
 </section>
 
 <section>
     <h2>Aho-Corasick</h2>
-    <p class="chips-padroes">Varredura do texto <code>ushers</code> — uma única passada, sem voltar atrás.</p>
+    <p class="chips-padroes"><strong>Fases 2 e 3</strong> — Varredura do texto <code>ushers</code></p>
     <svg class="automato automato-compacto" viewBox="0 0 1100 500" role="img"
          aria-label="Passo a passo da varredura do texto ushers pelo autômato, incluindo o link de saída de she para he">
         <defs>
@@ -1224,49 +1245,6 @@
     </div>
 </section>
 
-<section>
-    <h2>Aho-Corasick</h2>
-    <p class="texto-sec">O autômato vira uma tabela <strong>estado &#215; byte</strong>,
-       com os links de falha embutidos.</p>
-    <table class="tabela-ac">
-        <thead>
-            <tr><th>estado \ byte</th><th>e</th><th>h</th><th>r</th><th>s</th><th>u</th><th>&#8230;</th></tr>
-        </thead>
-        <tbody>
-            <tr><th>raiz</th><td>raiz</td><td>h</td><td>raiz</td><td>s</td><td>raiz</td><td>&#8230;</td></tr>
-            <tr><th>h</th><td>he</td><td>h</td><td>raiz</td><td>s</td><td>raiz</td><td>&#8230;</td></tr>
-            <tr><th>he</th><td>raiz</td><td>h</td><td>her</td><td>s</td><td>raiz</td><td>&#8230;</td></tr>
-            <tr><th>her</th><td>raiz</td><td>h</td><td>raiz</td><td>hers</td><td>raiz</td><td>&#8230;</td></tr>
-            <tr><th>sh</th><td>she</td><td>h</td><td>raiz</td><td>s</td><td>raiz</td><td>&#8230;</td></tr>
-            <tr><th>she</th><td>raiz</td><td>h</td><td class="celula-destaque">her</td><td>s</td><td>raiz</td><td>&#8230;</td></tr>
-            <tr class="linha-reticencias"><th>&#8942;</th><td colspan="6">uma linha por estado &#8212; 256 colunas, uma por byte poss&#237;vel</td></tr>
-        </tbody>
-    </table>
-</section>
-
-<section>
-    <h2>Proposta</h2>
-    <p class="texto-sec"><strong>implementar e avaliar estratégias de paralelismo</strong>
-       em CPUs multi-core.</p>
-    <div class="duas-colunas">
-        <div class="painel">
-            <span class="rotulo">Implementar</span>
-            <p class="painel-texto">Utilizar <strong>POSIX
-               Threads</strong> sobre o
-               <strong>autômato não modificado</strong></p>
-        </div>
-        <div class="painel">
-            <span class="rotulo">Avaliar</span>
-            <p class="painel-texto">Medir <strong>speedup, throughput e eficiência</strong>
-               contra o sequencial.</p>
-        </div>
-    </div>
-    <div class="definicao">
-        <p>Acelerar e produzir <strong>exatamente os mesmos matches</strong>
-           que o sequencial.</p>
-    </div>
-</section>
-
 <!-- ================================================================
      FIM SECAO 1
      ================================================================ -->
@@ -1327,11 +1305,11 @@
                <span class="citacao">Qu et al. (MPI); Tovarňák (REtrie)</span></p>
         </div>
         <div class="painel">
-            <span class="rotulo">Localidade</span>
-            <p class="painel-texto">O throughput fica ligado à
-               <strong>localidade da tabela</strong>: quando o autômato deixa a
-               cache, os ganhos tendem a saturar.
-               <span class="citacao">Lee &amp; Yang (FHBM); Sitaridi et al. (SIMD)</span></p>
+            <span class="rotulo">Só a fase de busca</span>
+            <p class="painel-texto">O paralelismo recai apenas sobre a
+               <strong>busca no texto</strong>: construir o autômato e reportar
+               as ocorrências seguem <strong>sequenciais</strong>.
+               <span class="citacao">Consenso nos 24 estudos revisados</span></p>
         </div>
         <div class="painel">
             <span class="rotulo">Abordagens diferentes</span>
@@ -1341,9 +1319,11 @@
         </div>
     </div>
     <div class="faixa-lacuna">
-        <p><strong>Lacuna:</strong> <strong>POSIX Threads</strong> em memória
-           compartilhada, <strong>autômato não modificado</strong>, avaliando escalabilidade quando
-           <strong>o autômato é maior que a cache</strong>.</p>
+        <p class="lead"><strong>Lacuna e proposta</strong></p>
+        <ul>
+            <li> utilizar POSIX Threads em memória compartilhada, sem modificar o autômato.</li>
+            <li>Otimizar as três fases do algoritmo.</li>
+        </ul>
     </div>
 </section>
 
@@ -1368,22 +1348,60 @@
 </section>
 
 <section>
-    <h2>Fases</h2>
-    <p class="texto-sec">A execução é organizada em três fases</p>
-    <div class="fluxo">
-        <div class="caixa">Fase 1 — Construir
-            <span class="sub">o autômato é montado uma única vez e declarado
-                somente leitura (sequencial)</span>
-        </div>
-        <div class="seta">&#8594;</div>
-        <div class="caixa caixa-central">Fase 2 — Buscar
-            <span class="sub">cada thread varre um segmento do texto —
-                <strong>é a fase que consome mais tempo</strong></span>
-        </div>
-        <div class="seta">&#8594;</div>
-        <div class="caixa">Fase 3 — Mesclar
-            <span class="sub">as listas privadas de matches são combinadas</span>
-        </div>
+    <h2>Fase 1: construção paralela</h2>
+    <p class="texto-sec">A inserção dos padrões na trie é sequencial; o cálculo dos <strong>links de falha</strong> é paralelizável, nível a nível.</p>
+    <svg class="automato" viewBox="0 0 1100 330" role="img"
+         aria-label="Construção BFS por níveis: níveis rasos concluídos, nível atual processado em paralelo por duas threads, barreira antes do próximo nível">
+        <text class="rotulo-nivel" x="190" y="26">nível 0</text>
+        <text class="rotulo-nivel" x="430" y="26">nível 1</text>
+        <text class="rotulo-nivel" x="670" y="26">nível 2</text>
+        <text class="rotulo-nivel" x="910" y="26">nível 3</text>
+
+        <!-- arestas da trie -->
+        <line class="aresta" x1="216" y1="163" x2="404" y2="117"/>
+        <line class="aresta" x1="216" y1="177" x2="404" y2="223"/>
+        <line class="aresta" x1="457" y1="110" x2="643" y2="110"/>
+        <line class="aresta" x1="457" y1="230" x2="643" y2="230"/>
+        <line class="aresta" x1="697" y1="110" x2="883" y2="110"/>
+        <line class="aresta" x1="697" y1="230" x2="883" y2="230"/>
+        <text class="letra" x="310" y="118">h</text>
+        <text class="letra" x="310" y="240">s</text>
+        <text class="letra" x="550" y="96">e</text>
+        <text class="letra" x="550" y="216">h</text>
+        <text class="letra" x="760" y="96">r</text>
+        <text class="letra" x="760" y="216">e</text>
+
+        <!-- niveis ja concluidos -->
+        <circle class="estado-pronto" cx="190" cy="170" r="27"/>
+        <text class="nome-estado" x="190" y="170">raiz</text>
+        <circle class="estado-pronto" cx="430" cy="110" r="27"/>
+        <text class="nome-estado" x="430" y="110">h</text>
+        <circle class="estado-pronto" cx="430" cy="230" r="27"/>
+        <text class="nome-estado" x="430" y="230">s</text>
+
+        <!-- nivel atual, em paralelo -->
+        <circle class="estado" cx="670" cy="110" r="27"/>
+        <text class="nome-estado" x="670" y="110">he</text>
+        <circle class="destaque-anel" cx="670" cy="110" r="36"/>
+        <text class="rotulo-thread" x="670" y="165">thread 0</text>
+        <circle class="estado" cx="670" cy="230" r="27"/>
+        <text class="nome-estado" x="670" y="230">sh</text>
+        <circle class="destaque-anel" cx="670" cy="230" r="36"/>
+        <text class="rotulo-thread" x="670" y="285">thread 1</text>
+
+        <!-- barreira antes do proximo nivel -->
+        <line class="barreira" x1="795" y1="48" x2="795" y2="290"/>
+        <text class="rotulo-padrao" x="795" y="315">barreira</text>
+
+        <!-- proximo nivel, aguardando -->
+        <circle class="estado-espera" cx="910" cy="110" r="27"/>
+        <text class="nome-estado" x="910" y="110">her</text>
+        <circle class="estado-espera" cx="910" cy="230" r="27"/>
+        <text class="nome-estado" x="910" y="230">she</text>
+    </svg>
+    <div class="definicao">
+        <p>O link de falha de um estado depende só de níveis <strong>mais
+           rasos</strong> — estados do mesmo nível são independentes.</p>
     </div>
 </section>
 
@@ -1501,7 +1519,7 @@
 <section>
     <h2>Fase 3: reportar ocorrências</h2>
     <p class="texto-sec"><strong>Saída plana:</strong> ao alcançar um estado final,
-       o autômato canônico percorre uma cadeia de ponteiros <br> — a saída plana tranforma em um bloco contíguo.</p>
+       o autômato canônico percorre uma cadeia de ponteiros <br> — a saída plana transforma em um bloco contíguo.</p>
     <svg class="automato" viewBox="0 0 1100 330" role="img"
          aria-label="Comparação entre a emissão canônica com ponteiros espalhados e a saída plana contígua">
         <defs>
@@ -1594,7 +1612,7 @@
                 <div class="mem-ccd">CCD 1 — 8 núcleos
                     <span class="sub-mem">cache própria</span></div>
             </div>
-            <div class="mem-dram">Memória principal DDR5 128gb — compartilhada por todas as threads</div>
+            <div class="mem-dram">Memória principal DDR5 123 GiB — compartilhada por todas as threads</div>
         </div>
     </div>
     <div class="definicao">
@@ -1671,8 +1689,31 @@
 </section>
 
 <section>
-    <h2>Resultados: escalabilidade até 32 threads</h2>
-    <p class="texto-sec">Fase 2 — Estratégia 2 (despacho dinâmico) + saída plana, corpus Enron.</p>
+    <h2>Resultados</h2>
+    <p class="texto-sec"><strong>Fase 1 — Construção paralela</strong>: compensa
+       quando o autômato é <strong>grande</strong>.</p>
+    <div class="tres-colunas">
+        <div class="painel metrica">
+            <span class="valor">1,59&#215;</span>
+            <span class="contexto">Emerging Threats · 508.896 estados <br>
+                <strong>324 &#8594; 203 ms</strong> em 16 threads</span>
+        </div>
+        <div class="painel metrica">
+            <span class="valor">1,17&#215;</span>
+            <span class="contexto">Snort completo · 55.479 estados <br>
+                <strong>28 &#8594; 24 ms</strong> em 4 threads</span>
+        </div>
+        <div class="painel metrica">
+            <span class="valor valor-alerta">0,70&#215;</span>
+            <span class="contexto">Snort-100 · 1.939 estados <br>
+                <strong>0,8 &#8594; 1,1 ms</strong> em 2 threads</span>
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2>Resultados</h2>
+    <p class="texto-sec"><strong>Fase 2 — Estratégia 2 (despacho dinâmico)</strong>, corpus Enron: escalabilidade até 32 threads</p>
     <svg class="grafico grafico-speedup" viewBox="0 0 1100 470" role="img"
          aria-label="Curvas de speedup por número de threads para Snort e Emerging Threats, com linha ideal de referência">
         <!-- grade e eixos -->
@@ -1712,61 +1753,85 @@
 
         <!-- curva Snort -->
         <g>
-            <polyline class="curva-snort" points="117.6,383.8 200.3,338.0 310.6,281.3 420.9,231.4 531.2,182.8 641.5,160.6 751.8,119.8 862.2,82.5 972.5,42.0"/>
-            <circle class="ponto-snort" cx="117.6" cy="383.8" r="6"/>
-            <circle class="ponto-snort" cx="200.3" cy="338.0" r="6"/>
-            <circle class="ponto-snort" cx="310.6" cy="281.3" r="6"/>
-            <circle class="ponto-snort" cx="420.9" cy="231.4" r="6"/>
-            <circle class="ponto-snort" cx="531.2" cy="182.8" r="6"/>
-            <circle class="ponto-snort" cx="641.5" cy="160.6" r="6"/>
-            <circle class="ponto-snort" cx="751.8" cy="119.8" r="6"/>
-            <circle class="ponto-snort" cx="862.2" cy="82.5" r="6"/>
-            <circle class="ponto-snort" cx="972.5" cy="42.0" r="6"/>
+            <polyline class="curva-snort" points="117.6,384.4 200.3,340.4 310.6,285.8 420.9,236.7 531.2,190.6 641.5,170.9 751.8,132.8 862.2,95.4 972.5,56.5"/>
+            <circle class="ponto-snort" cx="117.6" cy="384.4" r="6"/>
+            <circle class="ponto-snort" cx="200.3" cy="340.4" r="6"/>
+            <circle class="ponto-snort" cx="310.6" cy="285.8" r="6"/>
+            <circle class="ponto-snort" cx="420.9" cy="236.7" r="6"/>
+            <circle class="ponto-snort" cx="531.2" cy="190.6" r="6"/>
+            <circle class="ponto-snort" cx="641.5" cy="170.9" r="6"/>
+            <circle class="ponto-snort" cx="751.8" cy="132.8" r="6"/>
+            <circle class="ponto-snort" cx="862.2" cy="95.4" r="6"/>
+            <circle class="ponto-snort" cx="972.5" cy="56.5" r="6"/>
             <text class="rotulo-curva rotulo-snort" x="558" y="150">Snort</text>
         </g>
 
         <!-- curva Emerging Threats -->
         <g>
-            <polyline class="curva-et" points="117.6,383.3 200.3,340.2 310.6,289.8 420.9,241.7 531.2,201.3 641.5,183.4 751.8,153.1 862.2,127.0 972.5,103.8"/>
-            <circle class="ponto-et" cx="117.6" cy="383.3" r="6"/>
-            <circle class="ponto-et" cx="200.3" cy="340.2" r="6"/>
-            <circle class="ponto-et" cx="310.6" cy="289.8" r="6"/>
-            <circle class="ponto-et" cx="420.9" cy="241.7" r="6"/>
-            <circle class="ponto-et" cx="531.2" cy="201.3" r="6"/>
-            <circle class="ponto-et" cx="641.5" cy="183.4" r="6"/>
-            <circle class="ponto-et" cx="751.8" cy="153.1" r="6"/>
-            <circle class="ponto-et" cx="862.2" cy="127.0" r="6"/>
-            <circle class="ponto-et" cx="972.5" cy="103.8" r="6"/>
+            <polyline class="curva-et" points="117.6,384.0 200.3,343.4 310.6,294.8 420.9,251.8 531.2,212.4 641.5,195.1 751.8,168.7 862.2,141.3 972.5,119.2"/>
+            <circle class="ponto-et" cx="117.6" cy="384.0" r="6"/>
+            <circle class="ponto-et" cx="200.3" cy="343.4" r="6"/>
+            <circle class="ponto-et" cx="310.6" cy="294.8" r="6"/>
+            <circle class="ponto-et" cx="420.9" cy="251.8" r="6"/>
+            <circle class="ponto-et" cx="531.2" cy="212.4" r="6"/>
+            <circle class="ponto-et" cx="641.5" cy="195.1" r="6"/>
+            <circle class="ponto-et" cx="751.8" cy="168.7" r="6"/>
+            <circle class="ponto-et" cx="862.2" cy="141.3" r="6"/>
+            <circle class="ponto-et" cx="972.5" cy="119.2" r="6"/>
             <text class="rotulo-curva rotulo-et" x="585" y="245">Emerging Threats</text>
         </g>
 
         <!-- destaque dos pontos finais -->
         <g>
-            <circle class="destaque-ponto" cx="972.5" cy="42.0" r="13"/>
-            <circle class="destaque-ponto" cx="972.5" cy="103.8" r="13"/>
+            <circle class="destaque-ponto" cx="972.5" cy="56.5" r="13"/>
+            <circle class="destaque-ponto" cx="972.5" cy="119.2" r="13"/>
         </g>
     </svg>
     <div class="duas-colunas">
         <div class="painel metrica">
-            <span class="valor">22,91&#215;</span>
-            <span class="contexto">Snort · <strong>7.542 MB/s</strong> · eficiência de 71,6% em 32 threads</span>
+            <span class="valor">21,98&#215;</span>
+            <span class="contexto">Snort · <strong>7.236 MB/s</strong> · eficiência de 68,7% em 32 threads</span>
         </div>
         <div class="painel metrica">
-            <span class="valor valor-alerta">18,96&#215;</span>
-            <span class="contexto">Emerging Threats · <strong>3.979 MB/s</strong> · eficiência de 59,3% em 32 threads</span>
+            <span class="valor valor-alerta">17,97&#215;</span>
+            <span class="contexto">Emerging Threats · <strong>3.771 MB/s</strong> · eficiência de 56,2% em 32 threads</span>
         </div>
-    </div>
-    <div class="definicao">
-        <p>Medição ponta a ponta: <strong>22,23&#215;</strong>
-           e <strong>17,71&#215;</strong> respectivamente — a busca
-           domina o tempo total.</p>
     </div>
 </section>
 
 <section>
-    <h2>Resultados: tamanho do autômato</h2>
-    <p class="texto-sec">Uma única thread, corpus fixo (Enron): só o dicionário
-       varia <br> — e o throughput cai <strong>&#8722;66,6%</strong>.</p>
+    <h2>Resultados</h2>
+    <p class="texto-sec"><strong>Fase 3 — Saída plana</strong>: ganho medido em
+       execução sequencial, corpus Enron.</p>
+    <div class="tres-colunas">
+        <div class="painel metrica">
+            <span class="valor">+3,0%</span>
+            <span class="contexto">Snort-100 <br>
+                629,0 &#8594; 647,8 MB/s</span>
+        </div>
+        <div class="painel metrica">
+            <span class="valor">+4,2%</span>
+            <span class="contexto">Snort completo <br>
+                328,9 &#8594; 342,6 MB/s</span>
+        </div>
+        <div class="painel metrica">
+            <span class="valor">+6,9%</span>
+            <span class="contexto">Emerging Threats <br>
+                210,2 &#8594; 224,6 MB/s</span>
+        </div>
+    </div>
+    <div class="definicao">
+        <p>Os melhores
+           resultados do trabalho combinam despacho dinâmico com saída plana, <strong>22,91&#215;</strong> e
+           <strong>18,96&#215;</strong>. <br> Ponta a ponta (três fases):
+           <strong>22,23&#215;</strong> e <strong>17,71&#215;</strong></p>
+    </div>
+</section>
+
+<section>
+    <h2>Resultados</h2>
+    <p class="texto-sec"><strong>Tamanho do autômato</strong> — Execução <strong>sequencial</strong>: só o dicionário varia <br> e o throughput cai
+       <strong>&#8722;66,6%</strong>.</p>
     <div class="barras barras-compactas">
         <div class="linha-barra">
             <span class="nome-barra">Snort-100
@@ -1801,14 +1866,8 @@
             </div>
         </div>
     </div>
-    <div class="faixa-queda">
-        <p> Em 32 threads,
-           a queda se repete: 16.230 &#8594; 4.046 MB/s.</p>
-    </div>
     <div class="definicao">
-        <p>Trocar só o conteúdo do corpus (SimpleWiki &#8594; Enron, mesmo
-           dicionário) muda o throughput em ~5% — <strong>o autômato é a variável
-           dominante</strong>, não o texto varrido.</p>
+        <p>Trocar só o conteúdo do corpus (SimpleWiki &#8594; Enron) muda o throughput em ~5%</p>
     </div>
 </section>
 
@@ -1837,21 +1896,22 @@
     <p class="texto-sec">Quatro achados relevantes</p>
     <div class="achados">
         <div class="achado">
-            <span class="titulo-achado">O tamanho do autômato tem grande impacto</span>
-            <p>Regime limitado pela memória, mesmo com 32 threads.</p>
+            <span class="titulo-achado">Construção impacta autômatos grandes</span>
+            <p>Paralelizar a fase 1 compensa apenas para autômatos grandes.</p>
         </div>
         <div class="achado">
             <span class="titulo-achado">Particionar texto é mais eficiente</span>
-            <p>Particionar o texto sobre um autômato compartilhado: <strong>22,91&#215;</strong> (Snort) e
-               <strong>18,96&#215;</strong> (Emerging Threats) em 32 threads.</p>
+            <p><strong>22,91&#215;</strong> (Snort) e
+               <strong>18,96&#215;</strong> (Emerging Threats) em 32 threads.
+               Particionar o dicionário gera ganho pequeno.</p>
         </div>
         <div class="achado">
             <span class="titulo-achado">O layout de emissão importa</span>
-            <p>A emissão plana corta a perseguição de ponteiros e traz ganhos à custo mínimo.</p>
+            <p>A emissão plana corta a perseguição de ponteiros e traz ganhos a custo mínimo.</p>
         </div>
         <div class="achado">
-            <span class="titulo-achado">Particionar o dicionário tem impacto pequeno</span>
-            <p>Dividir o dicionário funciona, mas gera resultados modestos.</p>
+            <span class="titulo-achado">O tamanho do autômato tem grande impacto</span>
+            <p>Regime limitado pela memória, mesmo com 32 threads.</p>
         </div>
     </div>
 </section>
@@ -1906,13 +1966,12 @@
      (diagnosticos de balanceamento; secoes/secao-08.md)
      ================================================================ -->
 
-<section class="divisor centrado" data-background-color="#003A6B">
-    <h2>Material de apoio</h2>
-    <p class="divisor-sub">Estratégias de busca em núcleos desiguais e conteúdo concentrado</p>
+<section class="divisor centrado" data-background-color="#003A6B" data-visibility="uncounted">
+    <h2>Material extra</h2>
 </section>
 
-<section>
-    <h2>Apoio · Núcleos desiguais</h2>
+<section data-visibility="uncounted">
+    <h2>Fase 2 — Núcleos desiguais</h2>
     <p class="texto-sec">Diagnóstico no processador híbrido — Intel Core
        i5-1235U: 2 núcleos de desempenho + 8 de eficiência, mais lentos. Mede
        <strong>estabilidade</strong>, não desempenho.</p>
@@ -1953,8 +2012,8 @@
     </div>
 </section>
 
-<section>
-    <h2>Apoio · Conteúdo concentrado</h2>
+<section data-visibility="uncounted">
+    <h2>Fase 2 — Conteúdo concentrado</h2>
     <p class="texto-sec">Par sintético: mesmos bytes, mesmo total de matches —
        muda só a posição dos blocos densos. Medianas de 5 execuções
        independentes, no processador híbrido.</p>
