@@ -49,7 +49,24 @@ texto do TCC, o texto do TCC vence.
 5. Gerar figuras/graficos sob demanda, sempre com legenda e fonte rastreavel.
 6. Exportar HTML/PDF para `build/`.
 
-Comandos esperados para a fase de slides:
+O deck atual (`slides.html`, na raiz de `apresentacao/`) e um HTML/reveal.js
+autocontido (nao Marp) — ver `.agents/skills/html-slides` na raiz do
+workspace. Para exportar PDF, use `scripts/export-pdf.sh` (decktape +
+Chrome headless):
+
+```bash
+cd apresentacao
+./scripts/export-pdf.sh                 # -> build/slides.pdf
+./scripts/export-pdf.sh build/defesa.pdf # caminho customizado
+```
+
+Precisa de `node`/`npx` e do Chrome em `/usr/bin/google-chrome` (ou
+`CHROME_PATH=/caminho/para/chrome ./scripts/export-pdf.sh`). O script chama
+`npx decktape@3 reveal`, que abre o deck em Chrome headless e imprime cada
+slide (fundo, gradientes e SVGs inline saem corretos, ao contrario do
+"imprimir como PDF" manual do navegador).
+
+Se o deck for reescrito em Marp no futuro, os comandos abaixo se aplicam:
 
 ```bash
 cd apresentacao
@@ -58,4 +75,4 @@ CHROME_PATH=/usr/bin/google-chrome npx @marp-team/marp-cli@4.4.0 slides.md -o bu
 ```
 
 `build/slides.html` e `build/slides.pdf` sao artefatos gerados. O conteudo
-editavel deve ficar em Markdown, scripts e fontes de figura.
+editavel deve ficar em Markdown/HTML, scripts e fontes de figura.

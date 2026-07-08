@@ -645,23 +645,23 @@
         .skew-cabecalho,
         .skew-resultado {
             display: grid;
-            grid-template-columns: 255px 310px 1fr;
-            column-gap: 22px;
+            grid-template-columns: minmax(320px, 1fr) 230px 230px;
+            column-gap: 30px;
             align-items: center;
         }
         .skew-cabecalho {
             padding: 0 0 6px 0;
-            font-size: 0.58em;
+            font-size: 0.72em;
             font-weight: 700;
             color: var(--idp-texto-sec);
         }
+        .skew-cabecalho span:nth-child(n+2) { text-align: center; }
         .skew-resultado {
-            padding: 10px 0;
+            padding: 7px 0;
             border-top: 1px solid var(--idp-divisor);
         }
         .skew-resultado .estrategia {
-            font-size: 0.72em;
-            font-weight: 700;
+            font-size: 0.66em;
             color: var(--idp-texto);
         }
         .skew-resultado .estrategia .sub {
@@ -676,6 +676,14 @@
             font-weight: 800;
             line-height: 1;
         }
+        .skew-resultado .tempo {
+            font-size: 0.70em;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .skew-resultado .tempo-lenta { color: var(--idp-negativo); }
+        .skew-resultado .tempo-rapida { color: var(--idp-azul); }
         .skew-resultado .delta-neg { color: var(--idp-negativo); }
         .skew-resultado .delta-pos { color: var(--idp-sucesso); }
         .skew-resultado .explica {
@@ -2128,8 +2136,7 @@
 
 <section data-visibility="uncounted">
     <h2>Fase 2 — conteúdo concentrado</h2>
-    <p class="texto-sec">Mesmas ocorrências, concentração
-       diferente.</p>
+    <p class="texto-sec">Mesmos bytes e ocorrências; muda onde o trabalho fica.</p>
     <div class="skew-par skew-compacto">
         <div class="skew-linha">
             <span class="skew-nome">Corpus uniforme
@@ -2155,18 +2162,23 @@
     <div class="skew-resultados">
         <div class="skew-cabecalho">
             <span>Estratégia</span>
-            <span>Throughput: uniforme &#8594; concentrado</span>
-            <span>Interpretação</span>
+            <span>Thread mais lenta</span>
+            <span>Thread mais rápida</span>
         </div>
         <div class="skew-resultado">
             <span class="estrategia">Estática simples</span>
-            <span class="delta delta-neg">&#8722;29,6%</span>
-            <span class="explica">o trecho denso fica preso a poucas threads; as demais esperam</span>
+            <span class="tempo tempo-lenta">11,76 s</span>
+            <span class="tempo tempo-rapida">3,71 s</span>
+        </div>
+        <div class="skew-resultado">
+            <span class="estrategia">Estática por topologia</span>
+            <span class="tempo tempo-lenta">11,44 s</span>
+            <span class="tempo tempo-rapida">3,07 s</span>
         </div>
         <div class="skew-resultado">
             <span class="estrategia">Despacho dinâmico</span>
-            <span class="delta delta-pos">+16,9%</span>
-            <span class="explica">threads livres puxam novas tarefas da região densa</span>
+            <span class="tempo tempo-lenta">10,52 s</span>
+            <span class="tempo tempo-rapida">10,16 s</span>
         </div>
     </div>
 </section>
