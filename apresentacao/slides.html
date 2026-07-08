@@ -460,6 +460,14 @@
         }
         .automato .divisor-svg { stroke: var(--idp-divisor); stroke-width: 2; }
 
+        /* ---------- Fase 2, estrategia 2: despacho dinamico ---------- */
+        .automato .tarefa-pesada { fill: rgba(183, 121, 31, 0.16); stroke: var(--idp-alerta); stroke-width: 2.5; }
+        .automato .rotulo-pesada { fill: var(--idp-alerta); font-size: 19px; font-weight: 600; text-anchor: middle; }
+        .automato .ponteiro-tarefa { fill: var(--idp-texto-sec); }
+        .automato .amostra-legenda { rx: 3; }
+        .automato .amostra-a { fill: var(--idp-azul); }
+        .automato .amostra-b { fill: var(--idp-ciano); }
+
         /* ---------- Fase 1: construcao BFS por niveis ---------- */
         .automato .estado-pronto { fill: rgba(22, 138, 74, 0.15); stroke: var(--idp-sucesso); stroke-width: 3; }
         .automato .estado-espera { fill: #FFFFFF; stroke: #94A3B8; stroke-width: 3; }
@@ -537,6 +545,13 @@
         .grafico .rotulo-snort { fill: var(--idp-azul); }
         .grafico .rotulo-et { fill: var(--idp-alerta); }
         .grafico .destaque-ponto { fill: none; stroke: var(--idp-ciano); stroke-width: 5; }
+
+        /* ---------- Secao 7: grafico do resultado negativo ---------- */
+        .grafico .curva-neg { stroke: var(--idp-negativo); stroke-width: 4.5; fill: none; }
+        .grafico .ponto-neg { fill: var(--idp-negativo); }
+        .grafico .rotulo-neg { fill: var(--idp-negativo); }
+        .grafico .linha-ref { stroke: var(--idp-azul); stroke-width: 3; stroke-dasharray: 10 8; }
+        .grafico .rotulo-ref { fill: var(--idp-azul); font-size: 22px; font-weight: 700; }
 
         /* ---------- Secao 7: numeros grandes ---------- */
         .metrica .valor {
@@ -1130,8 +1145,8 @@
         </div>
         <div class="seta">&#8594;</div>
         <div class="caixa caixa-central">Fase 2 — Busca
-            <span class="sub"> O autômado percorre todo o texto. <br>
-                <strong>é a fase que consome mais tempo</strong></span>
+            <span class="sub"> O autômato percorre todo o texto. <br>
+                <strong>É a fase que consome mais tempo</strong></span>
         </div>
         <div class="seta">&#8594;</div>
         <div class="caixa">Fase 3 — Emissão
@@ -1422,7 +1437,7 @@
 
 <section>
     <h2>Lacunas identificadas</h2>
-    <p>Trabalho correlatos estudam:</p>
+    <p>Trabalhos correlatos estudam:</p>
     <div class="tres-colunas">
         <div class="painel">
             <span class="rotulo">Abordagem em CPUs</span>
@@ -1448,7 +1463,7 @@
     <div class="faixa-lacuna">
         <p class="lead"><strong>Lacuna e proposta</strong></p>
         <ul>
-            <li> utilizar POSIX Threads em memória compartilhada, sem modificar o autômato.</li>
+            <li>Utilizar POSIX Threads em memória compartilhada, sem modificar o autômato.</li>
             <li>Otimizar as três fases do algoritmo.</li>
         </ul>
     </div>
@@ -1601,27 +1616,57 @@
         <code>gato</code> · texto dividido entre duas threads</p>
     <div class="legenda-passos">
         <p class="passo passo-final fragment" data-fragment-index="3">
-            Cada match pertence ao segmento onde <strong>termina</strong>
+            Cada match pertence ao segmento onde <strong>termina</strong>.</p>
     </div>
 </section>
 
 <section>
     <h2>Fase 2: busca — Estratégia 2</h2>
     <p class="texto-sec"><strong>Despacho dinâmico:</strong> o texto é dividido em
-       muitas tarefas menores <br> — cada thread reivindica a próxima tarefa livre ao
-       terminar a sua.</p>
-    <div class="duas-colunas">
-        <div class="painel">
-            <span class="rotulo">Estática (Estratégia 1)</span>
-            <p class="painel-texto">Se um trecho
-               for mais pesado, quem o recebe termina por último e as demais
-               <strong>esperam</strong>.</p>
-        </div>
-        <div class="painel">
-            <span class="rotulo">Dinâmica (Estratégia 2)</span>
-            <p class="painel-texto">Threads que terminam cedo
-               <strong>puxam as tarefas restantes</strong></p>
-        </div>
+       muitas tarefas pequenas — quem termina puxa a próxima tarefa livre.</p>
+    <svg class="automato" viewBox="0 0 1100 250" role="img"
+         aria-label="Texto dividido em cinco tarefas pequenas; duas threads reivindicam tarefas de um contador compartilhado, e a thread que pega o trecho lento faz menos tarefas">
+        <!-- tarefas: o texto fatiado em pedaços pequenos -->
+        <text class="rotulo-pesada" x="278" y="24">lento</text>
+        <rect class="tarefa-pesada" x="218" y="40" width="120" height="56" rx="6"/>
+        <rect class="fita-caixa"    x="354" y="40" width="120" height="56" rx="6"/>
+        <rect class="fita-caixa"    x="490" y="40" width="120" height="56" rx="6"/>
+        <rect class="fita-caixa"    x="626" y="40" width="120" height="56" rx="6"/>
+        <rect class="fita-caixa"    x="762" y="40" width="120" height="56" rx="6"/>
+        <text class="fita-char" x="278" y="68">1</text>
+        <text class="fita-char" x="414" y="68">2</text>
+        <text class="fita-char" x="550" y="68">3</text>
+        <text class="fita-char" x="686" y="68">4</text>
+        <text class="fita-char" x="822" y="68">5</text>
+
+        <!-- posse das tarefas (acumula a cada passo) -->
+        <g class="fragment" data-fragment-index="0">
+            <rect class="barra-seg-a" x="218" y="112" width="120" height="8" rx="4"/>
+            <rect class="barra-seg-b" x="354" y="112" width="120" height="8" rx="4"/>
+        </g>
+        <g class="fragment" data-fragment-index="1">
+            <rect class="barra-seg-b" x="490" y="112" width="120" height="8" rx="4"/>
+            <rect class="barra-seg-b" x="626" y="112" width="120" height="8" rx="4"/>
+            <rect class="barra-seg-b" x="762" y="112" width="120" height="8" rx="4"/>
+        </g>
+
+        <!-- ponteiro compartilhado: proxima tarefa livre -->
+        <g class="fragment current-visible" data-fragment-index="0">
+            <path class="ponteiro-tarefa" d="M 540 152 L 560 152 L 550 132 z"/>
+            <text class="legenda-svg" x="550" y="180" text-anchor="middle">próxima tarefa livre</text>
+        </g>
+
+        <!-- legenda de cores -->
+        <rect class="amostra-legenda amostra-a" x="270" y="216" width="34" height="12"/>
+        <text class="legenda-svg" x="314" y="228">Thread A</text>
+        <rect class="amostra-legenda amostra-b" x="470" y="216" width="34" height="12"/>
+        <text class="legenda-svg" x="514" y="228">Thread B</text>
+        <rect class="tarefa-pesada" x="670" y="212" width="34" height="20" rx="4"/>
+        <text class="legenda-svg" x="714" y="228">trecho mais lento</text>
+    </svg>
+    <div class="definicao">
+        <p>Na partição estática, quem recebe o trecho lento termina por último —
+           as demais threads <strong>esperam</strong>.</p>
     </div>
 </section>
 
@@ -1629,18 +1674,45 @@
     <h2>Fase 2: busca — Estratégia 3</h2>
     <p class="texto-sec"><strong>Partição do dicionário:</strong> os padrões são
        repartidos em K grupos, gerando K sub-autômatos menores.</p>
-    <div class="duas-colunas">
-        <div class="painel">
-            <span class="rotulo">Vantagem esperada</span>
-            <p class="painel-texto">Sub-autômatos menores, estimou-se serem mais
-               <strong>amigáveis à cache</strong>.</p>
-        </div>
-        <div class="painel">
-            <span class="rotulo">Custo estrutural</span>
-            <p class="painel-texto">Cada sub-autômato <strong>relê o texto
-               inteiro</strong> <br> — tráfego de leitura &#215; K.</p>
-        </div>
-    </div>
+    <svg class="automato" viewBox="0 0 1100 360" role="img"
+         aria-label="Comparação: um autômato completo lê o texto uma vez; três sub-autômatos menores releem o texto inteiro, multiplicando as leituras por três">
+        <defs>
+            <marker id="seta-shard" markerWidth="10" markerHeight="10" refX="8" refY="4"
+                    orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M0,0 L9,4 L0,8 z" fill="#005DAA"/>
+            </marker>
+        </defs>
+
+        <line class="divisor-svg" x1="540" y1="20" x2="540" y2="335"/>
+
+        <!-- painel esquerdo: um automato completo -->
+        <text class="titulo-painel" x="270" y="38">Um autômato completo</text>
+        <circle class="estado" cx="270" cy="150" r="52"/>
+        <text class="nome-estado" x="270" y="150">autômato</text>
+        <line class="aresta" x1="270" y1="205" x2="270" y2="230" marker-end="url(#seta-shard)"/>
+        <rect class="fita-caixa" x="70" y="238" width="400" height="44" rx="6"/>
+        <text class="no-mem-t" x="270" y="260">texto</text>
+        <text class="legenda-svg" x="270" y="326" text-anchor="middle">lê o texto 1 vez</text>
+
+        <!-- painel direito: K sub-automatos -->
+        <text class="titulo-painel" x="820" y="38">K = 3 sub-autômatos</text>
+        <circle class="estado" cx="630" cy="122" r="33"/>
+        <text class="nome-estado" x="630" y="122">sub 1</text>
+        <line class="aresta" x1="666" y1="122" x2="692" y2="122" marker-end="url(#seta-shard)"/>
+        <rect class="fita-caixa" x="700" y="100" width="360" height="44" rx="6"/>
+        <text class="no-mem-t" x="880" y="122">texto inteiro</text>
+        <circle class="estado" cx="630" cy="197" r="33"/>
+        <text class="nome-estado" x="630" y="197">sub 2</text>
+        <line class="aresta" x1="666" y1="197" x2="692" y2="197" marker-end="url(#seta-shard)"/>
+        <rect class="fita-caixa" x="700" y="175" width="360" height="44" rx="6"/>
+        <text class="no-mem-t" x="880" y="197">texto inteiro</text>
+        <circle class="estado" cx="630" cy="272" r="33"/>
+        <text class="nome-estado" x="630" y="272">sub 3</text>
+        <line class="aresta" x1="666" y1="272" x2="692" y2="272" marker-end="url(#seta-shard)"/>
+        <rect class="fita-caixa" x="700" y="250" width="360" height="44" rx="6"/>
+        <text class="no-mem-t" x="880" y="272">texto inteiro</text>
+        <text class="rotulo-pesada" x="820" y="326">cada um relê o texto inteiro — leituras &#215; K</text>
+    </svg>
 </section>
 
 <section>
@@ -1690,11 +1762,6 @@
         <text class="bloco-plano-t" x="901" y="130">102</text>
         <text class="bloco-plano-t" x="995" y="130">6</text>
     </svg>
-    <div class="definicao">
-        <p>Ganho medido em uma thread: <strong>+3,0%</strong> no menor dicionário a
-           <strong>+6,9%</strong> no maior — pequeno, consistente, e herdado por
-           todas as variantes paralelas.</p>
-    </div>
 </section>
 
 <!-- ================================================================
@@ -1728,28 +1795,23 @@
                 <div class="core"></div><div class="core"></div><div class="core"></div><div class="core"></div>
                 <div class="core"></div><div class="core"></div><div class="core"></div><div class="core"></div>
             </div>
-            <p class="painel-texto">16 núcleos idênticos &#215; 2 threads <br>
-               = <strong>32 threads</strong> na mesma frequência</p>
+            <p class="painel-texto">16 núcleos <strong> · 32 threads</strong></p>
         </div>
         <div class="painel">
             <span class="rotulo">Hierarquia de memória</span>
             <div class="mem-ccds">
-                <div class="mem-ccd">CCD 0 — 8 núcleos
-                    <span class="sub-mem">cache própria</span></div>
-                <div class="mem-ccd">CCD 1 — 8 núcleos
-                    <span class="sub-mem">cache própria</span></div>
+                <div class="mem-ccd">CCD 0 — 8 núcleos</div>
+                <div class="mem-ccd">CCD 1 — 8 núcleos</div>
             </div>
-            <div class="mem-dram">Memória principal DDR5 123 GiB — compartilhada por todas as threads</div>
+            <div class="mem-dram">Memória principal DDR5 123 GiB</div>
         </div>
     </div>
     <div class="definicao">
-        <p>Laboratório próprio em C · GCC · POSIX Threads · Linux — frequência
-           fixada em modo de desempenho.</p>
+        <p>Código em C · POSIX Threads · Linux </p>
     </div>
     <div class="regra-dependencia">
-        <p>Um segundo processador, de núcleos híbridos, aparece <strong>apenas em
-           testes complementares</strong> —
-           nenhum número principal vem dele.</p>
+        <p>Núcleos híbridos aparecem <strong> em
+           testes complementares</strong></p>
     </div>
 </section>
 
@@ -1794,24 +1856,65 @@
         <p class="rotulo-corpora">Corpora de entrada — gigabytes de texto real:</p>
         <div class="corpora-cartoes">
             <div class="cartao-corpus">
-                <span class="nome-corpus">SimpleWiki</span>
-                <span class="tam-corpus">1,19 GiB</span>
-                <span class="papel-corpus">texto enciclopédico; contraste para
-                    isolar o efeito do conteúdo</span>
-            </div>
-            <div class="cartao-corpus">
                 <span class="nome-corpus">Enron</span>
                 <span class="tam-corpus">1,32 GiB</span>
-                <span class="papel-corpus">e-mails reais; <strong>corpus principal para os
+                <span class="papel-corpus"><strong>corpus principal para os
                     resultados</strong></span>
             </div>
             <div class="cartao-corpus">
                 <span class="nome-corpus">Enron 8&#215;</span>
                 <span class="tam-corpus">10,59 GiB</span>
-                <span class="papel-corpus">réplica óctupla; estabiliza as curvas
-                    de escalabilidade</span>
+                <span class="papel-corpus">réplica óctupla.</span>
+            </div>
+            <div class="cartao-corpus">
+                <span class="nome-corpus">SimpleWiki</span>
+                <span class="tam-corpus">1,19 GiB</span>
+                <span class="papel-corpus">testar o efeito do conteúdo</span>
             </div>
         </div>
+    </div>
+</section>
+
+<section>
+    <h2>Resultados</h2>
+    <p class="texto-sec"><strong>Tamanho do autômato</strong> — execução <strong>sequencial</strong>: só o dicionário varia <br> e o throughput cai
+       <strong>&#8722;66,6%</strong>.</p>
+    <div class="barras barras-compactas">
+        <div class="linha-barra">
+            <span class="nome-barra">Snort-100
+                <span class="sub">autômato de 1,93 MiB</span></span>
+            <div class="area-barra">
+                <div class="barra" style="width: 100%;"></div>
+                <span class="valor-fora">629,0 MB/s</span>
+            </div>
+        </div>
+        <div class="linha-barra">
+            <span class="nome-barra">Snort-1k
+                <span class="sub">11,92 MiB</span></span>
+            <div class="area-barra">
+                <div class="barra" style="width: 71.9%;"></div>
+                <span class="valor-fora">452,3 MB/s</span>
+            </div>
+        </div>
+        <div class="linha-barra">
+            <span class="nome-barra">Snort completo
+                <span class="sub">55,23 MiB</span></span>
+            <div class="area-barra">
+                <div class="barra" style="width: 52.3%;"></div>
+                <span class="valor-fora">328,9 MB/s</span>
+            </div>
+        </div>
+        <div class="linha-barra">
+            <span class="nome-barra">Emerging Threats
+                <span class="sub">506,78 MiB</span></span>
+            <div class="area-barra">
+                <div class="barra barra-et" style="width: 33.4%;"></div>
+                <span class="valor-fora">210,2 MB/s</span>
+            </div>
+        </div>
+    </div>
+    <div class="definicao">
+        <p>Trocar só o conteúdo do corpus (SimpleWiki &#8594; Enron) muda o throughput em ~5%</p>
     </div>
 </section>
 
@@ -1834,6 +1937,94 @@
             <span class="valor valor-alerta">0,70&#215;</span>
             <span class="contexto">Snort-100 · 1.939 estados <br>
                 <strong>0,8 &#8594; 1,1 ms</strong> em 2 threads</span>
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2>Resultados</h2>
+    <p class="texto-sec"><strong>Fase 2 — Estratégia 1 (partição estática)</strong>, corpus Enron: escalabilidade até 32 threads</p>
+    <svg class="grafico grafico-speedup" viewBox="0 0 1100 470" role="img"
+         aria-label="Curvas de speedup da partição estática por número de threads para Snort e Emerging Threats, com linha ideal de referência">
+        <!-- grade e eixos -->
+        <line class="grade" x1="90" y1="337.5" x2="1000" y2="337.5"/>
+        <line class="grade" x1="90" y1="275"   x2="1000" y2="275"/>
+        <line class="grade" x1="90" y1="212.5" x2="1000" y2="212.5"/>
+        <line class="grade" x1="90" y1="150"   x2="1000" y2="150"/>
+        <line class="grade" x1="90" y1="87.5"  x2="1000" y2="87.5"/>
+        <line class="grade" x1="90" y1="25"    x2="1000" y2="25"/>
+        <line class="eixo" x1="90" y1="25" x2="90" y2="400"/>
+        <line class="eixo" x1="90" y1="400" x2="1000" y2="400"/>
+        <text class="tick-label" x="70" y="406" text-anchor="end">0</text>
+        <text class="tick-label" x="70" y="343" text-anchor="end">4</text>
+        <text class="tick-label" x="70" y="281" text-anchor="end">8</text>
+        <text class="tick-label" x="70" y="218" text-anchor="end">12</text>
+        <text class="tick-label" x="70" y="156" text-anchor="end">16</text>
+        <text class="tick-label" x="70" y="93"  text-anchor="end">20</text>
+        <text class="tick-label" x="70" y="31"  text-anchor="end">24</text>
+        <text class="tick-label" x="117.6" y="428" text-anchor="middle">1</text>
+        <text class="tick-label" x="200.3" y="428" text-anchor="middle">4</text>
+        <text class="tick-label" x="310.6" y="428" text-anchor="middle">8</text>
+        <text class="tick-label" x="420.9" y="428" text-anchor="middle">12</text>
+        <text class="tick-label" x="531.2" y="428" text-anchor="middle">16</text>
+        <text class="tick-label" x="641.5" y="428" text-anchor="middle">20</text>
+        <text class="tick-label" x="751.8" y="428" text-anchor="middle">24</text>
+        <text class="tick-label" x="862.2" y="428" text-anchor="middle">28</text>
+        <text class="tick-label" x="972.5" y="428" text-anchor="middle">32</text>
+        <text class="titulo-eixo" x="545" y="462" text-anchor="middle">threads (T)</text>
+        <text class="titulo-eixo" x="28" y="212" text-anchor="middle"
+              transform="rotate(-90 28 212)">speedup (&#215;)</text>
+
+        <!-- referencia ideal e fim dos nucleos fisicos -->
+        <line class="ideal" x1="90" y1="400" x2="751.8" y2="25"/>
+        <text class="rotulo-ideal" x="762" y="45">ideal</text>
+        <line class="marcador-t16" x1="531.2" y1="25" x2="531.2" y2="400"/>
+        <text class="tick-label" x="531" y="16" text-anchor="middle">núcleos físicos e CCD</text>
+
+        <!-- curva Snort -->
+        <g>
+            <polyline class="curva-snort" points="117.6,384.4 200.3,341.5 310.6,287.8 420.9,240.4 531.2,195.5 641.5,173.7 751.8,138.1 862.2,102.7 972.5,71.5"/>
+            <circle class="ponto-snort" cx="117.6" cy="384.4" r="6"/>
+            <circle class="ponto-snort" cx="200.3" cy="341.5" r="6"/>
+            <circle class="ponto-snort" cx="310.6" cy="287.8" r="6"/>
+            <circle class="ponto-snort" cx="420.9" cy="240.4" r="6"/>
+            <circle class="ponto-snort" cx="531.2" cy="195.5" r="6"/>
+            <circle class="ponto-snort" cx="641.5" cy="173.7" r="6"/>
+            <circle class="ponto-snort" cx="751.8" cy="138.1" r="6"/>
+            <circle class="ponto-snort" cx="862.2" cy="102.7" r="6"/>
+            <circle class="ponto-snort" cx="972.5" cy="71.5" r="6"/>
+            <text class="rotulo-curva rotulo-snort" x="558" y="160">Snort</text>
+        </g>
+
+        <!-- curva Emerging Threats -->
+        <g>
+            <polyline class="curva-et" points="117.6,384.3 200.3,344.2 310.6,296.9 420.9,255.8 531.2,218.8 641.5,203.1 751.8,178.9 862.2,155.0 972.5,128.3"/>
+            <circle class="ponto-et" cx="117.6" cy="384.3" r="6"/>
+            <circle class="ponto-et" cx="200.3" cy="344.2" r="6"/>
+            <circle class="ponto-et" cx="310.6" cy="296.9" r="6"/>
+            <circle class="ponto-et" cx="420.9" cy="255.8" r="6"/>
+            <circle class="ponto-et" cx="531.2" cy="218.8" r="6"/>
+            <circle class="ponto-et" cx="641.5" cy="203.1" r="6"/>
+            <circle class="ponto-et" cx="751.8" cy="178.9" r="6"/>
+            <circle class="ponto-et" cx="862.2" cy="155.0" r="6"/>
+            <circle class="ponto-et" cx="972.5" cy="128.3" r="6"/>
+            <text class="rotulo-curva rotulo-et" x="585" y="252">Emerging Threats</text>
+        </g>
+
+        <!-- destaque dos pontos finais -->
+        <g>
+            <circle class="destaque-ponto" cx="972.5" cy="71.5" r="13"/>
+            <circle class="destaque-ponto" cx="972.5" cy="128.3" r="13"/>
+        </g>
+    </svg>
+    <div class="duas-colunas">
+        <div class="painel metrica">
+            <span class="valor">21,02&#215;</span>
+            <span class="contexto">Snort · <strong>6.920 MB/s</strong> · eficiência de 65,7% em 32 threads</span>
+        </div>
+        <div class="painel metrica">
+            <span class="valor valor-alerta">17,39&#215;</span>
+            <span class="contexto">Emerging Threats · <strong>3.649 MB/s</strong> · eficiência de 54,3% em 32 threads</span>
         </div>
     </div>
 </section>
@@ -1928,6 +2119,67 @@
 
 <section>
     <h2>Resultados</h2>
+    <p class="texto-sec"><strong>Fase 2 — Estratégia 3 (partição do dicionário)</strong>,
+       dicionário Snort, corpus Enron.</p>
+    <svg class="grafico grafico-speedup" viewBox="0 0 1100 470" role="img"
+         aria-label="Speedup da partição do dicionário por número de sub-autômatos, com pico de 1,89 vezes em 8 sub-autômatos, muito abaixo da linha de referência da partição do texto em 22,91 vezes">
+        <!-- grade e eixos -->
+        <line class="grade" x1="90" y1="337.5" x2="1000" y2="337.5"/>
+        <line class="grade" x1="90" y1="275"   x2="1000" y2="275"/>
+        <line class="grade" x1="90" y1="212.5" x2="1000" y2="212.5"/>
+        <line class="grade" x1="90" y1="150"   x2="1000" y2="150"/>
+        <line class="grade" x1="90" y1="87.5"  x2="1000" y2="87.5"/>
+        <line class="grade" x1="90" y1="25"    x2="1000" y2="25"/>
+        <line class="eixo" x1="90" y1="25" x2="90" y2="400"/>
+        <line class="eixo" x1="90" y1="400" x2="1000" y2="400"/>
+        <text class="tick-label" x="70" y="406" text-anchor="end">0</text>
+        <text class="tick-label" x="70" y="343" text-anchor="end">4</text>
+        <text class="tick-label" x="70" y="281" text-anchor="end">8</text>
+        <text class="tick-label" x="70" y="218" text-anchor="end">12</text>
+        <text class="tick-label" x="70" y="156" text-anchor="end">16</text>
+        <text class="tick-label" x="70" y="93"  text-anchor="end">20</text>
+        <text class="tick-label" x="70" y="31"  text-anchor="end">24</text>
+        <text class="tick-label" x="117.6" y="428" text-anchor="middle">2</text>
+        <text class="tick-label" x="331.3" y="428" text-anchor="middle">4</text>
+        <text class="tick-label" x="545.0" y="428" text-anchor="middle">8</text>
+        <text class="tick-label" x="758.7" y="428" text-anchor="middle">16</text>
+        <text class="tick-label" x="972.4" y="428" text-anchor="middle">32</text>
+        <text class="titulo-eixo" x="545" y="462" text-anchor="middle">sub-autômatos (K)</text>
+        <text class="titulo-eixo" x="28" y="212" text-anchor="middle"
+              transform="rotate(-90 28 212)">speedup (&#215;)</text>
+
+        <!-- referencia: particao do texto no mesmo cenario -->
+        <line class="linha-ref" x1="90" y1="42" x2="1000" y2="42"/>
+        <text class="rotulo-ref" x="545" y="76" text-anchor="middle">partição do texto — 22,91&#215;</text>
+
+        <!-- curva da particao do dicionario -->
+        <g>
+            <polyline class="curva-neg" points="117.6,377.2 331.3,373.0 545.0,370.5 758.7,371.3 972.4,372.2"/>
+            <circle class="ponto-neg" cx="117.6" cy="377.2" r="6"/>
+            <circle class="ponto-neg" cx="331.3" cy="373.0" r="6"/>
+            <circle class="ponto-neg" cx="545.0" cy="370.5" r="6"/>
+            <circle class="ponto-neg" cx="758.7" cy="371.3" r="6"/>
+            <circle class="ponto-neg" cx="972.4" cy="372.2" r="6"/>
+            <text class="rotulo-curva rotulo-neg" x="545" y="342" text-anchor="middle">pico: 1,89&#215;</text>
+            <circle class="destaque-ponto" cx="545.0" cy="370.5" r="13"/>
+        </g>
+    </svg>
+    <div class="duas-colunas">
+        <div class="painel metrica">
+            <span class="valor valor-negativo">1,89&#215;</span>
+            <span class="contexto">pico com <strong>8 sub-autômatos</strong> (620,9 MB/s);
+                adicionar mais grupos <strong>piora</strong>: 1,78&#215; com 32</span>
+        </div>
+        <div class="painel metrica">
+            <span class="valor">22,91&#215;</span>
+            <span class="contexto">partição do texto no mesmo cenário — cada
+                sub-autômato relê o texto inteiro, e o tráfego de memória domina</span>
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2>Resultados</h2>
     <p class="texto-sec"><strong>Fase 3 — Saída plana</strong>: ganho medido em
        execução sequencial, corpus Enron.</p>
     <div class="tres-colunas">
@@ -1950,51 +2202,7 @@
     <div class="definicao">
         <p>Os melhores
            resultados do trabalho combinam despacho dinâmico com saída plana, <strong>22,91&#215;</strong> e
-           <strong>18,96&#215;</strong>. <br> Ponta a ponta (três fases):
-           <strong>22,23&#215;</strong> e <strong>17,71&#215;</strong></p>
-    </div>
-</section>
-
-<section>
-    <h2>Resultados</h2>
-    <p class="texto-sec"><strong>Tamanho do autômato</strong> — Execução <strong>sequencial</strong>: só o dicionário varia <br> e o throughput cai
-       <strong>&#8722;66,6%</strong>.</p>
-    <div class="barras barras-compactas">
-        <div class="linha-barra">
-            <span class="nome-barra">Snort-100
-                <span class="sub">autômato de 1,93 MiB</span></span>
-            <div class="area-barra">
-                <div class="barra" style="width: 100%;"></div>
-                <span class="valor-fora">629,0 MB/s</span>
-            </div>
-        </div>
-        <div class="linha-barra">
-            <span class="nome-barra">Snort-1k
-                <span class="sub">11,92 MiB</span></span>
-            <div class="area-barra">
-                <div class="barra" style="width: 71.9%;"></div>
-                <span class="valor-fora">452,3 MB/s</span>
-            </div>
-        </div>
-        <div class="linha-barra">
-            <span class="nome-barra">Snort completo
-                <span class="sub">55,23 MiB</span></span>
-            <div class="area-barra">
-                <div class="barra" style="width: 52.3%;"></div>
-                <span class="valor-fora">328,9 MB/s</span>
-            </div>
-        </div>
-        <div class="linha-barra">
-            <span class="nome-barra">Emerging Threats
-                <span class="sub">506,78 MiB</span></span>
-            <div class="area-barra">
-                <div class="barra barra-et" style="width: 33.4%;"></div>
-                <span class="valor-fora">210,2 MB/s</span>
-            </div>
-        </div>
-    </div>
-    <div class="definicao">
-        <p>Trocar só o conteúdo do corpus (SimpleWiki &#8594; Enron) muda o throughput em ~5%</p>
+           <strong>18,96&#215;</strong>.</p>
     </div>
 </section>
 
@@ -2023,6 +2231,10 @@
     <p class="texto-sec">Quatro achados relevantes</p>
     <div class="achados">
         <div class="achado">
+            <span class="titulo-achado">O tamanho do autômato tem grande impacto</span>
+            <p>Condicionado pela memória, mesmo com 32 threads.</p>
+        </div>        
+        <div class="achado">
             <span class="titulo-achado">Construção impacta autômatos grandes</span>
             <p>Paralelizar a fase 1 compensa apenas para autômatos grandes.</p>
         </div>
@@ -2035,10 +2247,6 @@
         <div class="achado">
             <span class="titulo-achado">O layout de emissão importa</span>
             <p>A emissão plana corta a perseguição de ponteiros e traz ganhos a custo mínimo.</p>
-        </div>
-        <div class="achado">
-            <span class="titulo-achado">O tamanho do autômato tem grande impacto</span>
-            <p>Regime limitado pela memória, mesmo com 32 threads.</p>
         </div>
     </div>
 </section>
@@ -2065,7 +2273,7 @@
                 com mediana e dispersão</div>
         </div>
         <div class="limite-linha">
-            <div class="limite-caixa limite-atual">Impacto do conteúdo concentrado aferido em apenas em plataforma híbrida</div>
+            <div class="limite-caixa limite-atual">Impacto do conteúdo concentrado aferido apenas em plataforma híbrida</div>
             <span class="limite-seta">&#8594;</span>
             <div class="limite-caixa limite-futuro">Repetir o diagnóstico na
                 plataforma homogênea</div>
