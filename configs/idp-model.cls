@@ -171,10 +171,8 @@ headheight=1.8cm]{geometry}
 
         \vspace*{3cm}
 
-        {\bfseries\color{fundo_idp}
-        \iforientadora Orientadora 
-        \else Orientador
-        \fi}\\
+        % upstream PR #9 (capstone-latex-template): contracapa em inglês
+        {\bfseries\color{fundo_idp}Advisor}\\
         {\@nomeorientador}
 
         \vspace*{3cm}
@@ -201,27 +199,27 @@ headheight=1.8cm]{geometry}
     \begin{flushleft}
 
         \vspace*{2cm}
-        {Aprovado em \@dataaprovacao}
+        {Approved on \@dataaprovacao}
 
         \vspace*{1cm}
-        {\bfseries\color{fundo_idp}Banca Examinadora}
-        
-        
+        {\bfseries\color{fundo_idp}Examining Committee}
+
+
         {
         \vspace*{2cm}
-        \rule{\linewidth}{0.4pt}
+
         \vspace{1em}
-        {Thálisson de Oliveira Lopes}
+        {Jeremias Moreira Gomes (Advisor) - IDP}
 
         \vspace*{2cm}
-        \rule{\linewidth}{0.4pt}
+
         \vspace{1em}
-        {Caio César Rodrigues Garcez}
-        
+        {Thálisson de Oliveira Lopes (Committee Member) - IDP}
+
         \vspace*{2cm}
-        \rule{\linewidth}{0.4pt}
+
         \vspace{1em}
-        {Jeremias Moreira Gomes}
+        {Caio César Rodrigues Garcez (Committee Member) - IDP}
         }
     \end{flushleft}
 }
