@@ -293,28 +293,38 @@ threats to validity.
 % review: comment 053; task step 7 -- efficiency reported as measured data;
 % epic-03: residual loss at full SMT is treated as inference from the curve.
 % banca (defesa 2026-07-08): Caio --- efficiency restated as a curve so the
-% saturation of the parallel gain is directly visible.
+% saturation of the parallel gain is directly visible. Reference baseline is
+% sequential_flat (not the chained sequential), so the emission-layout gain is
+% not credited to parallelism and the curve starts at ~100%.
 Parallel efficiency (Eq.~\ref{eq:efficiency}) makes the shape of the scaling
-concrete: Figure~\ref{fig:efficiency} restates the two curves of
-Figure~\ref{fig:speedup} as the fraction of ideal linear speedup realized at
-each thread count, which exposes the saturation that the rising speedup curves
-compress. At sixteen threads---one worker per physical core---the moderate regime
-runs at $86.9\%$ efficiency ($13.90\times / 16$) and the memory-bound regime at
-$79.5\%$ ($12.72\times / 16$). Enabling the second SMT sibling on each core raises
-throughput by a further $1.65\times$ (moderate) and $1.49\times$ (memory-bound) but
-lowers efficiency to $71.6\%$ and $59.3\%$ at thirty-two threads. The loss is
-not evenly distributed: crossing from sixteen to eighteen threads---the first
-configuration in which SMT siblings share a physical core---costs about eight
-percentage points in a single step in both regimes ($86.9\%$ to $78.8\%$ and
-$79.5\%$ to $71.5\%$), the largest drop anywhere on either curve. That drop is
-consistent with SMT sharing, which can hide memory latency without doubling
-compute, and with residual memory contention in the wider regime. It is therefore
-treated as an inference from the curve and the footprint result, not as a measured
-sequential bottleneck or a counter-level measurement.
+concrete. One definitional care is needed first: the winning strategy inherits
+the flat emission layout, so dividing its headline speedup by the thread count
+would credit the layout gain---quantified later in this chapter
+(Table~\ref{tab:flat})---to parallelism and report efficiencies above $100\%$
+at trivial thread counts. Efficiency is therefore computed against the flat
+sequential baseline (\texttt{sequential\_flat}), the strongest single-threaded
+implementation in the laboratory, so that the curve isolates the contribution
+of parallelism itself. Figure~\ref{fig:efficiency} plots the result over the
+full thread sweep, exposing the saturation that the rising speedup curves of
+Figure~\ref{fig:speedup} compress. From near-perfect efficiency at one thread,
+the moderate regime falls to $83.5\%$ at sixteen threads---one worker per
+physical core---and the memory-bound regime to $74.3\%$. Enabling the second
+SMT sibling on each core raises throughput by a further $1.65\times$ (moderate)
+and $1.49\times$ (memory-bound) but lowers efficiency to $68.8\%$ and $55.4\%$
+at thirty-two threads. The loss is not evenly distributed: crossing from
+sixteen to eighteen threads---the first configuration in which SMT siblings
+share a physical core---costs about eight percentage points in a single step in
+both regimes ($83.5\%$ to $75.7\%$ and $74.3\%$ to $66.9\%$), the largest drop
+anywhere on either curve. That drop is consistent with SMT sharing, which can
+hide memory latency without doubling compute, and with residual memory
+contention in the wider regime. It is therefore treated as an inference from
+the curve and the footprint result, not as a measured sequential bottleneck or
+a counter-level measurement.
 
 % banca (defesa 2026-07-08): Caio --- efficiency curve; coordinates are
-% speedup/T from the same sweep as fig:speedup (v_speedup,
-% pthread_dynamic_flat, canonical Enron corpus, workstation 2026-06-30).
+% mbps(pthread_dynamic_flat) / (mbps(sequential_flat) * T) from phase A of the
+% canonical sweep (workstation 2026-06-30, Enron corpus; seq_flat baselines:
+% snort 342.40 MB/s, et_32 224.34 MB/s).
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}
@@ -324,9 +334,9 @@ sequential bottleneck or a counter-level measurement.
     xlabel={Number of threads ($T$)},
     ylabel={Parallel efficiency (\%)},
     xmin=1, xmax=32,
-    ymin=50, ymax=112,
+    ymin=0, ymax=110,
     xtick={1,4,8,12,16,20,24,28,32},
-    ytick={50,60,70,80,90,100,110},
+    ytick={0,20,40,60,80,100},
     legend pos=south west,
     legend style={font=\scriptsize},
     grid=both,
@@ -337,40 +347,39 @@ sequential bottleneck or a counter-level measurement.
 \addplot[color=gray, dotted] coordinates {
     (1,100) (32,100)
 };
-\addlegendentry{$100\%$ (linear ideal)}
+\addlegendentry{linear ideal}
 
 \addplot[color=blue, mark=square, thick] coordinates {
-    (1,104.4) (2,101.4) (4,99.2) (6,96.7) (8,95.0) (10,92.3) (12,89.9)
-    (14,88.5) (16,86.9) (18,78.8) (20,76.6) (22,76.0) (24,74.7) (26,73.8)
-    (28,72.6) (30,72.3) (32,71.6)
+    (1,100.4) (2,97.4) (4,95.3) (6,93.0) (8,91.3) (10,88.8) (12,86.4)
+    (14,85.1) (16,83.5) (18,75.7) (20,73.6) (22,73.1) (24,71.8) (26,70.9)
+    (28,69.8) (30,69.5) (32,68.8)
 };
 \addlegendentry{Snort (55~MiB)}
 
 \addplot[color=red, mark=triangle, thick] coordinates {
-    (1,107.0) (2,102.3) (4,95.7) (6,92.5) (8,88.1) (10,86.6) (12,84.4)
-    (14,82.0) (16,79.5) (18,71.5) (20,69.3) (22,66.5) (24,65.8) (26,63.8)
-    (28,62.4) (30,61.3) (32,59.3)
+    (1,100.1) (2,95.7) (4,89.5) (6,86.6) (8,82.4) (10,81.0) (12,78.9)
+    (14,76.7) (16,74.3) (18,66.9) (20,64.8) (22,62.2) (24,61.6) (26,59.7)
+    (28,58.4) (30,57.3) (32,55.4)
 };
 \addlegendentry{Emerging Threats (507~MiB)}
 
-\draw[dashed, gray!70, line width=.5pt] (axis cs:16,50) -- (axis cs:16,112);
+\draw[dashed, gray!70, line width=.5pt] (axis cs:16,0) -- (axis cs:16,110);
 \node[anchor=north west, font=\scriptsize, text=gray!60!black]
-    at (axis cs:16.4,111) {physical cores $\rightarrow$ SMT};
+    at (axis cs:16.4,108) {physical cores $\rightarrow$ SMT};
 \end{axis}
 \end{tikzpicture}
 \caption{Parallel efficiency---speedup divided by thread count
 (Eq.~\ref{eq:efficiency})---for the winning strategy
 (\texttt{pthread\_\allowbreak dynamic\_\allowbreak flat}) on the canonical Enron
-corpus, restating the curves of Figure~\ref{fig:speedup}. While the speedup
-itself rises monotonically to $T=32$, the efficiency view exposes the saturation
-of the parallel gain: each added thread contributes less, and the largest single
-loss occurs when the sweep crosses the dashed line at sixteen threads and the
-first SMT siblings begin to share physical cores. The memory-bound dictionary
-runs eight to twelve percentage points below the moderate one throughout,
-consistent with the memory-bandwidth contention discussed above. Values
-marginally above $100\%$ at one and two threads reflect the flat emission layout
-of the measured searcher, which is slightly faster than the chained sequential
-baseline used as the reference (Table~\ref{tab:flat}).}
+corpus, computed against the flat sequential baseline
+(\texttt{sequential\_flat}) so that the emission-layout gain is not credited to
+parallelism. While the speedup itself rises monotonically to $T=32$
+(Figure~\ref{fig:speedup}), the efficiency view exposes the saturation of the
+parallel gain: each added thread contributes less, and the largest single loss
+occurs when the sweep crosses the dashed line at sixteen threads and the first
+SMT siblings begin to share physical cores. The gap between the two regimes
+widens with the thread count, reaching about thirteen percentage points at
+$T=32$, consistent with the memory-bandwidth contention discussed above.}
 \label{fig:efficiency}
 \end{figure}
 
