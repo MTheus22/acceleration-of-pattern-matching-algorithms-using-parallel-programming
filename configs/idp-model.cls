@@ -19,6 +19,7 @@ headheight=1.8cm]{geometry}
 \RequirePackage{setspace}
 \RequirePackage{titletoc}
 \RequirePackage{hyperref}
+\RequirePackage{needspace}
 \RequirePackage[most]{tcolorbox}
 
 \RequirePackage{cite} % Pacote para formatação numérica padrão IEEE
@@ -227,6 +228,7 @@ headheight=1.8cm]{geometry}
 
 \renewcommand{\abstract}{
     \clearpage
+    \pdfbookmark[0]{Abstract}{abstract}
      \begin{flushleft}
     {\Large\bfseries\color{fundo_idp}\MakeUppercase{Abstract}}
     \end{flushleft}
@@ -238,6 +240,50 @@ headheight=1.8cm]{geometry}
         \color{fundo_idp}\textbf{Keywords:} \color{fundo_idp}{\@keywords}.
         \end{center}
     \end{tcolorbox}
+    \clearpage
+}
+
+% Resumo em português (tradução do abstract), mesmo padrão visual do \abstract
+\newcommand{\resumo}{
+    \clearpage
+    \pdfbookmark[0]{Resumo}{resumo}
+     \begin{flushleft}
+    {\Large\bfseries\color{fundo_idp}\MakeUppercase{Resumo}}
+    \end{flushleft}
+    \vspace{1em}
+    \input{partes/resumo}
+    \vspace{1em}
+     \begin{tcolorbox}[keywordsbox]
+        \begin{center}
+        \color{fundo_idp}\textbf{Palavras-chave:} \color{fundo_idp}{\@palavraschave}.
+        \end{center}
+    \end{tcolorbox}
+    \clearpage
+}
+
+% Dedicatória (opcional): sem título, texto em itálico no canto inferior direito
+\newcommand{\dedicatoria}{
+    \clearpage
+    \thispagestyle{pretext}
+    \pdfbookmark[0]{Dedicatória}{dedicatoria}
+    \vspace*{\fill}
+    \begin{flushright}
+    \itshape
+    \input{partes/dedicatoria}
+    \end{flushright}
+    \clearpage
+}
+
+% Agradecimentos (opcional): título no padrão das demais páginas pré-textuais
+\newcommand{\agradecimentos}{
+    \clearpage
+    \thispagestyle{pretext}
+    \pdfbookmark[0]{Agradecimentos}{agradecimentos}
+    \begin{flushleft}
+    {\Large\bfseries\color{fundo_idp}\MakeUppercase{Agradecimentos}}
+    \end{flushleft}
+    \vspace{1em}
+    \input{partes/agradecimentos}
     \clearpage
 }
 
@@ -305,6 +351,8 @@ headheight=1.8cm]{geometry}
 \newcommand{\subsecao}[1]{%
   \refstepcounter{subsecnum}
   \par\vspace{1.5ex}
+  % evita título órfão no fim da página (garante espaço para o título + ~2 linhas)
+  \Needspace{3\baselineskip}
 
       \phantomsection
       \addcontentsline{toc}{subsection}{\arabic{secnum}.\arabic{subsecnum} #1} % <-- Adiciona ao sumário
@@ -322,6 +370,8 @@ headheight=1.8cm]{geometry}
 \newcommand{\subsubsecao}[1]{%
   \refstepcounter{subsubsecnum}
   \par\vspace{1.2ex}
+  % evita título órfão no fim da página (garante espaço para o título + ~2 linhas)
+  \Needspace{3\baselineskip}
   \phantomsection
   \addcontentsline{toc}{subsubsection}{\thesubsubsecnum #1} % <-- Adiciona ao sumário
 
@@ -461,6 +511,7 @@ headheight=1.8cm]{geometry}
    \begingroup
    \backgroundsumario
    \pagestyle{empty}
+    \pdfbookmark[0]{Contents}{toc}
     \section*{\contentsname}
     \@starttoc{toc}
     \clearpage
@@ -475,6 +526,7 @@ headheight=1.8cm]{geometry}
    \begingroup
    \backgroundsumario
    \pagestyle{empty}
+    \pdfbookmark[0]{List of Figures}{lof}
     \section*{\listfigurename}
     \@starttoc{lof}
      \clearpage
@@ -487,6 +539,7 @@ headheight=1.8cm]{geometry}
    \begingroup
    \backgroundsumario
    \pagestyle{empty}
+    \pdfbookmark[0]{List of Tables}{lot}
     \section*{\listtablename}
     \@starttoc{lot}
      \clearpage

@@ -46,18 +46,32 @@ the L3 of one complex. Main memory is $123$~GiB of DDR5, and the aggregate memor
 bandwidth is the shared resource for which the parallel scans ultimately contend.
 
 The software stack is a purpose-built laboratory written in C11, compiled with
-GCC~13.3.0 using \texttt{-O3 -march=native} and an aggressive warning profile,
+GCC 13.3.0 using \texttt{-O3 -march=native} and an aggressive warning profile,
 and linked against the POSIX Threads library \cite{Nichols1996}. Experiments ran
-under Linux (kernel~6.17.0, Ubuntu~24.04). To minimize scheduling and
+under Linux (kernel 6.17.0, Ubuntu 24.04). To minimize scheduling and
 frequency-scaling artifacts, the CPU frequency governor was set to
 \texttt{performance}, holding the cores at their sustained all-core clock
 throughout the sweep; the topology-aware searchers
-(\texttt{pthread\_chunked\_v3} and \texttt{pthread\_chunked\_v3\_flat})
+(\texttt{pthread\_\allowbreak chunked\_\allowbreak v3} and \texttt{pthread\_\allowbreak chunked\_\allowbreak v3\_\allowbreak flat})
 additionally pin each worker thread to a dedicated logical CPU via
-\texttt{pthread\_setaffinity\_np}, while the remaining searchers rely on OS
+\texttt{pthread\_\allowbreak setaffinity\_\allowbreak np}, while the remaining searchers rely on OS
 scheduling without explicit binding. The build was additionally validated under
 sanitizer instrumentation, namely the Address and Undefined Behavior sanitizers
 and the Thread Sanitizer, as discussed in Section~\ref{subsec:correctness}.
+
+% banca (defesa 2026-07-08): Thálisson --- internal organization of the test
+% environment made explicit (single binary, strategy registry, shared
+% measurement path).
+Internally, the laboratory is organized as a single binary in which each
+scanning strategy is a self-contained module, registered under a unique name at
+program start-up and selected at run time. Every strategy therefore executes
+inside the same program: it receives the same automaton, produced by the same
+construction code, scans the same memory-mapped corpus buffer, and is timed by
+the same measurement harness, so that two runs differ only in the strategy
+under test and in the experimental parameters being varied, such as the thread
+count. This shared execution path is what makes the comparisons between
+strategies fair, and its structured per-run output is the source of the
+database described under metrics and instrumentation below.
 
 % epic-03: hook reserving the heterogeneous processor for the two closing
 % diagnostics (P/E imbalance; content skew, pilot i5_2026-07-02).
@@ -440,9 +454,9 @@ concerns composition.
     \label{tab:hypotheses}
     \small
     \begin{tabular}{@{}
-        >{\raggedright\arraybackslash}p{5.7cm}
-        >{\raggedright\arraybackslash}p{3.2cm}
-        >{\raggedright\arraybackslash}p{2.8cm}
+        >{\raggedright\arraybackslash}p{8.8cm}
+        >{\raggedright\arraybackslash}p{3.4cm}
+        >{\raggedright\arraybackslash}p{2.6cm}
     @{}}
         \toprule
         \textbf{Hypothesis} & \textbf{Experiment} & \textbf{Reported in} \\

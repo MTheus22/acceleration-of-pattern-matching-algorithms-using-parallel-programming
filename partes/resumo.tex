@@ -1,0 +1,35 @@
+O algoritmo Aho-Corasick é um pilar dos sistemas de detecção de intrusão de
+rede baseados em assinaturas e das ferramentas de análise de malware, pois
+varre uma entrada em tempo linear enquanto casa muitos padrões
+simultaneamente. Sua travessia canônica do autômato, porém, é sequencial e
+subutiliza os processadores multinúcleo modernos quando uma única entrada de
+grande porte precisa ser inspecionada. Este trabalho projeta, implementa e
+avalia estratégias de varredura Aho-Corasick com paralelismo de dados,
+construídas sobre POSIX Threads para CPUs multinúcleo de memória
+compartilhada. O texto de entrada é particionado em segmentos sobrepostos que
+as threads varrem concorrentemente sobre um autômato compartilhado e
+estritamente somente-leitura, mantendo a busca livre de travas; propõe-se
+também um layout de saída achatado e contíguo que reduz o custo de
+perseguição de ponteiros na emissão de casamentos. A avaliação foca o regime
+limitado por memória, no qual conjuntos de regras realistas do Snort e do
+Emerging Threats produzem autômatos de até cerca de $507$~MiB, muito além da    
+capacidade efetiva da cache de último nível. Em uma estação de trabalho
+homogênea AMD Ryzen~9~9950X (Zen~5, dezesseis núcleos, trinta e duas threads
+de hardware), a estratégia dinâmica com saída achatada atinge $22{,}91\times$
+de speedup e $7\,542$~MB/s no dicionário completo do Snort, e $18{,}96\times$
+e $3\,979$~MB/s no do Emerging Threats. A mesma estratégia permanece
+insensível ao conteúdo do corpus na carga do Snort, com $7\,976$~MB/s no
+SimpleWiki e $7\,595$~MB/s no Enron, e a granularidade de tarefa mais grossa
+testada atinge $7\,804$~MB/s. De ponta a ponta, sobre o corpus Enron replicado
+oito vezes, as acelerações atingem $22{,}23\times$ para o Snort e
+$17{,}71\times$ para o Emerging Threats, mostrando que a construção permanece
+um custo limitado e que a busca domina o pipeline. Um diagnóstico controlado
+sobre corpora com conteúdo enviesado --- mesmos bytes e mesmo total de
+casamentos, concentrados em uma região do texto --- confirma o balanceamento
+de carga da estratégia dinâmica: partições estáticas perdem até cerca de
+$30\%$ da vazão mediana, enquanto o despacho dinâmico permanece balanceado e
+as ultrapassa. A conclusão central é que, quando o autômato excede a
+capacidade efetiva da cache, a escalabilidade do Aho-Corasick passa a ser
+limitada pelo subsistema de memória, e não pela lógica de casamento; o
+paralelismo de texto sobre um autômato compartilhado, combinado à emissão
+achatada de casamentos, é a resposta mais eficaz nesse regime.

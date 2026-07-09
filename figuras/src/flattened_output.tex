@@ -43,9 +43,9 @@
 \node[note, anchor=north] at (2.25,0.85) {accepting state\\(hot transition array)};
 
 % scattered pattern nodes (deliberately misaligned -> "scattered")
-\node[pat] (pa) at (7.2,1.9) {\texttt{"he"}};
-\node[pat] (pb) at (8.1,0.4) {\texttt{"she"}};
-\node[pat] (pc) at (6.4,-0.7) {\texttt{"hers"}};
+\node[pat] (pa) at (7.2,1.9) {\texttt{he}};
+\node[pat] (pb) at (8.1,0.4) {\texttt{she}};
+\node[pat] (pc) at (6.4,-0.7) {\texttt{hers}};
 
 % pointer chain from accepting state across memory
 \draw[chain,->] (sacc.north) to[out=80,in=180] (pa.west);
@@ -75,9 +75,9 @@
     \node[font=\scriptsize, text=inkgray] at (\n*0.75,-1.6) {\idx};
 }
 % highlight the segment off..off+cnt = 3,4,5
-\node[seg] (c3) at (3*0.75,-1.0) {\scriptsize\texttt{"he"}};
-\node[seg] (c4) at (4*0.75,-1.0) {\scriptsize\texttt{"she"}};
-\node[seg] (c5) at (5*0.75,-1.0) {\scriptsize\texttt{"hers"}};
+\node[seg] (c3) at (3*0.75,-1.0) {\scriptsize\texttt{he}};
+\node[seg] (c4) at (4*0.75,-1.0) {\scriptsize\texttt{she}};
+\node[seg] (c5) at (5*0.75,-1.0) {\scriptsize\texttt{hers}};
 \node[anchor=east, font=\footnotesize\ttfamily] at (-0.55,-1.0) {outputs[]};
 
 % arrow from state offset to start of segment

@@ -2,3 +2,8 @@
 \usepackage{xurl}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+
+% Third line-breaking pass for paragraphs the standard passes cannot fit
+% (long \texttt identifiers, tied version numbers). Only affects paragraphs
+% that would otherwise produce an overfull \hbox past the right margin.
+\setlength{\emergencystretch}{3em}

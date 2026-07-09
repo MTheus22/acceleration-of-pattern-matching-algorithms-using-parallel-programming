@@ -257,7 +257,6 @@ Its efficiency primarily stems from two rules (or heuristics):
 \end{itemize}
 These two rules combined enable the Boyer-Moore algorithm to skip larger portions of the text, significantly reducing the total number of comparisons.
 
-\newpage
 \subsubsecao{The Need for Specialized Multi-Pattern Algorithms}
 
 When the task involves searching for multiple patterns simultaneously from a set $K = \{P_1, P_2, \dots, P_k\}$ within a text $T$, simply applying a single-pattern matching algorithm for each $P_i$ independently proves highly inefficient. This ``iterative'' approach requires scanning the text multiple times, resulting in a total time complexity that can be approximately $O(k \cdot (N+M_{\text{avg}}))$ or worse, where $M_{\text{avg}}$ is the average pattern length \cite{AhoCorasick1975}.
@@ -293,13 +292,13 @@ Aho-Corasick has two main phases: (i) construction, which builds the automaton, 
     \item \textbf{Output function (\acfunc{output}):} the output function $\acfunc{output}(s)$ identifies all keywords that end at state $s$. For a given state $s$, $\acfunc{output}(s)$ is the set of all patterns $P_i$ in $K$ such that the string corresponding to the path to $s$ is $P_i$. To ensure all matches are reported, including those that are suffixes of other patterns, $\acfunc{output}(s)$ is augmented during the computation of \acfunc{fail}: if $\acfunc{fail}(s) = s'$, then $\acfunc{output}(s) \leftarrow \acfunc{output}(s) \cup \acfunc{output}(\acfunc{fail}(s))$. This incremental union lets each state report every pattern that ends either at that state or at any suffix state reached through its failure chain.
 \end{itemize}
 
-The complete automaton, combining the \acfunc{goto} transitions, \acfunc{fail} links, and \acfunc{output} match sets, is illustrated in Figure~\ref{fig:ac_automaton} for the pattern set $K=\{\text{"he"}, \text{"she"}, \text{"hers"}\}$.
+The complete automaton, combining the \acfunc{goto} transitions, \acfunc{fail} links, and \acfunc{output} match sets, is illustrated in Figure~\ref{fig:ac_automaton} for the pattern set $K=\{\text{``he''}, \text{``she''}, \text{``hers''}\}$.
 
 % review: comments 009 (issue #104) caption below figure, 010/017 (issues #105/#135) no source line for author-made figures
 \begin{figure}[H]
 \centering
 \includegraphics[width=1.0\linewidth]{ac_automaton.pdf}
-\caption{Complete Aho–Corasick automaton for the pattern set $K=\{\text{"he"}, \text{"she"}, \text{"hers"}\}$, showing solid blue \acfunc{goto} transitions, dashed red \acfunc{fail} links, double-circled accepting states, and their corresponding \acfunc{output} match sets.}
+\caption{Complete Aho–Corasick automaton for the pattern set $K=\{\text{``he''}, \text{``she''}, \text{``hers''}\}$, showing solid blue \acfunc{goto} transitions, dashed red \acfunc{fail} links, double-circled accepting states, and their corresponding \acfunc{output} match sets.}
 \label{fig:ac_automaton}
 \end{figure}
 
@@ -314,7 +313,7 @@ Once the Aho–Corasick automaton has been built, it scans the text $T = a_1 a_2
 Figure~\ref{fig:ac-matching-flow} illustrates this control flow in detail, which: starts at the root with $i=1$, attempt each $\acfunc{goto}(cs, a_i)$, follow failure links on a “no” decision, report matches via $\acfunc{output}(cs)$ on a “yes,” advance $i$, and terminate when $i>n$.
 
 % review: comments 009 (issue #104) caption below figure, 010 (issue #105) no source line for author-made figures
-\begin{figure}[H]
+\begin{figure}[!htb]
     \centering
     \includegraphics[width=0.6\textwidth,keepaspectratio]{ac_matching.pdf}
     \caption{Flowchart of the Aho–Corasick matching phase.}
@@ -323,7 +322,6 @@ Figure~\ref{fig:ac-matching-flow} illustrates this control flow in detail, which
 
 Each input character advances the automaton by at most one \acfunc{goto} transition, which increases the current depth by one, whereas every failure-link traversal strictly decreases that depth. Since the depth is non-negative, the total number of failure transitions over the scan cannot exceed the number of \acfunc{goto} transitions, which bounds the total number of transitions (\acfunc{goto} plus \acfunc{fail}) by $< 2n$ \cite{AhoCorasick1975}.
 
-\newpage
 \subsubsecao{Time and Space Complexity}
 
 The Aho-Corasick algorithm exhibits optimal \textit{linear time complexity} for multi-pattern matching \cite{AhoCorasick1975}, \cite{Gusfield1997}. The complexities for the construction and search phases and storing the automaton are as follows:

@@ -37,9 +37,9 @@
     \node[accept] (s5) at (7.5, -1.8) {5};
 
     % --- Match Labels ---
-    \node[match, above=3mm of s2] (m2) {\{"he"\}};
-    \node[match, below=3mm of s5] (m5) {\{"she", "he"\}};
-    \node[match, above=3mm of s7] (m7) {\{"hers"\}};
+    \node[match, above=3mm of s2] (m2) {\{he\}};
+    \node[match, below=3mm of s5] (m5) {\{she, he\}};
+    \node[match, above=3mm of s7] (m7) {\{hers\}};
 
     % Connect labels to states
     \draw[gray, thin, dotted] (s2) -- (m2);
