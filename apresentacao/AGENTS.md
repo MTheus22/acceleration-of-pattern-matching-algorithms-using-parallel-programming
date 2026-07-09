@@ -4,15 +4,15 @@ Instrucoes para agentes de IA trabalhando em `apresentacao/`.
 
 ## Objetivo da pasta
 
-Preparar a apresentacao oral da defesa em duas frentes:
+Preservar o material-base da defesa:
 
-1. Deck fonte: `slides.md` em Marp, ou HTML/reveal.js se a skill de HTML for usada.
-2. `roteiro/`: fala de treino, sincronizada com os slides.
+1. `base-apresentacao.md` como narrativa consolidada.
+2. `DESIGN.md` como guia visual.
+3. `slides.html` como deck atual rastreado.
+4. `figuras/` e `scripts/` como apoio para eventual reuso futuro.
 
-Antes disso, `base-apresentacao.md` organiza a narrativa global, enquanto
-`secoes/secao-*.md` contem os briefs focados de cada secao. Essa divisao existe
-para que um agente possa trabalhar uma secao com menos contexto e sem carregar
-todo o documento base.
+O texto final do TCC continua sendo a fonte de verdade. O deck HTML existe como
+artefato derivado e pode ser ajustado, mas nao deve contradizer o TCC.
 
 ## Leitura obrigatoria
 
@@ -21,9 +21,8 @@ Antes de editar slides, roteiro, graficos ou figuras:
 1. Leia este arquivo.
 2. Leia `DESIGN.md`.
 3. Leia `base-apresentacao.md`.
-4. Leia o arquivo relevante em `secoes/secao-*.md`.
-5. Leia o `../AGENTS.md` do repositorio LaTeX.
-6. Leia as partes relevantes do TCC em `../partes/*.tex`.
+4. Leia o `../AGENTS.md` do repositorio LaTeX.
+5. Leia as partes relevantes do TCC em `../partes/*.tex`.
 
 O texto final do TCC e a fonte de verdade. Notas antigas, decks antigos e
 resultados historicos so podem ser usados como contexto, nunca como autoridade.
@@ -82,26 +81,14 @@ conteudo desbalanceado. Nao use o i5 como plataforma principal da defesa.
 - Nao prometer replicacao estatistica entre execucoes independentes para a
   campanha canonica; ela foi um sweep unico com iteracoes temporizadas.
 
-## Build Marp
+## Deck atual e futuras recriacoes
 
-Quando `slides.md` existir:
+O deck atual rastreado e `slides.html`. Se for necessario reconstruir ou
+substituir esse deck no futuro, trate isso como uma derivacao nova a partir de
+`base-apresentacao.md` e do TCC final. Nao assuma a existencia de `slides.md`,
+`build/` ou `roteiro/` neste repositorio.
 
-```bash
-cd apresentacao
-npx @marp-team/marp-cli@4.4.0 slides.md -o build/slides.html --allow-local-files
-CHROME_PATH=/usr/bin/google-chrome npx @marp-team/marp-cli@4.4.0 slides.md -o build/slides.pdf --allow-local-files
-```
-
-Arquivos em `build/` sao gerados. Nao edite HTML/PDF manualmente.
-
-## Skill para HTML slides
-
-Se a apresentacao for implementada como HTML/reveal.js em vez de Marp, use a
-skill do workspace `.agents/skills/html-slides` (vista a partir da raiz
-`/home/matheusbarros/projects/idp/tcc`). A partir deste sub-repositorio, o
-caminho equivalente e `../.agents/skills/html-slides`.
-
-## Checklist antes de finalizar deck ou roteiro
+## Checklist antes de finalizar novo deck ou roteiro
 
 - [ ] Todo numero confere com o TCC atual.
 - [ ] Nenhum headline usa os numeros antigos do i5.

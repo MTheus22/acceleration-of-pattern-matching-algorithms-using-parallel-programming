@@ -51,12 +51,11 @@ configs/                  Classe LaTeX customizada do IDP (idp-model.cls)
                           e folha de estilo (idp-style.sty).
 pacotes/                  Lista centralizada de pacotes (pacotes.tex).
 figuras/                  Figuras (PDFs/PNGs); o graphicspath aponta para cá.
-reviews/                  PDFs anotados de revisão + backlog extraído em
-                          `*.comments.db` e `*.comments.md`.
+apresentacao/             Material-base da defesa (narrativa, design, figuras
+                          e scripts auxiliares).
 .github/                  Instruções para o GitHub Copilot.
 tools/article-ai/         Workflow auxiliar de IA para resumir artigos
                           relacionados (mais detalhes no README local).
-review_of_studies_inspiration.md   Material de inspiração (não publicado).
 ```
 
 ## Build
@@ -101,25 +100,7 @@ versões customizadas — usar `\section` quebra o sumário. As regras:
 | Adicionar um pacote LaTeX       | `pacotes/pacotes.tex`                                      |
 | Ajustar layout da classe        | `configs/idp-model.cls` (evitar; só se realmente necessário) |
 
-## Review do PDF anotado
-
-O workflow atual de revisão do texto usa:
-
-- `reviews/*.pdf` — PDF anotado pelo revisor
-- `reviews/*.comments.db` — base SQLite com um registro por comentário
-- `reviews/*.comments.md` — visão legível do backlog
-- `../automation/extract_pdf_comments.py` — extração do PDF anotado
-- `../automation/review_comments.py` — consulta e atualização do backlog
-- `../automation/review_issue_sync.py` — criação/vínculo de uma issue GitHub por comentário
-
-Ao corrigir um comentário no LaTeX, prefira deixar um comentário local
-próximo ao trecho alterado, por exemplo:
-
-```latex
-% review: issue #101, comment 14
-```
-
-## Workflows de IA auxiliar (`tools/`, `.agents/`)
+## Workflows auxiliares (`tools/`)
 
 - [`tools/article-ai/`](tools/article-ai/) — pipeline para gerar
   resumos formais de artigos da revisão sistemática usando Claude +
@@ -129,10 +110,6 @@ próximo ao trecho alterado, por exemplo:
   — instruções específicas para o GitHub Copilot.
 - [`AGENTS.md`](AGENTS.md) — guia rápido para o Claude e agentes
   similares.
-- [`../.agents/skills/tcc-review-workflow/SKILL.md`](../.agents/skills/tcc-review-workflow/SKILL.md)
-  — workflow do review do TCC baseado em `reviews/*.comments.db`,
-  mapeamento para `partes/*.tex` e sincronização com issues GitHub.
-
 ## Repositórios relacionados
 
 | Repositório                                                                                   | Conteúdo                                  |

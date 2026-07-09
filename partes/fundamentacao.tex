@@ -1,7 +1,6 @@
-% A subseção "Fundamentos do Paralelismo" começa aqui.
 \subsecao{Fundamentals of Parallelism}
 
-Parallelism in computing refers to the simultaneous execution of multiple tasks or parts of the same task, with the primary goal of reducing a program's total execution time. It is crucial to distinguish parallelism from concurrency. Concurrency occurs when multiple tasks are in progress at a given time, but may not be executing simultaneously. A single-core system can exhibit concurrency by rapidly switching between the execution of different tasks, simulating parallelism through preemption. True parallelism, on the other hand, requires hardware with multiple processing units \cite{Butenhof1997}. This distinction is fundamental to the present work, which exploits true hardware parallelism through multiple CPU cores. % review: comment 007 (issue #102)
+Parallelism in computing refers to the simultaneous execution of multiple tasks or parts of the same task, with the primary goal of reducing a program's total execution time. It is crucial to distinguish parallelism from concurrency. Concurrency occurs when multiple tasks are in progress at a given time, but may not be executing simultaneously. A single-core system can exhibit concurrency by rapidly switching between the execution of different tasks, simulating parallelism through preemption. True parallelism, on the other hand, requires hardware with multiple processing units \cite{Butenhof1997}. This distinction is fundamental to the present work, which exploits true hardware parallelism through multiple CPU cores.
 
 \subsubsecao{Parallel Computing Architectures}
 
@@ -70,12 +69,10 @@ are mechanisms for reducing stragglers on heterogeneous processors, not a change
 to the Aho--Corasick matching semantics. The main experimental campaign of this
 thesis is conducted on homogeneous cores; the hybrid-core discussion appears only
 as a diagnostic comparison in the results chapter.
-% Fim da subseção "Fundamentos do Paralelismo".
 
-% A subseção "Parallel Performance Evaluation Metrics" começa aqui.
 \subsecao{Parallel Performance Evaluation Metrics}
 
-Performance evaluation is fundamental to understanding the effectiveness of a parallel program. The following metrics compare the execution time of the parallel program with its equivalent sequential counterpart \cite{Grama2003}. % review: comment 008 (issue #103) — relate the metrics to the experiments
+Performance evaluation is fundamental to understanding the effectiveness of a parallel program. The following metrics compare the execution time of the parallel program with its equivalent sequential counterpart \cite{Grama2003}.
 The evaluation of parallel algorithms requires objective metrics that quantify both performance gains and resource utilization; accordingly, the metrics presented in this section provide the basis for evaluating the implementation proposed in this work and for interpreting the experimental results reported in Chapters 5 and 6.
 
 \subsubsecao{Execution Time and Overhead}
@@ -104,7 +101,6 @@ An ideal, or linear, speedup would be \texttt{S = p}. Amdahl's Law~\cite{Amdahl1
 \end{equation}
 In the limit, as the number of processors (\texttt{p}) tends to infinity, the maximum speedup is bounded by $\frac{1}{s}$. This implies that even a small sequential fraction (small \texttt{s}) can severely limit the total speedup, regardless of the number of processors available. Figure~\ref{fig:speedup-plot} illustrates the theoretical speedup according to Amdahl's Law compared to ideal speedup for a given sequential fraction. 
 
-% review: comments 009 (issue #104) caption below figure, 010 (issue #105) no source line for author-made figures
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.7\linewidth]{speedup-plot.png}
@@ -126,7 +122,7 @@ Efficiency (\texttt{E}) measures the effectiveness of processor utilization in a
     E = \frac{S}{p} = \frac{T_s}{p \cdot T_p}
     \label{eq:efficiency}
 \end{equation}
-Efficiency values range between 0 and 1 (inclusive), often expressed as a percentage (0\% to 100\%). An efficiency of 1 (or 100\%) signifies ideal, linear speedup, implying that all processors are contributing productively throughout the execution. In practice, efficiency typically diminishes as the processor count increases, primarily due to the escalating impact of parallel overhead \cite{Grama2003}.
+Efficiency values range between 0 and 1 (inclusive), often expressed as a percentage (0\% to 100\%).
 
 
 \subsubsecao{Scalability}
@@ -139,9 +135,7 @@ In parallel computing, scalability denotes a system’s ability to sustain high 
 \end{itemize}
 
 A parallel system is considered scalable if its efficiency remains above an acceptable threshold as both the number of processors $p$ and the problem size $W$ increase.
-% Fim da subseção "Parallel Performance Evaluation Metrics".
 
-% Conteúdo da subseção "Tries (Prefix Trees)"
 
 \subsecao{Tries (Prefix Trees)}
 
@@ -168,15 +162,12 @@ Tries support several primary operations, including search, insertion, and delet
     \item \textbf{Deletion}: deleting a key first involves locating the node corresponding to the key's final character and removing its end-of-word marker. If there are no child links (meaning it is not a prefix for any other key), it can be deleted. This deletion may proceed recursively: when a child node is removed, if its parent has no other children and the parent node is not marking a key, the parent node becomes redundant and can be deleted. This process continues up to the root as long as parent nodes become redundant.
 \end{itemize}
 
-% Figura da Trie
-% review: comments 009 (issue #104) caption below figure, 010 (issue #105) no source line for author-made figures
 \begin{figure}[H]
-  \centering % Centraliza a figura
+  \centering
     \includegraphics[width=0.4\textwidth]{trie.pdf}
-  \caption{Example trie storing \{``car'', ``cat'', ``cart'', ``dog''\}. Nodes marking the end of a complete word are shown with a double circle.} % Legenda da figura
-  \label{fig:trie-example} % Rótulo para referenciar a figura
+  \caption{Example trie storing \{``car'', ``cat'', ``cart'', ``dog''\}. Nodes marking the end of a complete word are shown with a double circle.}
+  \label{fig:trie-example}
 \end{figure}
-% Fim da Figura da Trie
 
 \subsubsecao{Advantages and Performance Characteristics}
 
@@ -189,12 +180,9 @@ Tries provide distinct advantages for operations on string collections, as detai
 
 While prefix sharing can save space, the overall space complexity of $R$-way tries requires careful consideration. Each node in an $R$-way trie conceptually provides $R$ potential links. If the alphabet size $R$ is large (e.g., for Unicode) and the actual branching factor at most nodes is low (a sparse trie), allocating space for all $R$ links per node can lead to considerable memory consumption due to numerous unused (null) links \cite{Knuth1998}, \cite{SedgewickWayne2011}.
 
-% review: comment 011 (issue #131) — closing wrap-up demoted from a subsection to a reinforcing paragraph
 In summary, the trie data structure is a cornerstone for numerous advanced string processing algorithms. Critically for this work, the Aho-Corasick algorithm, engineered for the efficient, simultaneous matching of multiple patterns within a text, employs a trie---constructed from the set of patterns (the dictionary)---as its initial structural framework \cite{AhoCorasick1975}. A thorough grasp of the trie principles presented above is thus essential for developing and analyzing the Aho-Corasick algorithm.
 
-% Fim da subseção "Tries".
 
-% Conteúdo da seção/subseção "Pattern Matching"
 
 \subsecao{Pattern Matching}
 
@@ -218,7 +206,6 @@ Algorithms that address the string matching problem are generally categorized ba
 
 The naive or brute-force algorithm represents the most straightforward method for exact pattern matching. Its operation involves iteratively aligning the pattern $P$ with the text $T$ at every possible starting position $i$ (from 0 to $N-M$). For each alignment, $P$ is compared character by character, from left to right, against the corresponding substring. If all characters match, an occurrence is reported \cite{Gusfield1997}.
 
-% review: issue #132, comment 012
 \begin{algorithm}[H]
 \caption{Naive exact string matching}
 \label{alg:naive-matching}
@@ -263,11 +250,9 @@ When the task involves searching for multiple patterns simultaneously from a set
 
 To efficiently handle applications that require simultaneous searches for a large number of patterns, specialized algorithms are essential. These methods usually preprocess the entire set of patterns to create a unified data structure, which enables a single, efficient pass over the text to identify all occurrences of any pattern within the set \cite{Gusfield1997}.
 
-The theoretical framework of \textit{finite automata} provides a robust and elegant solution to this problem. By constructing a single \textit{finite automaton} (FA) that can recognize all patterns in a given set, the text can be processed in a single continuous scan. Each character read from the text triggers a \textit{state transition} within the FA. When the FA reaches an \textit{accepting state}---a state explicitly designed to indicate the successful recognition of one or more patterns---the algorithm reports an occurrence. Algorithms like the Aho-Corasick algorithm exemplify this approach; they automate the construction of such a \textit{pattern-matching machine}, typically based on a trie structure augmented with specialized \textit{failure transitions} \cite{AhoCorasick1975}. This automaton-based paradigm forms the critical foundation for efficiently solving multi-pattern matching problems. The Aho-Corasick algorithm, which instantiates this paradigm and is the focus of this work, is examined in detail in the next section. % review: comment 013 (issue #133) — forward reference to the next section
+The theoretical framework of \textit{finite automata} provides a robust and elegant solution to this problem. By constructing a single \textit{finite automaton} (FA) that can recognize all patterns in a given set, the text can be processed in a single continuous scan. Each character read from the text triggers a \textit{state transition} within the FA. When the FA reaches an \textit{accepting state}---a state explicitly designed to indicate the successful recognition of one or more patterns---the algorithm reports an occurrence. Algorithms like the Aho-Corasick algorithm exemplify this approach; they automate the construction of such a \textit{pattern-matching machine}, typically based on a trie structure augmented with specialized \textit{failure transitions} \cite{AhoCorasick1975}. This automaton-based paradigm forms the critical foundation for efficiently solving multi-pattern matching problems. The Aho-Corasick algorithm, which instantiates this paradigm and is the focus of this work, is examined in detail in the next section.
 
-% Fim da seção/subseção "Pattern Matching".
 
-% Conteúdo da subseção "The Aho-Corasick Algorithm"
 
 \providecommand{\acfunc}[1]{\ensuremath{\mathtt{#1}}}
 
@@ -285,7 +270,6 @@ The Aho-Corasick algorithm overcomes this by building one \textit{finite automat
 
 Aho-Corasick has two main phases: (i) construction, which builds the automaton, and (ii) search, which scans the text. The automaton has three key tables, built in the following order:
 
-% review: issue #168, comment 2
 \begin{itemize}
     \item \textbf{Keyword trie (\acfunc{goto}):} a \textit{keyword trie} is first constructed from the pattern set $K=\{ P_1, P_2, \dots, P_k \}$. Each node represents a state, and each edge corresponds to a character transition. A path from the root to any state $s$ spells a prefix of one or more keywords. Formally, the transition function $\acfunc{goto}(s, a)$ returns the next state $s'$ when an edge labelled $a$ exists; otherwise the transition fails. Undefined transitions from the root are assigned back to the root, i.e., $\acfunc{goto}(0, a) = 0$, creating implicit self-loops for every alphabet symbol;
     \item \textbf{Failure function (\acfunc{fail}):} for any state $s$ (except the root), $\acfunc{fail}(s)$ is the state $s'$ whose path label is the longest proper suffix of the path label of $s$ that is also a prefix of some keyword. On a mismatch, the automaton follows $\acfunc{fail}(s)$ and resumes matching without consuming the current character. The failure function \acfunc{fail} is computed level-by-level (breadth-first) after the \acfunc{goto} table is complete;
@@ -294,7 +278,6 @@ Aho-Corasick has two main phases: (i) construction, which builds the automaton, 
 
 The complete automaton, combining the \acfunc{goto} transitions, \acfunc{fail} links, and \acfunc{output} match sets, is illustrated in Figure~\ref{fig:ac_automaton} for the pattern set $K=\{\text{``he''}, \text{``she''}, \text{``hers''}\}$.
 
-% review: comments 009 (issue #104) caption below figure, 010/017 (issues #105/#135) no source line for author-made figures
 \begin{figure}[H]
 \centering
 \includegraphics[width=1.0\linewidth]{ac_automaton.pdf}
@@ -303,7 +286,6 @@ The complete automaton, combining the \acfunc{goto} transitions, \acfunc{fail} l
 \end{figure}
 
 
-% review: comment 015 (issue #107) — worked example of how the automaton in Figure 3 operates
 To make the interaction of the three tables concrete, consider scanning the text \texttt{ushers} with the automaton of Figure~\ref{fig:ac_automaton}. The leading \texttt{u} has no outgoing edge from the root, so the implicit self-loop keeps the machine at state~$0$. The substring \texttt{she} then drives three successive \acfunc{goto} transitions to the accepting state for \texttt{she}; because the failure link of that state points to the state for \texttt{he}---the longest proper suffix of \texttt{she} that is also a keyword prefix---its augmented \acfunc{output} set reports both \texttt{she} and \texttt{he} at that position. The next character \texttt{r} has no \acfunc{goto} edge from the \texttt{she} state, so the automaton follows the failure link to the \texttt{he} state and continues along \texttt{her} and then \texttt{hers}, emitting \texttt{hers} when the final \texttt{s} is consumed. A single left-to-right pass thus reports every occurrence---\texttt{he}, \texttt{she}, and \texttt{hers}---without ever rescanning a character.
 
 \subsubsecao{Matching Phase}
@@ -312,7 +294,6 @@ Once the Aho–Corasick automaton has been built, it scans the text $T = a_1 a_2
 
 Figure~\ref{fig:ac-matching-flow} illustrates this control flow in detail, which: starts at the root with $i=1$, attempt each $\acfunc{goto}(cs, a_i)$, follow failure links on a “no” decision, report matches via $\acfunc{output}(cs)$ on a “yes,” advance $i$, and terminate when $i>n$.
 
-% review: comments 009 (issue #104) caption below figure, 010 (issue #105) no source line for author-made figures
 \begin{figure}[!htb]
     \centering
     \includegraphics[width=0.6\textwidth,keepaspectratio]{ac_matching.pdf}
@@ -343,5 +324,3 @@ The cost of the DFA representation is memory: for the standard 256-symbol byte a
 The Aho-Corasick algorithm is widely used in applications that require high-performance \textit{multi-pattern matching}, where its single-pass processing of the input against the entire pattern set is essential. Representative use cases include large-scale text analysis, motif searching in DNA or protein sequences \cite{Vajira2018}, spam filtering, Network Intrusion Detection Systems (NIDS) that scan traffic against thousands of signatures, and anti-malware tooling---YARA, for example, employs Aho-Corasick to match the literal string components extracted from its rules \cite{YARADocs}.
 
 While Aho-Corasick excels at exact literal matching, systems like NIDS often layer additional capabilities---such as \textit{regular-expression matching}---on top of Aho-Corasick engines to support more expressive signatures, which affects overall performance characteristics. The algorithm therefore remains a theoretically elegant and practically impactful example of \textit{finite-automata theory} applied to string processing \cite{Gusfield1997},\cite{YARADocs}.
-
-% Fim da subseção "The Aho-Corasick Algorithm".

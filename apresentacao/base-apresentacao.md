@@ -14,23 +14,8 @@ O documento esta em portugues porque a defesa sera em portugues. Ele nao e o
 deck; e o mapa narrativo que deve impedir que os slides virem uma copia densa do
 TCC.
 
-As secoes detalhadas da apresentacao foram separadas para otimizar o contexto de
-agentes que trabalhem em partes independentes:
-
-| Secao | Brief |
-|---|---|
-| 1 - Abertura e orientacao | `secoes/secao-01.md` |
-| 2 - Motivacao e problema | `secoes/secao-02.md` |
-| 3 - Conceito minimo de Aho-Corasick | `secoes/secao-03.md` |
-| 4 - Lacuna da literatura | `secoes/secao-04.md` |
-| 5 - Estrategia adotada | `secoes/secao-05.md` |
-| 6 - Metodologia experimental | `secoes/secao-06.md` |
-| 7 - Resultados principais | `secoes/secao-07.md` |
-| 8 - Diagnosticos de balanceamento | `secoes/secao-08.md` |
-| 9 - Conclusao, limitacoes e futuro | `secoes/secao-09.md` |
-
-Ao trabalhar em uma parte especifica, leia este arquivo para premissas globais
-e depois apenas o `secoes/secao-XX.md` correspondente.
+Este arquivo permaneceu como a referencia consolidada da defesa depois da
+simplificacao da pasta `apresentacao/`. Use-o como storyboard unico.
 
 ## Premissas globais
 
@@ -126,8 +111,8 @@ conceito do algoritmo ou o resultado central.
 
 ## Storyboard inicial de slides
 
-Esta e uma primeira sequencia candidata. Deve ser ajustada antes de virar
-`slides.md`.
+Esta e uma primeira sequencia candidata. Deve ser ajustada antes de virar um
+novo deck, se ele precisar ser recriado.
 
 | # | Titulo sugerido | Funcao |
 |---:|---|---|
@@ -154,8 +139,8 @@ Esta e uma primeira sequencia candidata. Deve ser ajustada antes de virar
 | 21 | Achados e limites | Conclusao + ameacas + futuro. |
 | 22 | Obrigado | Encerramento. |
 
-A ordem acima segue a ordem dos briefs em `secoes/secao-*.md`: a sequencia visual do
-automato (slide 5) vem antes dos slides de dependencia sequencial e de cache
+A ordem acima preserva um fluxo didatico: a sequencia visual do automato
+(slide 5) vem antes dos slides de dependencia sequencial e de cache
 (6 e 7), porque ambos dependem do conceito de tabela de transicao que a
 sequencia constroi; a RSL (slide 8) fecha o bloco conceitual e justifica a
 estrategia que comeca no slide 9.
@@ -336,6 +321,6 @@ Nao comparar estes valores absolutos com os da workstation.
 - [ ] Escolher quais slides serao cortaveis.
 - [ ] Gerar os graficos principais em SVG.
 - [ ] Redesenhar as figuras conceituais para 16:9.
-- [ ] Criar `slides.md` com pouco texto.
-- [ ] Exportar PDF e revisar legibilidade em tela cheia.
-- [ ] Criar roteiro depois que a ordem dos slides estabilizar.
+- [ ] Criar um novo deck com pouco texto, se necessario.
+- [ ] Exportar PDF e revisar legibilidade em tela cheia, se o deck for recriado.
+- [ ] Criar roteiro depois que a ordem dos slides estabilizar, se houver nova iteracao.

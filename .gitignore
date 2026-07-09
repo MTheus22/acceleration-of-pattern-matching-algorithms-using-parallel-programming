@@ -24,3 +24,12 @@
 # Local agent configs (not part of the thesis source)
 .agents/
 .copilot/
+.claude/
+.codex/
+
+# Private review workflow artifacts
+reviews/
+
+# Generated presentation artifacts
+apresentacao/build/
+apresentacao/slides.html

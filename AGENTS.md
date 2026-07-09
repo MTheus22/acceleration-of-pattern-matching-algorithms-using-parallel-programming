@@ -77,8 +77,8 @@ configs/                  Custom IDP class. AVOID editing unless you
   idp-style.sty
 pacotes/pacotes.tex       Central place to add LaTeX packages.
 figuras/                  Figures. graphicspath already includes this.
-reviews/                  Annotated review PDFs + extracted `*.comments.db`
-                          and `*.comments.md` backlogs.
+apresentacao/             Defense support material (narrative base, design
+                          notes, figures and helper scripts).
 .github/                  Copilot instructions.
 ```
 
@@ -133,7 +133,6 @@ Other custom commands relevant for editing:
 | Task                              | Where / how                                          |
 |-----------------------------------|------------------------------------------------------|
 | Add or edit a paragraph           | `partes/<chapter>.tex`                               |
-| Inspect review backlog            | `reviews/*.comments.db` via `../automation/review_comments.py` |
 | Sync comments to GitHub issues    | `../automation/review_issue_sync.py`                 |
 | Consolidate section evidence first| `../tcc_notes/sections/notes/<section>.md`           |
 | Draft a section before LaTeX      | `../tcc_notes/sections/text/<section>.md`            |
@@ -143,50 +142,16 @@ Other custom commands relevant for editing:
 | Add a LaTeX package               | add `\usepackage{...}` in `pacotes/pacotes.tex`      |
 | Generate a clean PDF              | `make`                                               |
 
-## Review workflow
-
-When addressing advisor/reviewer comments from an annotated PDF:
-
-- Treat `reviews/*.comments.db` as the source of truth for extracted
-  comments and statuses.
-- One GitHub issue may exist per extracted comment; issue metadata is
-  stored back in the same DB.
-- Prefer the workspace skill `tcc-review-workflow` plus the helper
-  scripts in `../automation/`.
-- For substantive LaTeX changes tied to a review issue, add a nearby
-  comment such as `% review: issue #101, comment 14` to make later
-  audit/review easier.
-
 ## Presentation (`apresentacao/`)
 
-The defense material lives in `apresentacao/`. The current planning source is
-split between `apresentacao/base-apresentacao.md` (global narrative, numbers,
-storyboard, and cross-section guidance) and
-`apresentacao/secoes/secao-*.md` (one focused brief per presentation section).
-It is supported by `apresentacao/AGENTS.md` and `apresentacao/DESIGN.md`.
-Future work should derive two artifacts from that base: `apresentacao/slides.md`
-(deck source) and scripts or notes under `apresentacao/roteiro/` (spoken
-rehearsal script).
+The defense material lives in `apresentacao/`. The repository keeps the durable
+support assets for the defense plus the current tracked deck in
+`apresentacao/slides.html`. The review backlog is no longer kept here.
 
 For presentation work, read `apresentacao/AGENTS.md` first. The thesis text in
-`partes/*.tex` is the source of truth for narrative and numbers; old decks,
-generated PDFs/HTML, and historical i5-centered assets are not authoritative.
-If the deck is implemented as HTML/reveal.js instead of Marp, use the workspace
-skill `.agents/skills/html-slides` for slide-implementation patterns.
-
-Marp is **not** on `PATH`; it runs via `npx` and the package is
-`@marp-team/marp-cli` (v4.4.0), *not* `marp`. PDF export needs Chrome.
-
-```bash
-cd apresentacao
-npx @marp-team/marp-cli@4.4.0 slides.md -o build/slides.html --allow-local-files
-CHROME_PATH=/usr/bin/google-chrome \
-  npx @marp-team/marp-cli@4.4.0 slides.md -o build/slides.pdf --allow-local-files
-```
-
-`--allow-local-files` is required because slides reference local images.
-Generated HTML/PDF files belong in `apresentacao/build/` and must not be edited
-by hand.
+`partes/*.tex` is the source of truth for narrative and numbers. The current
+HTML deck should be treated as a derived artifact anchored in
+`base-apresentacao.md` plus the thesis text.
 
 ## Helpers in this repo
 

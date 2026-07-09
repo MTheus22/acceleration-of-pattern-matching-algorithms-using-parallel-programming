@@ -165,7 +165,6 @@ headheight=1.8cm]{geometry}
 
         \vspace*{3cm}
  
-        % review: issue #96, comment 001
         \noindent{Undergraduate Thesis submitted in partial fulfillment of the requirements for the degree of Bachelor in Software Engineering at the Brazilian Institute of Education, Development and Research (IDP).}
 
 
@@ -192,7 +191,6 @@ headheight=1.8cm]{geometry}
     \end{flushleft}
         \vspace*{2cm}
 
-       % review: issue #96, comment 001
        \noindent{Undergraduate Thesis submitted in partial fulfillment of the requirements for the degree of Bachelor in Software Engineering at the Brazilian Institute of Education, Development and Research (IDP).}
 
 

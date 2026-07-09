@@ -6,10 +6,6 @@ results support a direct conclusion: for intrusion-detection-scale pattern sets,
 the dominant barrier is not the state-transition logic itself, but the memory
 system that must feed many threads traversing the same large automaton.
 
-% review: issue #158, comment 062 --- conclusion recentered on the workstation
-% as the single measurement environment; the old platform-comparison framing was
-% removed.
-% epic-03: headline figures below come from runs/workstation_2026-06-30/sweep.db.
 Three findings summarize the contribution. First, the automaton footprint is the
 main regime switch. With the dynamic flat strategy at thirty-two threads,
 throughput falls from about $16.2$~GB/s on the smallest Snort-derived automaton
@@ -97,8 +93,6 @@ machine remains unmeasured.
 
 \subsecao{Future Work}
 
-% review: issue #130, comment 063 --- future work keeps only work not already
-% delivered by the workstation migration.
 Four directions follow from these limitations. The first is to add hardware
 performance counters to the benchmark harness, so that cache misses, memory
 bandwidth, and pipeline behavior can be measured directly rather than inferred

@@ -82,7 +82,8 @@ Figuras candidatas do TCC:
 
 ## Sequencias progressivas
 
-Marp permite duplicar slides para criar revelacoes por avancos. Sequencias uteis:
+Um deck baseado em HTML ou Markdown pode duplicar slides para criar revelacoes
+por avancos. Sequencias uteis:
 
 - Aho-Corasick: inserir padroes na trie, ler caracteres, seguir transicoes,
   ativar failure link, emitir match.

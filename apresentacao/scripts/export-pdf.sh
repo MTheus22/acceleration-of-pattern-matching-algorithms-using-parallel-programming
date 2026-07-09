@@ -1,15 +1,21 @@
 #!/usr/bin/env bash
-# Exporta apresentacao/slides.html para PDF via decktape (Chrome headless).
+# Exporta um slides.html local para PDF via decktape (Chrome headless).
 # Uso:
-#   ./scripts/export-pdf.sh              -> build/slides.pdf
+#   ./scripts/export-pdf.sh              -> slides.pdf
 #   ./scripts/export-pdf.sh saida.pdf    -> caminho customizado
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
 SLIDES="slides.html"
-OUT="${1:-build/slides.pdf}"
+OUT="${1:-slides.pdf}"
 CHROME_BIN="${CHROME_PATH:-/usr/bin/google-chrome}"
+
+if [[ ! -f "$SLIDES" ]]; then
+  echo "slides.html nao encontrado em $(pwd)." >&2
+  echo "Recrie o deck primeiro e rode novamente." >&2
+  exit 1
+fi
 
 mkdir -p "$(dirname "$OUT")"
 

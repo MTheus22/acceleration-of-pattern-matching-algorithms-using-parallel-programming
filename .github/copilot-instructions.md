@@ -33,8 +33,8 @@ YARA-centric objectives.
 - `configs/idp-model.cls` — institutional class. **Do not edit.**
 - `pacotes/pacotes.tex` — add `\usepackage{...}` here.
 - `figuras/` — figures (PDF/PNG); `graphicspath` already points here.
-- `apresentacao/` — defense slides in **Marp**. Edit `slides.md`;
-  `slides.html`/`slides.pdf` are generated (see below). Don't hand-edit them.
+- `apresentacao/` — defense support material plus the current tracked HTML deck
+  (`slides.html`).
 
 ## Conventions Copilot must follow
 
@@ -52,14 +52,12 @@ YARA-centric objectives.
 - Add new chapters by creating `partes/new.tex` and registering them
   in `main.tex` via `\secao{...}{partes/new}`.
 
-## Slides (Marp, `apresentacao/`)
+## Presentation (`apresentacao/`)
 
-- Source of truth: `apresentacao/slides.md`. Regenerate outputs after editing:
-  - `npx @marp-team/marp-cli@4.4.0 slides.md -o slides.html --allow-local-files`
-  - PDF: prefix `CHROME_PATH=/usr/bin/google-chrome` (Marp uses Chrome).
-- Package is `@marp-team/marp-cli` (not `marp`); runs via `npx`, not on PATH.
-- Slide numbers must match the thesis. Full details in
-  [`../CLAUDE.md`](../CLAUDE.md) and `apresentacao/README.md`.
+- The current tracked deck is `apresentacao/slides.html`.
+- Treat `apresentacao/base-apresentacao.md` as the durable narrative base.
+- If the deck must be recreated, derive it from the thesis text plus the
+  presentation support material, and document the chosen format locally.
 
 ## Common pitfalls
 
